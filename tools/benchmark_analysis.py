@@ -22,6 +22,8 @@ API_ROOT = ROOT / "apps/api"
 RULES_ROOT = ROOT / "packages/rules"
 DEFAULT_JSON = ROOT / "docs/proof-pack/current-performance.json"
 DEFAULT_MARKDOWN = ROOT / "docs/proof-pack/current-performance.md"
+DEFAULT_SCALE_JSON = ROOT / "docs/proof-pack/current-scale-performance.json"
+DEFAULT_SCALE_MARKDOWN = ROOT / "docs/proof-pack/current-scale-performance.md"
 
 SCENARIOS = {
     "core-auth-100kb": {"kind": "core", "bytes": 100_000},
@@ -31,10 +33,22 @@ SCENARIOS = {
     "core-mixed-1mb": {"kind": "mixed", "bytes": 1_000_000},
     "case-bundle-eight-sources": {"kind": "bundle", "bytes_per_source": 900_000},
     "api-upload-pdf-report": {"kind": "api-report"},
+    "offline-auth-10mb": {"kind": "core", "bytes": 10_000_000},
+    "offline-auth-50mb": {"kind": "core", "bytes": 50_000_000},
+    "offline-auth-100mb": {"kind": "core", "bytes": 100_000_000},
 }
 
 SMOKE_SCENARIOS = ["core-auth-100kb", "core-mixed-100kb", "api-upload-pdf-report"]
-FULL_SCENARIOS = list(SCENARIOS)
+FULL_SCENARIOS = [
+    "core-auth-100kb",
+    "core-auth-1mb",
+    "core-auth-near-limit",
+    "core-mixed-100kb",
+    "core-mixed-1mb",
+    "case-bundle-eight-sources",
+    "api-upload-pdf-report",
+]
+SCALE_SCENARIOS = ["offline-auth-10mb", "offline-auth-50mb", "offline-auth-100mb"]
 
 BUDGETS = {
     "core-auth-100kb": {"p95_seconds": 2.0, "max_rss_mb": 256.0},
@@ -44,12 +58,15 @@ BUDGETS = {
     "core-mixed-1mb": {"p95_seconds": 20.0, "max_rss_mb": 768.0},
     "case-bundle-eight-sources": {"p95_seconds": 30.0, "max_rss_mb": 1024.0},
     "api-upload-pdf-report": {"p95_seconds": 5.0, "max_rss_mb": 384.0},
+    "offline-auth-10mb": {"p95_seconds": 30.0, "max_rss_mb": 1536.0},
+    "offline-auth-50mb": {"p95_seconds": 150.0, "max_rss_mb": 6144.0},
+    "offline-auth-100mb": {"p95_seconds": 300.0, "max_rss_mb": 12288.0},
 }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run isolated TraceHawk performance benchmarks.")
-    parser.add_argument("--profile", choices=("smoke", "full"), default="full")
+    parser.add_argument("--profile", choices=("smoke", "full", "scale"), default="full")
     parser.add_argument("--repeats", type=int)
     parser.add_argument("--check", action="store_true", help="Do not write proof artifacts.")
     parser.add_argument(
@@ -57,8 +74,8 @@ def main() -> int:
         action="store_true",
         help="Record results without enforcing budgets.",
     )
-    parser.add_argument("--json-output", type=Path, default=DEFAULT_JSON)
-    parser.add_argument("--markdown-output", type=Path, default=DEFAULT_MARKDOWN)
+    parser.add_argument("--json-output", type=Path)
+    parser.add_argument("--markdown-output", type=Path)
     parser.add_argument("--worker", choices=SCENARIOS)
     args = parser.parse_args()
 
@@ -66,15 +83,25 @@ def main() -> int:
         print(json.dumps(run_worker(args.worker), sort_keys=True))
         return 0
 
-    repeats = args.repeats or (1 if args.profile == "smoke" else 3)
-    scenario_names = SMOKE_SCENARIOS if args.profile == "smoke" else FULL_SCENARIOS
+    repeats = args.repeats or (1 if args.profile in {"smoke", "scale"} else 3)
+    scenario_names = {
+        "smoke": SMOKE_SCENARIOS,
+        "full": FULL_SCENARIOS,
+        "scale": SCALE_SCENARIOS,
+    }[args.profile]
     report = run_benchmarks(scenario_names, repeats)
     if not args.calibrate:
         assert_budgets(report)
     if not args.check:
-        args.json_output.parent.mkdir(parents=True, exist_ok=True)
-        args.json_output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
-        args.markdown_output.write_text(render_markdown(report))
+        json_output = args.json_output or (
+            DEFAULT_SCALE_JSON if args.profile == "scale" else DEFAULT_JSON
+        )
+        markdown_output = args.markdown_output or (
+            DEFAULT_SCALE_MARKDOWN if args.profile == "scale" else DEFAULT_MARKDOWN
+        )
+        json_output.parent.mkdir(parents=True, exist_ok=True)
+        json_output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+        markdown_output.write_text(render_markdown(report))
     print(
         f"benchmark_{args.profile}=ok scenarios={len(scenario_names)} "
         f"repeats={repeats} budgets={'calibration' if args.calibrate else 'passed'}"
@@ -142,7 +169,7 @@ def _run_isolated_worker(scenario_name: str) -> dict[str, Any]:
         check=True,
         capture_output=True,
         text=True,
-        timeout=120,
+        timeout=360 if scenario_name in SCALE_SCENARIOS else 120,
     )
     lines = [line for line in process.stdout.splitlines() if line.strip()]
     return json.loads(lines[-1])
@@ -318,10 +345,10 @@ def render_markdown(report: dict[str, Any]) -> str:
     rows = [
         "# Current Performance Benchmark",
         "",
-        f"Generated: `{report['generated_at']}`  ",
-        f"Base commit: `{report['base_commit']}`  ",
-        f"Working tree dirty during capture: `{str(report['working_tree_dirty']).lower()}`  ",
-        f"Python: `{report['environment']['python']}`  ",
+        f"Generated: `{report['generated_at']}`",
+        f"Base commit: `{report['base_commit']}`",
+        f"Working tree dirty during capture: `{str(report['working_tree_dirty']).lower()}`",
+        f"Python: `{report['environment']['python']}`",
         f"Platform: `{report['environment']['platform']}`",
         "",
         "## Results",

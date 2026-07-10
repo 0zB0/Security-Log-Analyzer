@@ -7,6 +7,7 @@ uses three repetitions and creates the committed proof report.
 ```bash
 make benchmark-smoke
 make benchmark
+make benchmark-scale
 ```
 
 Current scenarios cover:
@@ -15,6 +16,13 @@ Current scenarios cover:
 - 100 KB and 1 MB mixed auth/web parser routing;
 - an eight-source case bundle;
 - HTTP upload, SQLite persistence, and PDF report generation.
+
+The opt-in scale profile runs direct, offline engine analysis at 10 MB, 50 MB, and 100 MB. Those
+cases measure algorithmic growth outside the HTTP upload path. They do not change or bypass the
+configured upload and case-bundle security limits, and they are not run on every CI change.
+
+Robustness tests additionally cover concurrent independent analyses, very long lines, control
+characters, malformed JSON lines, newline-heavy input, and recovery after a rejected upload.
 
 The configured limits remain the security boundary. Benchmark success does not authorize files
 larger than `MAX_UPLOAD_BYTES`, more files than `MAX_CASE_FILES`, or bundles larger than

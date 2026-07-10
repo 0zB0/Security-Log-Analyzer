@@ -46,11 +46,17 @@ def main() -> int:
         css_response = httpx.get(f"{base_url}/src/styles/main.css", timeout=5)
         css_response.raise_for_status()
         assert ".shell" in css_response.text
+        workspace_sources = sorted(
+            path
+            for pattern in ("*.ts", "*.tsx")
+            for path in (ROOT / "apps/web/src/features/workspace").glob(pattern)
+            if not path.name.endswith((".test.ts", ".test.tsx"))
+        )
         app_source = "\n".join(
             [
                 (ROOT / "apps/web/src/app/main.tsx").read_text(),
                 (ROOT / "apps/web/src/app/workspaceOptions.ts").read_text(),
-                (ROOT / "apps/web/src/features/workspace/WorkspaceBody.tsx").read_text(),
+                *(path.read_text() for path in workspace_sources),
             ]
         )
         assert "async function handleRunDemo()" in app_source

@@ -15,6 +15,7 @@ venv/
 node_modules/
 dist/
 .vite/
+apps/web/coverage/
 
 # Local data
 *.db

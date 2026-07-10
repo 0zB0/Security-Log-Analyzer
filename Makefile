@@ -1,4 +1,4 @@
-.PHONY: check-structure tree test test-scenarios detection-quality detection-quality-check iot23-evaluation benchmark-smoke benchmark lint api-dev web-dev web-build compose-check smoke-live smoke-ollama smoke-reports smoke-ui smoke-azure-public real-lab-proof security-scan sbom release-assets verify-all
+.PHONY: check-structure lock-check tree test test-scenarios detection-quality detection-quality-check iot23-evaluation benchmark-smoke benchmark benchmark-scale lint api-dev web-dev web-test web-build compose-check smoke-live smoke-ollama smoke-reports smoke-ui smoke-azure-public real-lab-proof security-scan sbom release-assets verify-all
 
 check-structure:
 	@test -f local-soc-assistant-architecture.md
@@ -8,6 +8,14 @@ check-structure:
 	@test -d packages/sample-data
 	@test -d docs
 	@echo "TraceHawk scaffold OK"
+
+lock-check:
+	@.venv/bin/uv pip compile apps/api/pyproject.toml --extra dev --python-version 3.12 --universal --quiet -o /tmp/tracehawk-requirements.lock
+	@tail -n +3 apps/api/requirements.lock > /tmp/tracehawk-requirements.expected
+	@tail -n +3 /tmp/tracehawk-requirements.lock > /tmp/tracehawk-requirements.actual
+	@cmp -s /tmp/tracehawk-requirements.expected /tmp/tracehawk-requirements.actual
+	@npm --prefix apps/web ci --ignore-scripts --dry-run >/dev/null
+	@echo "Dependency locks OK"
 
 tree:
 	@find . -path ./.git -prune -o -maxdepth 4 -type f -print | sort
@@ -34,6 +42,9 @@ benchmark-smoke:
 benchmark:
 	@.venv/bin/python tools/benchmark_analysis.py --profile full
 
+benchmark-scale:
+	@.venv/bin/python tools/benchmark_analysis.py --profile scale --check
+
 lint:
 	@.venv/bin/python -m ruff check apps/api/tracehawk_api apps/api/tests tools
 
@@ -42,6 +53,9 @@ api-dev:
 
 web-dev:
 	@npm --prefix apps/web run dev
+
+web-test:
+	@npm --prefix apps/web run test:coverage
 
 web-build:
 	@npm --prefix apps/web run build
@@ -83,5 +97,5 @@ release-assets:
 	@.venv/bin/python tools/generate_release_assets.py
 	@.venv/bin/python -m pytest apps/api/tests/test_proof_assets.py -q
 
-verify-all: check-structure test lint web-build compose-check test-scenarios detection-quality-check benchmark-smoke smoke-live smoke-ollama smoke-reports smoke-ui
+verify-all: check-structure lock-check test lint web-test web-build compose-check test-scenarios detection-quality-check benchmark-smoke smoke-live smoke-ollama smoke-reports smoke-ui
 	@echo "TraceHawk local verification OK"

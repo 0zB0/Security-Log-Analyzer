@@ -158,3 +158,44 @@ def test_incident_pdf_report_renders_readable_pdf() -> None:
     assert "Scoring Rationale" in text
     assert "Sequence quality" in text
     assert "Report Integrity Notes" in text
+
+
+def test_incident_report_formats_preserve_core_fields_and_redaction_parity() -> None:
+    client = TestClient(app)
+    sample = ROOT / "packages/sample-data/auth/ssh-bruteforce.log"
+
+    with sample.open("rb") as file:
+        analysis_response = client.post(
+            "/api/analyze/upload",
+            files={"file": ("ssh-bruteforce.log", file, "text/plain")},
+        )
+
+    analysis = analysis_response.json()
+    rendered: dict[str, str] = {}
+    for report_format in ("markdown", "html", "pdf"):
+        response = client.post(
+            f"/api/reports/incident?format={report_format}",
+            json={
+                "incident": analysis["incidents"][0],
+                "findings": analysis["findings"],
+                "evidence": analysis["evidence"],
+                "assistant_summary": "Source 198.51.100.10 used admin.",
+                "redaction": {"enabled": True},
+            },
+        )
+        assert response.status_code == 200
+        body = response.json()
+        assert body["format"] == report_format
+        content = body["content"]
+        if report_format == "pdf":
+            reader = PdfReader(BytesIO(b64decode(content)))
+            content = "\n".join(page.extract_text() or "" for page in reader.pages)
+        rendered[report_format] = content
+
+    for report_format, content in rendered.items():
+        assert "198.51.100.10" not in content, report_format
+        assert " admin" not in content.lower(), report_format
+        assert "[REDACTED_IP]" in content, report_format
+        assert "[REDACTED_USER]" in content, report_format
+        assert "Possible SSH credential compromise" in content, report_format
+        assert "Scoring Rationale" in content, report_format

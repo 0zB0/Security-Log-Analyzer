@@ -16,6 +16,10 @@ def check_markdown_links(root: Path) -> list[str]:
     for markdown in sorted(root.rglob("*.md")):
         if any(part in {".git", ".venv", "node_modules"} for part in markdown.parts):
             continue
+        relative_parts = markdown.relative_to(root).parts
+        if relative_parts[:2] == ("public", "github"):
+            # Overlay documents are validated after export at their destination paths.
+            continue
         text = markdown.read_text(encoding="utf-8")
         for raw_target in LINK_PATTERN.findall(text):
             target = raw_target.strip().strip("<>").split(maxsplit=1)[0]

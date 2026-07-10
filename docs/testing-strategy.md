@@ -1,5 +1,17 @@
 # Testing Strategy
 
+## Frontend Tests
+
+Vitest and React Testing Library cover deterministic workspace selectors and critical rendered
+states. Accessibility assertions use axe against component output. Coverage thresholds apply to
+the extracted selector layer; TypeScript build and the browser-driven UI smoke remain separate
+integration gates.
+
+```bash
+npm --prefix apps/web run test:coverage
+make smoke-ui
+```
+
 ## Parser Tests
 
 Parser tests verify timestamp parsing, field extraction, invalid-line handling, and event type classification.
@@ -36,6 +48,13 @@ The final demo test should import sample logs, create parsed events, trigger fin
 
 Current smoke coverage includes upload analysis, live file tail, live folder watch, assistant mock
 responses, model selector wiring, redaction control wiring, and Markdown/HTML/PDF report generation.
+
+## Robustness Tests
+
+Robustness coverage includes concurrent independent analyses, unsupported long/control-character
+inputs, malformed JSON lines, newline-heavy input, and a successful recovery analysis after a
+rejected upload. The opt-in scale benchmark measures direct offline analysis at 10, 50, and 100 MB
+without changing the bounded HTTP upload contract.
 
 ## External Dataset Evaluation
 

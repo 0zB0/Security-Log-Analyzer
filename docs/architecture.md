@@ -1,5 +1,14 @@
 # Architecture
 
+Architecture decision records:
+
+- [Confidence-ranked parser routing](adr/0001-confidence-ranked-parser-routing.md)
+- [Transparent additive correlation scoring](adr/0002-transparent-correlation-scoring.md)
+- [LLM explanation boundary](adr/0003-llm-explanation-boundary.md)
+
+The executable review path is documented in the
+[technical walkthrough](technical-walkthrough.md).
+
 ```text
 Browser / API client
 ↓

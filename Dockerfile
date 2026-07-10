@@ -20,13 +20,14 @@ ENV TRACEHAWK_OLLAMA_MODEL=gpt-oss:20b
 
 WORKDIR /app
 COPY apps/api/pyproject.toml ./apps/api/pyproject.toml
+COPY apps/api/requirements.lock ./apps/api/requirements.lock
 COPY apps/api/tracehawk_api ./apps/api/tracehawk_api
 COPY packages/rules ./packages/rules
 COPY packages/sample-data ./packages/sample-data
 COPY tools/sqlite_backup.py ./tools/sqlite_backup.py
 COPY --from=web-build /app/apps/web/dist ./apps/web/dist
 
-RUN pip install --no-cache-dir -e ./apps/api \
+RUN pip install --no-cache-dir --constraint ./apps/api/requirements.lock -e ./apps/api \
     && useradd --create-home --shell /usr/sbin/nologin appuser \
     && mkdir -p /data \
     && chown -R appuser:appuser /app /data

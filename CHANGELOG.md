@@ -4,7 +4,17 @@ All notable public TraceHawk releases are documented here.
 
 ## [Unreleased]
 
-- No public changes after v0.7.1.
+### Added
+
+- frontend tests, accessibility assertions, and coverage enforcement;
+- reproducible Python and npm dependency locks;
+- 10, 50, and 100 MB offline scale evidence and robustness tests;
+- architecture decision records and an executable technical walkthrough.
+
+### Changed
+
+- the workspace frontend and report service are split into focused modules;
+- public CI validates frontend tests before build.
 
 ## [0.7.1] - 2026-07-10
 

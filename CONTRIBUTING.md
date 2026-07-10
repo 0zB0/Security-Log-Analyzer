@@ -7,10 +7,14 @@ TraceHawk accepts focused fixes, parser improvements, detection rules, tests, an
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip==26.1.2
-.venv/bin/python -m pip install -e 'apps/api[dev]'
+.venv/bin/python -m pip install --constraint apps/api/requirements.lock -e 'apps/api[dev]'
 npm --prefix apps/web ci
 make verify-all
 ```
+
+Read the [technical walkthrough](docs/technical-walkthrough.md) and relevant
+[architecture decisions](docs/adr/) before changing parser routing, correlation scoring, or the
+local LLM boundary.
 
 Keep detections deterministic and evidence-first. New rules require a positive scenario, a benign
 control where practical, MITRE metadata, analyst guidance, and false-positive notes. Do not commit

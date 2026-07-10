@@ -96,13 +96,15 @@ Active stack:
 
 Detailed design: [architecture](docs/architecture.md) and
 [local SOC assistant blueprint](local-soc-assistant-architecture.md).
+Critical decisions are recorded in [ADRs](docs/adr/), with an executable
+[technical walkthrough](docs/technical-walkthrough.md).
 
 ## Local Development And Verification
 
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip==26.1.2
-.venv/bin/python -m pip install -e 'apps/api[dev]'
+.venv/bin/python -m pip install --constraint apps/api/requirements.lock -e 'apps/api[dev]'
 npm --prefix apps/web ci
 make verify-all
 ```
