@@ -1,8 +1,8 @@
 {
-  "content_sha256": "4394e9e0d0d52e44b15a3278a5087cbb04a41fb37f48cadd7eaae87f80420280",
+  "content_sha256": "28d9a064247911f46a9036a4eb9018eb91942c2dc6a34e0b61d82ab0d405dd8d",
   "file_count": 338,
   "policy": "curated-public-allowlist",
   "release": "v0.7.0",
   "schema_version": 1,
-  "source_commit": "dd97ebe8f3204aae44acf1d9898bd6ab31106ce7"
+  "source_commit": "42529b99cc8a8fcba4adbd9ac12311e1c6657898"
 }
