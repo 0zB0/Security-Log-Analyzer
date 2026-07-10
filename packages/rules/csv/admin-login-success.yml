@@ -1,0 +1,29 @@
+id: csv-admin-login-success-001
+title: CSV administrative login success
+description: CSV security events show a successful login for an administrative account.
+severity: medium
+confidence: medium
+log_types:
+  - csv_log
+mitre:
+  tactic: Initial Access
+  technique_id: T1078
+  technique_name: Valid Accounts
+conditions:
+  field_contains_any:
+    event_type:
+      - success
+    username:
+      - admin
+      - root
+  group_by:
+    - source_ip
+    - username
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Approved administrator login.
+recommendations:
+  - Confirm user, source IP, and change window.
+  - Review actions after login.

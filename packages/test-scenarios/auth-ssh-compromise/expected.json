@@ -1,0 +1,15 @@
+{
+  "parser": "linux_auth",
+  "raw_line_count": 12,
+  "parsed_event_count": 12,
+  "finding_count": 4,
+  "incident_count": 1,
+  "expected_findings": [
+    "ssh-bruteforce-001",
+    "ssh-compromise-sequence-001",
+    "ssh-success-after-failures-001",
+    "sudo-user-management-001"
+  ],
+  "expected_mitre": ["T1078", "T1110.001", "T1136.001"],
+  "expected_evidence_lines": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+}

@@ -1,0 +1,20 @@
+{
+  "parser": "syslog",
+  "raw_line_count": 5,
+  "parsed_event_count": 5,
+  "finding_count": 1,
+  "incident_count": 1,
+  "expected_findings": [
+    "syslog-error-burst-001"
+  ],
+  "expected_mitre": [
+    "T1562"
+  ],
+  "expected_evidence_lines": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ]
+}

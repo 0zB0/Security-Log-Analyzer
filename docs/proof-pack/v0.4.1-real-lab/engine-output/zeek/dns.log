@@ -1,0 +1,14 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	dns
+#open	2026-07-09-07-59-25
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	trans_id	rtt	query	qclass	qclass_name	qtype	qtype_name	rcode	rcode_name	AA	TC	RD	RA	Z	answers	TTLs	rejected	opcode	opcode_name
+#types	time	string	addr	port	addr	port	enum	count	interval	string	count	string	count	string	count	string	bool	bool	bool	bool	count	vector[string]	vector[interval]	bool	count	string
+1783509603.199999	CyP0Aq30K0aNvpxyy8	10.20.0.25	52001	10.20.0.53	53	udp	17409	-	a1.beacon-control.example	1	C_INTERNET	1	A	-	-	F	F	T	F	0	-	-	F	0	query
+1783509623.199999	C3xeuJ3qgTP9IqGiZa	10.20.0.25	52002	10.20.0.53	53	udp	17410	-	a2.beacon-control.example	1	C_INTERNET	1	A	-	-	F	F	T	F	0	-	-	F	0	query
+1783509643.199999	C4bKao4vCEJEypGT83	10.20.0.25	52003	10.20.0.53	53	udp	17411	-	a3.beacon-control.example	1	C_INTERNET	1	A	-	-	F	F	T	F	0	-	-	F	0	query
+1783509663.199999	CRBHJA1DWw7EABKLG2	10.20.0.25	52004	10.20.0.53	53	udp	17412	-	a4.beacon-control.example	1	C_INTERNET	1	A	-	-	F	F	T	F	0	-	-	F	0	query
+1783509683.199999	CaEQGu4f6N2cbSnoz6	10.20.0.25	52005	10.20.0.53	53	udp	17413	-	a5.beacon-control.example	1	C_INTERNET	1	A	-	-	F	F	T	F	0	-	-	F	0	query
+#close	2026-07-09-07-59-25

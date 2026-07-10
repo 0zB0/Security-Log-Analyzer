@@ -1,0 +1,28 @@
+id: cloudtrail-console-login-failure-burst-001
+title: CloudTrail console login failure burst
+description: Multiple failed AWS ConsoleLogin events from one source address.
+severity: high
+confidence: high
+log_types:
+  - cloudtrail
+mitre:
+  tactic: Credential Access
+  technique_id: T1110
+  technique_name: Brute Force
+conditions:
+  event_type: ConsoleLogin
+  group_by:
+    - source_ip
+  window_minutes: 10
+  count_gte: 3
+  field_equals:
+    responseElements.ConsoleLogin: Failure
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - User mistyped MFA or password several times.
+  - Corporate SSO misconfiguration caused repeated failures.
+recommendations:
+  - Check whether a successful login followed the failures.
+  - Validate the source IP and identity provider logs.

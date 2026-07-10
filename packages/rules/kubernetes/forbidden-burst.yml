@@ -1,0 +1,27 @@
+id: kubernetes-forbidden-burst-001
+title: Kubernetes forbidden request burst
+description: Multiple forbidden Kubernetes API requests came from one source identity or IP.
+severity: medium
+confidence: medium
+log_types:
+  - kubernetes_audit
+mitre:
+  tactic: Discovery
+  technique_id: T1613
+  technique_name: Container and Resource Discovery
+conditions:
+  group_by:
+    - username
+    - source_ip
+  window_minutes: 10
+  count_gte: 3
+  field_equals:
+    responseStatus.code: 403
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Misconfigured automation repeatedly testing denied permissions.
+recommendations:
+  - Review the denied verbs and resources.
+  - Confirm whether the actor is probing permissions.

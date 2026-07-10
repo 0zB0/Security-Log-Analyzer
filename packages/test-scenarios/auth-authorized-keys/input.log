@@ -1,0 +1,1 @@
+Jul 05 12:30:00 lab sudo:   deploy : TTY=pts/1 ; PWD=/home/deploy ; USER=root ; COMMAND=/bin/sh -c echo ssh-rsa AAAATEST >> /home/app/.ssh/authorized_keys

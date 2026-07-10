@@ -1,0 +1,33 @@
+id: network-wireguard-admin-service-access-001
+title: Interface administrative service access
+description: Traffic over the monitored interface reached SSH or administrative service ports.
+severity: high
+confidence: medium
+log_types:
+  - network_packet
+mitre:
+  tactic: Lateral Movement
+  technique_id: T1021
+  technique_name: Remote Services
+conditions:
+  event_type: network_packet
+  field_equals:
+    transport_protocol: tcp
+  field_in:
+    destination_port:
+      - 22
+      - 2222
+  group_by:
+    - source_ip
+    - destination_ip
+    - destination_port
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Approved administrator SSH session over the monitored interface.
+  - Monitoring or backup automation using SSH.
+recommendations:
+  - Confirm the peer and change window.
+  - Review destination host authentication logs for the same timestamp.
+  - Verify that SSH exposure over the tunnel is expected.

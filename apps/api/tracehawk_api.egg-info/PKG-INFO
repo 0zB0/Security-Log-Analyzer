@@ -1,0 +1,25 @@
+Metadata-Version: 2.4
+Name: tracehawk-api
+Version: 0.7.0
+Summary: FastAPI backend for TraceHawk local-only live SOC assistant
+Requires-Python: >=3.12
+Requires-Dist: fastapi
+Requires-Dist: uvicorn[standard]
+Requires-Dist: pydantic
+Requires-Dist: sqlalchemy
+Requires-Dist: pyyaml
+Requires-Dist: watchdog
+Requires-Dist: jinja2
+Requires-Dist: httpx
+Requires-Dist: python-dotenv
+Requires-Dist: python-multipart
+Requires-Dist: reportlab
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
+Requires-Dist: mypy; extra == "dev"
+Requires-Dist: pypdf; extra == "dev"
+Requires-Dist: httpx2<3,>=2; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Requires-Dist: pip-audit; extra == "dev"
+Requires-Dist: cyclonedx-bom; extra == "dev"

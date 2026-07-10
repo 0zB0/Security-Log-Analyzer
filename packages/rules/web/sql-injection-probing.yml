@@ -1,0 +1,30 @@
+id: web-sql-injection-probing-001
+title: SQL injection probing
+description: A web request contained common SQL injection probes.
+severity: high
+confidence: medium
+log_types:
+  - web_access
+mitre:
+  tactic: Initial Access
+  technique_id: T1190
+  technique_name: Exploit Public-Facing Application
+conditions:
+  event_type: http_request
+  field_contains_any:
+    url_target:
+      - "%20OR%20"
+      - "' OR "
+      - UNION SELECT
+      - sqlmap
+  group_by:
+    - source_ip
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Approved web application security scan.
+recommendations:
+  - Confirm whether the application returned sensitive data.
+  - Review application logs for database errors.
+

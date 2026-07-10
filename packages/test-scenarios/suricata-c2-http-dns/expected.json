@@ -1,0 +1,28 @@
+{
+  "parser": "suricata_eve",
+  "raw_line_count": 7,
+  "parsed_event_count": 7,
+  "finding_count": 4,
+  "incident_count": 1,
+  "expected_findings": [
+    "suricata-c2-category-001",
+    "suricata-dns-burst-001",
+    "suricata-high-severity-alert-001",
+    "suricata-http-sensitive-path-001"
+  ],
+  "expected_mitre": [
+    "T1071",
+    "T1071.004",
+    "T1083",
+    "T1190"
+  ],
+  "expected_evidence_lines": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ]
+}

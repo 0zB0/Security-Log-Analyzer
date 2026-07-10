@@ -1,0 +1,30 @@
+id: json-admin-login-success-001
+title: JSON admin login success
+description: JSON events show a successful login for an administrative account.
+severity: medium
+confidence: medium
+log_types:
+  - json_log
+mitre:
+  tactic: Defense Evasion
+  technique_id: T1078
+  technique_name: Valid Accounts
+conditions:
+  event_type: login_success
+  field_contains_any:
+    username:
+      - admin
+      - root
+      - administrator
+  group_by:
+    - source_ip
+    - username
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Expected administrator login.
+recommendations:
+  - Verify the login source and time.
+  - Review subsequent privileged actions.
+

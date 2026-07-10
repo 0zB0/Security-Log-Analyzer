@@ -1,0 +1,12 @@
+title = "TraceHawk secret scanning policy"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Generated proof manifests contain SHA-256 values under an api_result_sha256 key."
+targetRules = ["generic-api-key"]
+paths = [
+  '''^docs/proof-pack/v0\.4\.1-real-lab/manifest\.json$''',
+  '''^docs/proof-pack/v0\.4\.1-real-lab/api-results/summary\.json$''',
+]

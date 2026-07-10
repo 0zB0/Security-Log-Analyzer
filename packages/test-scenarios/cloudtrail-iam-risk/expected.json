@@ -1,0 +1,29 @@
+{
+  "parser": "cloudtrail",
+  "raw_line_count": 7,
+  "parsed_event_count": 7,
+  "finding_count": 5,
+  "incident_count": 3,
+  "expected_findings": [
+    "cloudtrail-access-key-created-001",
+    "cloudtrail-logging-disabled-001",
+    "cloudtrail-console-login-failure-burst-001",
+    "cloudtrail-iam-policy-attachment-001",
+    "cloudtrail-root-account-usage-001"
+  ],
+  "expected_mitre": [
+    "T1078.004",
+    "T1098",
+    "T1110",
+    "T1562.008"
+  ],
+  "expected_evidence_lines": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ]
+}

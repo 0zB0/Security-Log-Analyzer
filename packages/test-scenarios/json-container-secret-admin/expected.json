@@ -1,0 +1,14 @@
+{
+  "parser": "json_log",
+  "raw_line_count": 3,
+  "parsed_event_count": 3,
+  "finding_count": 3,
+  "incident_count": 1,
+  "expected_findings": [
+    "json-admin-login-success-001",
+    "json-container-privileged-001",
+    "json-secret-file-read-001"
+  ],
+  "expected_mitre": ["T1078", "T1552.001", "T1611"],
+  "expected_evidence_lines": [1, 2, 3]
+}

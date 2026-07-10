@@ -1,0 +1,28 @@
+id: zeek-notice-event-001
+title: Zeek notice event
+description: Zeek notice logs contain an analyst-worthy notice such as scan, SSH, or policy activity.
+severity: medium
+confidence: medium
+log_types:
+  - zeek_json
+  - zeek_tsv
+mitre:
+  tactic: Discovery
+  technique_id: T1046
+  technique_name: Network Service Discovery
+conditions:
+  event_type: zeek_notice
+  group_by:
+    - source_ip
+  window_minutes: 10
+  count_gte: 1
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Site-specific Zeek notice policy with informational severity.
+  - Approved scanner intentionally producing notices.
+recommendations:
+  - Review the Zeek note and sub-message.
+  - Pivot to conn, DNS, HTTP, or SSL logs using UID when present.
+  - Confirm whether the notice aligns with approved activity.

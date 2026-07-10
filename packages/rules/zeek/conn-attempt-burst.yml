@@ -1,0 +1,34 @@
+id: zeek-conn-attempt-burst-001
+title: Zeek repeated connection-attempt burst
+description: One source generated many unsuccessful TCP connection attempts to the same destination service in a short window.
+severity: high
+confidence: medium
+log_types:
+  - zeek_json
+  - zeek_tsv
+mitre:
+  tactic: Discovery
+  technique_id: T1046
+  technique_name: Network Service Discovery
+conditions:
+  event_type: zeek_conn
+  field_equals:
+    transport_protocol: tcp
+    conn_state: S0
+  group_by:
+    - source_ip
+    - destination_ip
+    - destination_port
+  window_minutes: 1
+  count_gte: 100
+evidence:
+  include_matching_lines: true
+  max_lines: 30
+false_positives:
+  - Load test, outage retry storm, or health checker repeatedly contacting an unavailable service.
+  - Approved scanner represented as repeated connection attempts rather than distinct destination ports.
+  - DDoS or connection-exhaustion traffic that shares the same repeated S0 attempt shape.
+recommendations:
+  - Confirm whether the source was an approved scanner or load generator.
+  - Compare the destination service with firewall, endpoint, and packet-capture evidence.
+  - If unauthorized, isolate the source and preserve the bounded connection timeline.

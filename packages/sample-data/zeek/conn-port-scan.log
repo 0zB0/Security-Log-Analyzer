@@ -1,0 +1,17 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	conn
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state
+#types	time	string	addr	port	addr	port	enum	string	interval	count	count	string
+1783539601.000000	Cscan01	10.8.0.44	51001	10.0.0.5	30000	tcp	-	0.001	0	0	S0
+1783539602.000000	Cscan02	10.8.0.44	51002	10.0.0.5	30001	tcp	-	0.001	0	0	S0
+1783539603.000000	Cscan03	10.8.0.44	51003	10.0.0.5	30002	tcp	-	0.001	0	0	S0
+1783539604.000000	Cscan04	10.8.0.44	51004	10.0.0.5	30003	tcp	-	0.001	0	0	S0
+1783539605.000000	Cscan05	10.8.0.44	51005	10.0.0.5	30004	tcp	-	0.001	0	0	S0
+1783539606.000000	Cscan06	10.8.0.44	51006	10.0.0.5	30005	tcp	-	0.001	0	0	S0
+1783539607.000000	Cscan07	10.8.0.44	51007	10.0.0.5	30006	tcp	-	0.001	0	0	S0
+1783539608.000000	Cscan08	10.8.0.44	51008	10.0.0.5	30007	tcp	-	0.001	0	0	S0
+1783539609.000000	Cscan09	10.8.0.44	51009	10.0.0.5	30008	tcp	-	0.001	0	0	S0
+1783539610.000000	Cscan10	10.8.0.44	51010	10.0.0.5	30009	tcp	-	0.001	0	0	S0

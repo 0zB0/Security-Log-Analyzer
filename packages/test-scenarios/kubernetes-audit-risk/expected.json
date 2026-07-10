@@ -1,0 +1,29 @@
+{
+  "parser": "kubernetes_audit",
+  "raw_line_count": 6,
+  "parsed_event_count": 6,
+  "finding_count": 5,
+  "incident_count": 2,
+  "expected_findings": [
+    "kubernetes-clusterrolebinding-create-001",
+    "kubernetes-forbidden-burst-001",
+    "kubernetes-pod-exec-001",
+    "kubernetes-privileged-pod-create-001",
+    "kubernetes-secret-read-001"
+  ],
+  "expected_mitre": [
+    "T1098",
+    "T1552",
+    "T1609",
+    "T1611",
+    "T1613"
+  ],
+  "expected_evidence_lines": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ]
+}

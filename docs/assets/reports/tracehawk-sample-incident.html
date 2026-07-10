@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>TraceHawk Incident Report - Correlated security activity</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f4f6f8;
+      color: #17202a;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+    header, section {
+      border: 1px solid #d9e0e8;
+      background: #ffffff;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      padding: 20px;
+    }
+    h1, h2, h3 { margin: 0 0 10px; }
+    .meta, dl {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      gap: 8px 14px;
+    }
+    dt, .label {
+      color: #637083;
+      font-weight: 700;
+    }
+    dd { margin: 0; }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .chip {
+      border: 1px solid #d9e0e8;
+      background: #f8fafc;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    pre {
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #101820;
+      color: #e8eef7;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+    }
+    code {
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    }
+    .integrity li { margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>TraceHawk Incident Report: Correlated security activity</h1>
+      <div class="meta">
+        <span class="label">Generated</span><span>2026-07-09T23:11:27.457746+00:00</span>
+        <span class="label">Mode</span><span>Local-only deterministic report</span>
+        <span class="label">Incident ID</span><span><code>incident:23a706754630</code></span>
+        <span class="label">Status</span><span>active</span>
+        <span class="label">Severity</span><span>critical</span>
+        <span class="label">Score</span><span>100</span>
+        <span class="label">First Seen</span><span>2026-07-08T11:20:00+00:00</span>
+        <span class="label">Last Seen</span><span>2026-07-08T11:21:23.199999+00:00</span>
+      </div>
+    </header>
+    <section>
+      <h2>Executive Summary</h2>
+      <p>Correlated security activity grouped 12 finding(s) involving dst:10.20.0.53, dst:203.0.113.80, host:10.20.0.53, host:lab-app.internal, ip:10.20.0.25. Sequence: scan activity followed by sensitive HTTP access. Sequence: DNS burst followed by alert or C2 activity. Sequence: alert burst includes high severity Suricata evidence. Cross-source corroboration links 20 related evidence pair(s).</p>
+      <div class="chips"><span class="chip">dst:10.20.0.53</span><span class="chip">dst:203.0.113.80</span><span class="chip">host:10.20.0.53</span><span class="chip">host:lab-app.internal</span><span class="chip">ip:10.20.0.25</span><span class="chip">port:53</span><span class="chip">port:80</span><span class="chip">T1071</span><span class="chip">T1071.004</span><span class="chip">T1083</span><span class="chip">T1190</span><span class="chip">T1595.002</span></div>
+    </section>
+
+    <section>
+      <h2>Scoring Rationale</h2>
+      <dl><dt>Base Severity</dt><dd>95</dd><dt>Finding Volume</dt><dd>20</dd><dt>Sequence Quality</dt><dd>25</dd><dt>Time Window Proximity</dt><dd>10</dd><dt>Cross Source Corroboration</dt><dd>18</dd><dt>Rule Family Diversity</dt><dd>8</dd></dl>
+      <ul><li>critical severity baseline contributes 95.</li><li>12 finding(s) contribute 20 volume point(s).</li><li>Sequence quality: scan activity is followed by sensitive HTTP access.</li><li>Sequence quality: DNS burst is followed by alert or C2 activity.</li><li>Sequence quality: alert burst includes high severity Suricata evidence.</li><li>Time-window proximity: related findings occur within five minutes.</li><li>Cross-source corroboration: 20 related link(s) across dns_query_match, http_path_match contribute 18 point(s).</li><li>Rule-family diversity: 5 families (alert, c2, dns, http, scan) contribute 8 point(s).</li></ul>
+    </section>
+
+
+        <section>
+          <h2>Local Assistant Summary</h2>
+          <p>Deterministic correlation joins independent Zeek and Suricata observations. Validate the shared flow, HTTP path, and sequence evidence before escalation.</p>
+        </section>
+
+    <section>
+      <h2>Findings</h2>
+
+        <section class="finding">
+          <h3>Suricata alert burst</h3>
+          <dl>
+            <dt>Rule</dt><dd><code>suricata-alert-burst-001</code></dd>
+            <dt>Severity</dt><dd>high</dd>
+            <dt>Confidence</dt><dd>medium</dd>
+            <dt>Events</dt><dd>11</dd>
+            <dt>MITRE</dt><dd>T1595.002 Vulnerability Scanning</dd>
+          </dl>
+          <p>Suricata alert burst matched 11 event(s) for 10.20.0.25.</p>
+          <p>Suricata EVE shows multiple IDS alerts from one source in a short window.</p>
+        </section>
+
+
+        <section class="finding">
+          <h3>Suricata command and control category alert</h3>
+          <dl>
+            <dt>Rule</dt><dd><code>suricata-c2-category-001</code></dd>
+            <dt>Severity</dt><dd>critical</dd>
+            <dt>Confidence</dt><dd>medium</dd>
+            <dt>Events</dt><dd>1</dd>
+            <dt>MITRE</dt><dd>T1071 Application Layer Protocol</dd>
+          </dl>
+          <p>Suricata command and control category alert matched 1 event(s) for 10.20.0.25, 203.0.113.80.</p>
+          <p>Suricata EVE alert category or signature indicates possible command and control activity.</p>
+        </section>
+
+
+        <section class="finding">
+          <h3>Suricata high severity alert</h3>
+          <dl>
+            <dt>Rule</dt><dd><code>suricata-high-severity-alert-001</code></dd>
+            <dt>Severity</dt><dd>high</dd>
+            <dt>Confidence</dt><dd>high</dd>
+            <dt>Events</dt><dd>1</dd>
+            <dt>MITRE</dt><dd>T1190 Exploit Public-Facing Application</dd>
+          </dl>
+          <p>Suricata high severity alert matched 1 event(s) for 10.20.0.25, 203.0.113.80, TRACEHAWK LAB HTTP sensitive env path.</p>
+          <p>Suricata EVE alert has severity 1, indicating a high priority IDS match.</p>
+        </section>
+
+
+        <section class="finding">
+          <h3>Suricata high severity alert</h3>
+          <dl>
+            <dt>Rule</dt><dd><code>suricata-high-severity-alert-001</code></dd>
+            <dt>Severity</dt><dd>high</dd>
+            <dt>Confidence</dt><dd>high</dd>
+            <dt>Events</dt><dd>1</dd>
+            <dt>MITRE</dt><dd>T1190 Exploit Public-Facing Application</dd>
+          </dl>
+          <p>Suricata high severity alert matched 1 event(s) for 10.20.0.25, 203.0.113.80, TRACEHAWK LAB HTTP C2 config path.</p>
+          <p>Suricata EVE alert has severity 1, indicating a high priority IDS match.</p>
+        </section>
+
+
+        <section class="finding">
+          <h3>Suricata high severity alert</h3>
+          <dl>
+            <dt>Rule</dt><dd><code>suricata-high-severity-alert-001</code></dd>
+            <dt>Severity</dt><dd>high</dd>
+            <dt>Confidence</dt><dd>high</dd>
+            <dt>Events</dt><dd>4</dd>
+            <dt>MITRE</dt><dd>T1190 Exploit Public-Facing Application</dd>
+          </dl>
+          <p>Suricata high severity alert matched 4 event(s) for 10.20.0.25, 203.0.113.80, TRACEHAWK LAB Nmap HTTP user agent scan.</p>
+          <p>Suricata EVE alert has severity 1, indicating a high priority IDS match.</p>
+        </section>
+
+
+        <section class="finding">
+          <h3>Suricata HTTP sensitive path access</h3>
+          <dl>
+            <dt>Rule</dt><dd><code>suricata-http-sensitive-path-001</code></dd>
+            <dt>Severity</dt><dd>high</dd>
+            <dt>Confidence</dt><dd>medium</dd>
+            <dt>Events</dt><dd>4</dd>
+            <dt>MITRE</dt><dd>T1083 File and Directory Discovery</dd>
+          </dl>
+          <p>Suricata HTTP sensitive path access matched 4 event(s) for 10.20.0.25, lab-app.internal.</p>
+          <p>Suricata EVE HTTP record shows access to common sensitive files or administrative paths.</p>
+        </section>
+
+
+        <section class="finding">
+          <h3>Suricata scan signature</h3>
+          <dl>
+            <dt>Rule</dt><dd><code>suricata-scan-signature-001</code></dd>
+            <dt>Severity</dt><dd>high</dd>
+            <dt>Confidence</dt><dd>medium</dd>
+            <dt>Events</dt><dd>4</dd>
+            <dt>MITRE</dt><dd>T1595.002 Vulnerability Scanning</dd>
+          </dl>
+          <p>Suricata scan signature matched 4 event(s) for 10.20.0.25.</p>
+          <p>Suricata EVE alert signature indicates scanning or reconnaissance.</p>
+        </section>
+
+
+        <section class="finding">
+          <h3>Zeek HTTP sensitive path access</h3>
+          <dl>
+            <dt>Rule</dt><dd><code>zeek-http-sensitive-path-001</code></dd>
+            <dt>Severity</dt><dd>high</dd>
+            <dt>Confidence</dt><dd>medium</dd>
+            <dt>Events</dt><dd>4</dd>
+            <dt>MITRE</dt><dd>T1083 File and Directory Discovery</dd>
+          </dl>
+          <p>Zeek HTTP sensitive path access matched 4 event(s) for 10.20.0.25, lab-app.internal.</p>
+          <p>Zeek HTTP logs show access to common sensitive files or administrative paths.</p>
+        </section>
+
+
+        <section class="finding">
+          <h3>Suricata command and control category alert</h3>
+          <dl>
+            <dt>Rule</dt><dd><code>suricata-c2-category-001</code></dd>
+            <dt>Severity</dt><dd>critical</dd>
+            <dt>Confidence</dt><dd>medium</dd>
+            <dt>Events</dt><dd>5</dd>
+            <dt>MITRE</dt><dd>T1071 Application Layer Protocol</dd>
+          </dl>
+          <p>Suricata command and control category alert matched 5 event(s) for 10.20.0.25, 10.20.0.53.</p>
+          <p>Suricata EVE alert category or signature indicates possible command and control activity.</p>
+        </section>
+
+
+        <section class="finding">
+          <h3>Suricata DNS burst</h3>
+          <dl>
+            <dt>Rule</dt><dd><code>suricata-dns-burst-001</code></dd>
+            <dt>Severity</dt><dd>medium</dd>
+            <dt>Confidence</dt><dd>medium</dd>
+            <dt>Events</dt><dd>5</dd>
+            <dt>MITRE</dt><dd>T1071.004 DNS</dd>
+          </dl>
+          <p>Suricata DNS burst matched 5 event(s) for 10.20.0.25.</p>
+          <p>Suricata EVE DNS records show repeated queries from one source in a short window.</p>
+        </section>
+
+
+        <section class="finding">
+          <h3>Suricata high severity alert</h3>
+          <dl>
+            <dt>Rule</dt><dd><code>suricata-high-severity-alert-001</code></dd>
+            <dt>Severity</dt><dd>high</dd>
+            <dt>Confidence</dt><dd>high</dd>
+            <dt>Events</dt><dd>5</dd>
+            <dt>MITRE</dt><dd>T1190 Exploit Public-Facing Application</dd>
+          </dl>
+          <p>Suricata high severity alert matched 5 event(s) for 10.20.0.25, 10.20.0.53, TRACEHAWK LAB DNS beacon-control query.</p>
+          <p>Suricata EVE alert has severity 1, indicating a high priority IDS match.</p>
+        </section>
+
+
+        <section class="finding">
+          <h3>Zeek DNS burst</h3>
+          <dl>
+            <dt>Rule</dt><dd><code>zeek-dns-burst-001</code></dd>
+            <dt>Severity</dt><dd>medium</dd>
+            <dt>Confidence</dt><dd>medium</dd>
+            <dt>Events</dt><dd>5</dd>
+            <dt>MITRE</dt><dd>T1071.004 DNS</dd>
+          </dl>
+          <p>Zeek DNS burst matched 5 event(s) for 10.20.0.25.</p>
+          <p>Zeek DNS logs show repeated queries from one source in a short window.</p>
+        </section>
+
+    </section>
+    <section>
+      <h2>Timeline</h2>
+      <ul><li><code>2026-07-08T11:20:00+00:00 | suricata_alert | 10.20.0.25 | TRACEHAWK LAB HTTP C2 config path</code></li><li><code>2026-07-08T11:20:00+00:00 | suricata_alert | 10.20.0.25 | TRACEHAWK LAB Nmap HTTP user agent scan</code></li><li><code>2026-07-08T11:20:00+00:00 | suricata_http | 10.20.0.25 | HTTP GET lab-app.internal/wp-config.php</code></li><li><code>2026-07-08T11:20:00+00:00 | suricata_alert | 10.20.0.25 | TRACEHAWK LAB Nmap HTTP user agent scan</code></li><li><code>2026-07-08T11:20:00+00:00 | suricata_http | 10.20.0.25 | HTTP GET lab-app.internal/backup.zip</code></li><li><code>2026-07-08T11:20:00+00:00 | suricata_alert | 10.20.0.25 | TRACEHAWK LAB Nmap HTTP user agent scan</code></li><li><code>2026-07-08T11:20:00+00:00 | suricata_http | 10.20.0.25 | HTTP GET lab-app.internal/admin</code></li><li><code>2026-07-08T11:20:00+00:00 | suricata_alert | 10.20.0.25 | TRACEHAWK LAB HTTP sensitive env path</code></li><li><code>2026-07-08T11:20:00+00:00 | suricata_alert | 10.20.0.25 | TRACEHAWK LAB Nmap HTTP user agent scan</code></li><li><code>2026-07-08T11:20:00+00:00 | suricata_http | 10.20.0.25 | HTTP GET lab-app.internal/.env</code></li><li><code>2026-07-08T11:20:00.029999+00:00 | zeek_http | 10.20.0.25 | Zeek HTTP GET lab-app.internal/.env</code></li><li><code>2026-07-08T11:20:00.829999+00:00 | zeek_http | 10.20.0.25 | Zeek HTTP GET lab-app.internal/wp-config.php</code></li><li><code>2026-07-08T11:20:01.629999+00:00 | zeek_http | 10.20.0.25 | Zeek HTTP GET lab-app.internal/admin</code></li><li><code>2026-07-08T11:20:02.429999+00:00 | zeek_http | 10.20.0.25 | Zeek HTTP GET lab-app.internal/backup.zip</code></li><li><code>2026-07-08T11:20:03.199999+00:00 | zeek_dns | 10.20.0.25 | Zeek DNS query a1.beacon-control.example</code></li><li><code>2026-07-08T11:20:03.199999+00:00 | suricata_dns | 10.20.0.25 | DNS query a1.beacon-control.example</code></li><li><code>2026-07-08T11:20:03.199999+00:00 | suricata_alert | 10.20.0.25 | TRACEHAWK LAB DNS beacon-control query</code></li><li><code>2026-07-08T11:20:23.199999+00:00 | zeek_dns | 10.20.0.25 | Zeek DNS query a2.beacon-control.example</code></li><li><code>2026-07-08T11:20:23.199999+00:00 | suricata_alert | 10.20.0.25 | TRACEHAWK LAB DNS beacon-control query</code></li><li><code>2026-07-08T11:20:23.199999+00:00 | suricata_dns | 10.20.0.25 | DNS query a2.beacon-control.example</code></li><li><code>2026-07-08T11:20:43.199999+00:00 | zeek_dns | 10.20.0.25 | Zeek DNS query a3.beacon-control.example</code></li><li><code>2026-07-08T11:20:43.199999+00:00 | suricata_alert | 10.20.0.25 | TRACEHAWK LAB DNS beacon-control query</code></li><li><code>2026-07-08T11:20:43.199999+00:00 | suricata_dns | 10.20.0.25 | DNS query a3.beacon-control.example</code></li><li><code>2026-07-08T11:21:03.199999+00:00 | zeek_dns | 10.20.0.25 | Zeek DNS query a4.beacon-control.example</code></li><li><code>2026-07-08T11:21:03.199999+00:00 | suricata_alert | 10.20.0.25 | TRACEHAWK LAB DNS beacon-control query</code></li><li><code>2026-07-08T11:21:03.199999+00:00 | suricata_dns | 10.20.0.25 | DNS query a4.beacon-control.example</code></li><li><code>2026-07-08T11:21:23.199999+00:00 | zeek_dns | 10.20.0.25 | Zeek DNS query a5.beacon-control.example</code></li><li><code>2026-07-08T11:21:23.199999+00:00 | suricata_alert | 10.20.0.25 | TRACEHAWK LAB DNS beacon-control query</code></li><li><code>2026-07-08T11:21:23.199999+00:00 | suricata_dns | 10.20.0.25 | DNS query a5.beacon-control.example</code></li></ul>
+    </section>
+    <section>
+      <h2>Evidence</h2>
+
+        <section class="evidence-block">
+          <h3>Line 10</h3>
+          <pre>1783509623.199999	C3xeuJ3qgTP9IqGiZa	10.20.0.25	52002	10.20.0.53	53	udp	17410	-	a2.beacon-control.example	1	C_INTERNET	1	A	-	-	F	F	T	F	0	-	-	F	0	query</pre>
+          <p><strong>SHA-256:</strong> <code>bb871e8b8bee8c136bbac95f25510e54b17479f13a604eee369d50f0325ce15b</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 11</h3>
+          <pre>1783509643.199999	C4bKao4vCEJEypGT83	10.20.0.25	52003	10.20.0.53	53	udp	17411	-	a3.beacon-control.example	1	C_INTERNET	1	A	-	-	F	F	T	F	0	-	-	F	0	query</pre>
+          <p><strong>SHA-256:</strong> <code>cc94ddbc81339482ff05e489e0899d36f0079dd0d43c4ca2be9cef2c5cdd1fdf</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 12</h3>
+          <pre>1783509663.199999	CRBHJA1DWw7EABKLG2	10.20.0.25	52004	10.20.0.53	53	udp	17412	-	a4.beacon-control.example	1	C_INTERNET	1	A	-	-	F	F	T	F	0	-	-	F	0	query</pre>
+          <p><strong>SHA-256:</strong> <code>a397202da05e461a73daad891e0046fd9c788728eb0ff41716bbac43914091d3</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 13</h3>
+          <pre>1783509683.199999	CaEQGu4f6N2cbSnoz6	10.20.0.25	52005	10.20.0.53	53	udp	17413	-	a5.beacon-control.example	1	C_INTERNET	1	A	-	-	F	F	T	F	0	-	-	F	0	query</pre>
+          <p><strong>SHA-256:</strong> <code>2bf7fa62d6f019f32fca7c56fe41b16013c89f5a58bf75744deebb19206f7f5e</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 9</h3>
+          <pre>1783509603.199999	CyP0Aq30K0aNvpxyy8	10.20.0.25	52001	10.20.0.53	53	udp	17409	-	a1.beacon-control.example	1	C_INTERNET	1	A	-	-	F	F	T	F	0	-	-	F	0	query</pre>
+          <p><strong>SHA-256:</strong> <code>89567328bc4ce64608f7e68842ef7adb99cf643367d9ed19b77ba0a204761796</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 1</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:43.199999+0000&quot;,&quot;flow_id&quot;:858989634115848,&quot;pcap_cnt&quot;:23,&quot;event_type&quot;:&quot;alert&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:52003,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;dest_port&quot;:53,&quot;proto&quot;:&quot;UDP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;wire/pcap&quot;,&quot;tx_id&quot;:0,&quot;alert&quot;:{&quot;action&quot;:&quot;allowed&quot;,&quot;gid&quot;:1,&quot;signature_id&quot;:9000004,&quot;rev&quot;:1,&quot;signature&quot;:&quot;TRACEHAWK LAB DNS beacon-control query&quot;,&quot;category&quot;:&quot;A Network Trojan was detected&quot;,&quot;severity&quot;:1},&quot;dns&quot;:{&quot;version&quot;:3,&quot;type&quot;:&quot;request&quot;,&quot;tx_id&quot;:0,&quot;id&quot;:17411,&quot;flags&quot;:&quot;100&quot;,&quot;rd&quot;:true,&quot;opcode&quot;:0,&quot;rcode&quot;:&quot;NOERROR&quot;,&quot;queries&quot;:[{&quot;rrname&quot;:&quot;a3.beacon-control.example&quot;,&quot;rrtype&quot;:&quot;A&quot;}]},&quot;app_proto&quot;:&quot;dns&quot;,&quot;direction&quot;:&quot;to_server&quot;,&quot;flow&quot;:{&quot;pkts_toserver&quot;:1,&quot;pkts_toclient&quot;:0,&quot;bytes_toserver&quot;:85,&quot;bytes_toclient&quot;:0,&quot;start&quot;:&quot;2026-07-08T11:20:43.199999+0000&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;src_port&quot;:52003,&quot;dest_port&quot;:53}}</pre>
+          <p><strong>SHA-256:</strong> <code>73dbc88137b339146507b8e27bb87df88716383be45c3afa2bb838e59889035a</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 10</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:03.199999+0000&quot;,&quot;flow_id&quot;:858990587745546,&quot;pcap_cnt&quot;:21,&quot;event_type&quot;:&quot;dns&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:52001,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;dest_port&quot;:53,&quot;proto&quot;:&quot;UDP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;wire/pcap&quot;,&quot;dns&quot;:{&quot;version&quot;:3,&quot;type&quot;:&quot;request&quot;,&quot;tx_id&quot;:0,&quot;id&quot;:17409,&quot;flags&quot;:&quot;100&quot;,&quot;rd&quot;:true,&quot;opcode&quot;:0,&quot;rcode&quot;:&quot;NOERROR&quot;,&quot;queries&quot;:[{&quot;rrname&quot;:&quot;a1.beacon-control.example&quot;,&quot;rrtype&quot;:&quot;A&quot;}]}}</pre>
+          <p><strong>SHA-256:</strong> <code>0b56b689dca88b1288b79804c754ac29d2eb652484675ac03f4b2d704f48f41d</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 11</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:00.000000+0000&quot;,&quot;flow_id&quot;:58271976689396,&quot;event_type&quot;:&quot;alert&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:41001,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;dest_port&quot;:80,&quot;proto&quot;:&quot;TCP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;stream (flow timeout)&quot;,&quot;tx_id&quot;:0,&quot;alert&quot;:{&quot;action&quot;:&quot;allowed&quot;,&quot;gid&quot;:1,&quot;signature_id&quot;:9000002,&quot;rev&quot;:1,&quot;signature&quot;:&quot;TRACEHAWK LAB HTTP C2 config path&quot;,&quot;category&quot;:&quot;A Network Trojan was detected&quot;,&quot;severity&quot;:1},&quot;ts_progress&quot;:&quot;request_complete&quot;,&quot;tc_progress&quot;:&quot;response_started&quot;,&quot;http&quot;:{&quot;hostname&quot;:&quot;lab-app.internal&quot;,&quot;url&quot;:&quot;/wp-config.php&quot;,&quot;http_user_agent&quot;:&quot;Nmap NSE lab probe&quot;,&quot;http_method&quot;:&quot;GET&quot;,&quot;protocol&quot;:&quot;HTTP/1.1&quot;,&quot;length&quot;:0},&quot;app_proto&quot;:&quot;http&quot;,&quot;direction&quot;:&quot;to_server&quot;,&quot;flow&quot;:{&quot;pkts_toserver&quot;:3,&quot;pkts_toclient&quot;:2,&quot;bytes_toserver&quot;:262,&quot;bytes_toclient&quot;:153,&quot;start&quot;:&quot;2026-07-08T11:20:00.799999+0000&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;src_port&quot;:41001,&quot;dest_port&quot;:80}}</pre>
+          <p><strong>SHA-256:</strong> <code>efdd05839e26f143fdd5ff8372d3e7d3d3cdbe5d54f8aa518d30491238b1d94b</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 12</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:00.000000+0000&quot;,&quot;flow_id&quot;:58271976689396,&quot;event_type&quot;:&quot;alert&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:41001,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;dest_port&quot;:80,&quot;proto&quot;:&quot;TCP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;stream (flow timeout)&quot;,&quot;tx_id&quot;:0,&quot;alert&quot;:{&quot;action&quot;:&quot;allowed&quot;,&quot;gid&quot;:1,&quot;signature_id&quot;:9000003,&quot;rev&quot;:1,&quot;signature&quot;:&quot;TRACEHAWK LAB Nmap HTTP user agent scan&quot;,&quot;category&quot;:&quot;Attempted Information Leak&quot;,&quot;severity&quot;:1},&quot;ts_progress&quot;:&quot;request_complete&quot;,&quot;tc_progress&quot;:&quot;response_started&quot;,&quot;http&quot;:{&quot;hostname&quot;:&quot;lab-app.internal&quot;,&quot;url&quot;:&quot;/wp-config.php&quot;,&quot;http_user_agent&quot;:&quot;Nmap NSE lab probe&quot;,&quot;http_method&quot;:&quot;GET&quot;,&quot;protocol&quot;:&quot;HTTP/1.1&quot;,&quot;length&quot;:0},&quot;app_proto&quot;:&quot;http&quot;,&quot;direction&quot;:&quot;to_server&quot;,&quot;flow&quot;:{&quot;pkts_toserver&quot;:3,&quot;pkts_toclient&quot;:2,&quot;bytes_toserver&quot;:262,&quot;bytes_toclient&quot;:153,&quot;start&quot;:&quot;2026-07-08T11:20:00.799999+0000&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;src_port&quot;:41001,&quot;dest_port&quot;:80}}</pre>
+          <p><strong>SHA-256:</strong> <code>8099078d5bf2ebd79d2bd72ded13f616a92067c0edfbd33c2555a5deb30b9205</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 13</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:00.000000+0000&quot;,&quot;flow_id&quot;:58271976689396,&quot;event_type&quot;:&quot;http&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:41001,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;dest_port&quot;:80,&quot;proto&quot;:&quot;TCP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;stream (flow timeout)&quot;,&quot;tx_id&quot;:0,&quot;http&quot;:{&quot;hostname&quot;:&quot;lab-app.internal&quot;,&quot;url&quot;:&quot;/wp-config.php&quot;,&quot;http_user_agent&quot;:&quot;Nmap NSE lab probe&quot;,&quot;http_method&quot;:&quot;GET&quot;,&quot;protocol&quot;:&quot;HTTP/1.1&quot;,&quot;status&quot;:404,&quot;length&quot;:0}}</pre>
+          <p><strong>SHA-256:</strong> <code>15d2ddf368d7ef801c22e5144d7fca9dfa82eb79cd14b815f586bd7703eaed79</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 15</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:00.000000+0000&quot;,&quot;flow_id&quot;:592084950371583,&quot;event_type&quot;:&quot;alert&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:41003,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;dest_port&quot;:80,&quot;proto&quot;:&quot;TCP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;stream (flow timeout)&quot;,&quot;tx_id&quot;:0,&quot;alert&quot;:{&quot;action&quot;:&quot;allowed&quot;,&quot;gid&quot;:1,&quot;signature_id&quot;:9000003,&quot;rev&quot;:1,&quot;signature&quot;:&quot;TRACEHAWK LAB Nmap HTTP user agent scan&quot;,&quot;category&quot;:&quot;Attempted Information Leak&quot;,&quot;severity&quot;:1},&quot;ts_progress&quot;:&quot;request_complete&quot;,&quot;tc_progress&quot;:&quot;response_started&quot;,&quot;http&quot;:{&quot;hostname&quot;:&quot;lab-app.internal&quot;,&quot;url&quot;:&quot;/backup.zip&quot;,&quot;http_user_agent&quot;:&quot;Nmap NSE lab probe&quot;,&quot;http_method&quot;:&quot;GET&quot;,&quot;protocol&quot;:&quot;HTTP/1.1&quot;,&quot;length&quot;:0},&quot;app_proto&quot;:&quot;http&quot;,&quot;direction&quot;:&quot;to_server&quot;,&quot;flow&quot;:{&quot;pkts_toserver&quot;:3,&quot;pkts_toclient&quot;:2,&quot;bytes_toserver&quot;:259,&quot;bytes_toclient&quot;:153,&quot;start&quot;:&quot;2026-07-08T11:20:02.399999+0000&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;src_port&quot;:41003,&quot;dest_port&quot;:80}}</pre>
+          <p><strong>SHA-256:</strong> <code>c527e9533a12c4f8807aaf79ac2621da6922f2e59a3aa95d25445c3fd4f4ba83</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 16</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:00.000000+0000&quot;,&quot;flow_id&quot;:592084950371583,&quot;event_type&quot;:&quot;http&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:41003,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;dest_port&quot;:80,&quot;proto&quot;:&quot;TCP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;stream (flow timeout)&quot;,&quot;tx_id&quot;:0,&quot;http&quot;:{&quot;hostname&quot;:&quot;lab-app.internal&quot;,&quot;url&quot;:&quot;/backup.zip&quot;,&quot;http_user_agent&quot;:&quot;Nmap NSE lab probe&quot;,&quot;http_method&quot;:&quot;GET&quot;,&quot;protocol&quot;:&quot;HTTP/1.1&quot;,&quot;status&quot;:404,&quot;length&quot;:0}}</pre>
+          <p><strong>SHA-256:</strong> <code>0b6afcde07acc8586253880b96d946fb3adc01190dd54fd2e7f66c6f0aa31ef9</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 18</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:00.000000+0000&quot;,&quot;flow_id&quot;:325177781814277,&quot;event_type&quot;:&quot;alert&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:41002,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;dest_port&quot;:80,&quot;proto&quot;:&quot;TCP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;stream (flow timeout)&quot;,&quot;tx_id&quot;:0,&quot;alert&quot;:{&quot;action&quot;:&quot;allowed&quot;,&quot;gid&quot;:1,&quot;signature_id&quot;:9000003,&quot;rev&quot;:1,&quot;signature&quot;:&quot;TRACEHAWK LAB Nmap HTTP user agent scan&quot;,&quot;category&quot;:&quot;Attempted Information Leak&quot;,&quot;severity&quot;:1},&quot;ts_progress&quot;:&quot;request_complete&quot;,&quot;tc_progress&quot;:&quot;response_started&quot;,&quot;http&quot;:{&quot;hostname&quot;:&quot;lab-app.internal&quot;,&quot;url&quot;:&quot;/admin&quot;,&quot;http_user_agent&quot;:&quot;Nmap NSE lab probe&quot;,&quot;http_method&quot;:&quot;GET&quot;,&quot;protocol&quot;:&quot;HTTP/1.1&quot;,&quot;length&quot;:0},&quot;app_proto&quot;:&quot;http&quot;,&quot;direction&quot;:&quot;to_server&quot;,&quot;flow&quot;:{&quot;pkts_toserver&quot;:3,&quot;pkts_toclient&quot;:2,&quot;bytes_toserver&quot;:254,&quot;bytes_toclient&quot;:153,&quot;start&quot;:&quot;2026-07-08T11:20:01.599999+0000&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;src_port&quot;:41002,&quot;dest_port&quot;:80}}</pre>
+          <p><strong>SHA-256:</strong> <code>52ad9da4f115837f1a53fa0678ea3f6dc2d4a068840a3fbad506f3ecf891621f</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 19</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:00.000000+0000&quot;,&quot;flow_id&quot;:325177781814277,&quot;event_type&quot;:&quot;http&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:41002,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;dest_port&quot;:80,&quot;proto&quot;:&quot;TCP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;stream (flow timeout)&quot;,&quot;tx_id&quot;:0,&quot;http&quot;:{&quot;hostname&quot;:&quot;lab-app.internal&quot;,&quot;url&quot;:&quot;/admin&quot;,&quot;http_user_agent&quot;:&quot;Nmap NSE lab probe&quot;,&quot;http_method&quot;:&quot;GET&quot;,&quot;protocol&quot;:&quot;HTTP/1.1&quot;,&quot;status&quot;:404,&quot;length&quot;:0}}</pre>
+          <p><strong>SHA-256:</strong> <code>97bb01df1cb3a62befcf249039e09a89226ab97f2c605a0930fb55672c683a6e</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 2</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:23.199999+0000&quot;,&quot;flow_id&quot;:1984890687060882,&quot;pcap_cnt&quot;:22,&quot;event_type&quot;:&quot;alert&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:52002,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;dest_port&quot;:53,&quot;proto&quot;:&quot;UDP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;wire/pcap&quot;,&quot;tx_id&quot;:0,&quot;alert&quot;:{&quot;action&quot;:&quot;allowed&quot;,&quot;gid&quot;:1,&quot;signature_id&quot;:9000004,&quot;rev&quot;:1,&quot;signature&quot;:&quot;TRACEHAWK LAB DNS beacon-control query&quot;,&quot;category&quot;:&quot;A Network Trojan was detected&quot;,&quot;severity&quot;:1},&quot;dns&quot;:{&quot;version&quot;:3,&quot;type&quot;:&quot;request&quot;,&quot;tx_id&quot;:0,&quot;id&quot;:17410,&quot;flags&quot;:&quot;100&quot;,&quot;rd&quot;:true,&quot;opcode&quot;:0,&quot;rcode&quot;:&quot;NOERROR&quot;,&quot;queries&quot;:[{&quot;rrname&quot;:&quot;a2.beacon-control.example&quot;,&quot;rrtype&quot;:&quot;A&quot;}]},&quot;app_proto&quot;:&quot;dns&quot;,&quot;direction&quot;:&quot;to_server&quot;,&quot;flow&quot;:{&quot;pkts_toserver&quot;:1,&quot;pkts_toclient&quot;:0,&quot;bytes_toserver&quot;:85,&quot;bytes_toclient&quot;:0,&quot;start&quot;:&quot;2026-07-08T11:20:23.199999+0000&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;src_port&quot;:52002,&quot;dest_port&quot;:53}}</pre>
+          <p><strong>SHA-256:</strong> <code>f3c7e25f9e49010fbc3036a691c99897e0165263c998dd5272a5ecca10c77fbf</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 21</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:00.000000+0000&quot;,&quot;flow_id&quot;:2731975549,&quot;event_type&quot;:&quot;alert&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:41000,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;dest_port&quot;:80,&quot;proto&quot;:&quot;TCP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;stream (flow timeout)&quot;,&quot;tx_id&quot;:0,&quot;alert&quot;:{&quot;action&quot;:&quot;allowed&quot;,&quot;gid&quot;:1,&quot;signature_id&quot;:9000001,&quot;rev&quot;:1,&quot;signature&quot;:&quot;TRACEHAWK LAB HTTP sensitive env path&quot;,&quot;category&quot;:&quot;Web Application Attack&quot;,&quot;severity&quot;:1},&quot;ts_progress&quot;:&quot;request_complete&quot;,&quot;tc_progress&quot;:&quot;response_started&quot;,&quot;http&quot;:{&quot;hostname&quot;:&quot;lab-app.internal&quot;,&quot;url&quot;:&quot;/.env&quot;,&quot;http_user_agent&quot;:&quot;Nmap NSE lab probe&quot;,&quot;http_method&quot;:&quot;GET&quot;,&quot;protocol&quot;:&quot;HTTP/1.1&quot;,&quot;length&quot;:0},&quot;app_proto&quot;:&quot;http&quot;,&quot;direction&quot;:&quot;to_server&quot;,&quot;flow&quot;:{&quot;pkts_toserver&quot;:3,&quot;pkts_toclient&quot;:2,&quot;bytes_toserver&quot;:253,&quot;bytes_toclient&quot;:153,&quot;start&quot;:&quot;2026-07-08T11:20:00.000000+0000&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;src_port&quot;:41000,&quot;dest_port&quot;:80}}</pre>
+          <p><strong>SHA-256:</strong> <code>407bda53b042b66bf9e36e8f1e0271140c95ca833a0110f2396e68518d7b1139</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 22</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:00.000000+0000&quot;,&quot;flow_id&quot;:2731975549,&quot;event_type&quot;:&quot;alert&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:41000,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;dest_port&quot;:80,&quot;proto&quot;:&quot;TCP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;stream (flow timeout)&quot;,&quot;tx_id&quot;:0,&quot;alert&quot;:{&quot;action&quot;:&quot;allowed&quot;,&quot;gid&quot;:1,&quot;signature_id&quot;:9000003,&quot;rev&quot;:1,&quot;signature&quot;:&quot;TRACEHAWK LAB Nmap HTTP user agent scan&quot;,&quot;category&quot;:&quot;Attempted Information Leak&quot;,&quot;severity&quot;:1},&quot;ts_progress&quot;:&quot;request_complete&quot;,&quot;tc_progress&quot;:&quot;response_started&quot;,&quot;http&quot;:{&quot;hostname&quot;:&quot;lab-app.internal&quot;,&quot;url&quot;:&quot;/.env&quot;,&quot;http_user_agent&quot;:&quot;Nmap NSE lab probe&quot;,&quot;http_method&quot;:&quot;GET&quot;,&quot;protocol&quot;:&quot;HTTP/1.1&quot;,&quot;length&quot;:0},&quot;app_proto&quot;:&quot;http&quot;,&quot;direction&quot;:&quot;to_server&quot;,&quot;flow&quot;:{&quot;pkts_toserver&quot;:3,&quot;pkts_toclient&quot;:2,&quot;bytes_toserver&quot;:253,&quot;bytes_toclient&quot;:153,&quot;start&quot;:&quot;2026-07-08T11:20:00.000000+0000&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;src_port&quot;:41000,&quot;dest_port&quot;:80}}</pre>
+          <p><strong>SHA-256:</strong> <code>ed55759a640c1bd36e10ac4745643ead5a7a6928403c5698ccef4d48bc99f978</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 23</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:00.000000+0000&quot;,&quot;flow_id&quot;:2731975549,&quot;event_type&quot;:&quot;http&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:41000,&quot;dest_ip&quot;:&quot;203.0.113.80&quot;,&quot;dest_port&quot;:80,&quot;proto&quot;:&quot;TCP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;stream (flow timeout)&quot;,&quot;tx_id&quot;:0,&quot;http&quot;:{&quot;hostname&quot;:&quot;lab-app.internal&quot;,&quot;url&quot;:&quot;/.env&quot;,&quot;http_user_agent&quot;:&quot;Nmap NSE lab probe&quot;,&quot;http_method&quot;:&quot;GET&quot;,&quot;protocol&quot;:&quot;HTTP/1.1&quot;,&quot;status&quot;:404,&quot;length&quot;:0}}</pre>
+          <p><strong>SHA-256:</strong> <code>dca401de9f6b96a08750344ff5168381bcff2967436a40614b9cf88f229a7b5f</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 3</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:43.199999+0000&quot;,&quot;flow_id&quot;:858989634115848,&quot;pcap_cnt&quot;:23,&quot;event_type&quot;:&quot;dns&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:52003,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;dest_port&quot;:53,&quot;proto&quot;:&quot;UDP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;wire/pcap&quot;,&quot;dns&quot;:{&quot;version&quot;:3,&quot;type&quot;:&quot;request&quot;,&quot;tx_id&quot;:0,&quot;id&quot;:17411,&quot;flags&quot;:&quot;100&quot;,&quot;rd&quot;:true,&quot;opcode&quot;:0,&quot;rcode&quot;:&quot;NOERROR&quot;,&quot;queries&quot;:[{&quot;rrname&quot;:&quot;a3.beacon-control.example&quot;,&quot;rrtype&quot;:&quot;A&quot;}]}}</pre>
+          <p><strong>SHA-256:</strong> <code>a7150452810a1c048968831aeed5eb3b831c411f0855f6bee31464d9453597c6</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 4</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:21:03.199999+0000&quot;,&quot;flow_id&quot;:1984893022680349,&quot;pcap_cnt&quot;:24,&quot;event_type&quot;:&quot;alert&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:52004,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;dest_port&quot;:53,&quot;proto&quot;:&quot;UDP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;wire/pcap&quot;,&quot;tx_id&quot;:0,&quot;alert&quot;:{&quot;action&quot;:&quot;allowed&quot;,&quot;gid&quot;:1,&quot;signature_id&quot;:9000004,&quot;rev&quot;:1,&quot;signature&quot;:&quot;TRACEHAWK LAB DNS beacon-control query&quot;,&quot;category&quot;:&quot;A Network Trojan was detected&quot;,&quot;severity&quot;:1},&quot;dns&quot;:{&quot;version&quot;:3,&quot;type&quot;:&quot;request&quot;,&quot;tx_id&quot;:0,&quot;id&quot;:17412,&quot;flags&quot;:&quot;100&quot;,&quot;rd&quot;:true,&quot;opcode&quot;:0,&quot;rcode&quot;:&quot;NOERROR&quot;,&quot;queries&quot;:[{&quot;rrname&quot;:&quot;a4.beacon-control.example&quot;,&quot;rrtype&quot;:&quot;A&quot;}]},&quot;app_proto&quot;:&quot;dns&quot;,&quot;direction&quot;:&quot;to_server&quot;,&quot;flow&quot;:{&quot;pkts_toserver&quot;:1,&quot;pkts_toclient&quot;:0,&quot;bytes_toserver&quot;:85,&quot;bytes_toclient&quot;:0,&quot;start&quot;:&quot;2026-07-08T11:21:03.199999+0000&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;src_port&quot;:52004,&quot;dest_port&quot;:53}}</pre>
+          <p><strong>SHA-256:</strong> <code>d8684367dc4c72055743a2d6c72807d1174afedf16c5f8d19b0263b38afc028c</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 5</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:23.199999+0000&quot;,&quot;flow_id&quot;:1984890687060882,&quot;pcap_cnt&quot;:22,&quot;event_type&quot;:&quot;dns&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:52002,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;dest_port&quot;:53,&quot;proto&quot;:&quot;UDP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;wire/pcap&quot;,&quot;dns&quot;:{&quot;version&quot;:3,&quot;type&quot;:&quot;request&quot;,&quot;tx_id&quot;:0,&quot;id&quot;:17410,&quot;flags&quot;:&quot;100&quot;,&quot;rd&quot;:true,&quot;opcode&quot;:0,&quot;rcode&quot;:&quot;NOERROR&quot;,&quot;queries&quot;:[{&quot;rrname&quot;:&quot;a2.beacon-control.example&quot;,&quot;rrtype&quot;:&quot;A&quot;}]}}</pre>
+          <p><strong>SHA-256:</strong> <code>890ea228ca419932dea7f6d7c4f183280a93fc60b10ed570c914877091c3f242</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 6</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:21:03.199999+0000&quot;,&quot;flow_id&quot;:1984893022680349,&quot;pcap_cnt&quot;:24,&quot;event_type&quot;:&quot;dns&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:52004,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;dest_port&quot;:53,&quot;proto&quot;:&quot;UDP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;wire/pcap&quot;,&quot;dns&quot;:{&quot;version&quot;:3,&quot;type&quot;:&quot;request&quot;,&quot;tx_id&quot;:0,&quot;id&quot;:17412,&quot;flags&quot;:&quot;100&quot;,&quot;rd&quot;:true,&quot;opcode&quot;:0,&quot;rcode&quot;:&quot;NOERROR&quot;,&quot;queries&quot;:[{&quot;rrname&quot;:&quot;a4.beacon-control.example&quot;,&quot;rrtype&quot;:&quot;A&quot;}]}}</pre>
+          <p><strong>SHA-256:</strong> <code>d418b371bf4e664c1f270b44db0a64019ea7864f58a8212d878a8ad99cfea51a</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 7</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:21:23.199999+0000&quot;,&quot;flow_id&quot;:858991076225460,&quot;pcap_cnt&quot;:25,&quot;event_type&quot;:&quot;alert&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:52005,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;dest_port&quot;:53,&quot;proto&quot;:&quot;UDP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;wire/pcap&quot;,&quot;tx_id&quot;:0,&quot;alert&quot;:{&quot;action&quot;:&quot;allowed&quot;,&quot;gid&quot;:1,&quot;signature_id&quot;:9000004,&quot;rev&quot;:1,&quot;signature&quot;:&quot;TRACEHAWK LAB DNS beacon-control query&quot;,&quot;category&quot;:&quot;A Network Trojan was detected&quot;,&quot;severity&quot;:1},&quot;dns&quot;:{&quot;version&quot;:3,&quot;type&quot;:&quot;request&quot;,&quot;tx_id&quot;:0,&quot;id&quot;:17413,&quot;flags&quot;:&quot;100&quot;,&quot;rd&quot;:true,&quot;opcode&quot;:0,&quot;rcode&quot;:&quot;NOERROR&quot;,&quot;queries&quot;:[{&quot;rrname&quot;:&quot;a5.beacon-control.example&quot;,&quot;rrtype&quot;:&quot;A&quot;}]},&quot;app_proto&quot;:&quot;dns&quot;,&quot;direction&quot;:&quot;to_server&quot;,&quot;flow&quot;:{&quot;pkts_toserver&quot;:1,&quot;pkts_toclient&quot;:0,&quot;bytes_toserver&quot;:85,&quot;bytes_toclient&quot;:0,&quot;start&quot;:&quot;2026-07-08T11:21:23.199999+0000&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;src_port&quot;:52005,&quot;dest_port&quot;:53}}</pre>
+          <p><strong>SHA-256:</strong> <code>9ce11843b973ea41ece6d4eb1402ea09a471d4ee7694d393a45b64b92224a853</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 8</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:20:03.199999+0000&quot;,&quot;flow_id&quot;:858990587745546,&quot;pcap_cnt&quot;:21,&quot;event_type&quot;:&quot;alert&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:52001,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;dest_port&quot;:53,&quot;proto&quot;:&quot;UDP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;wire/pcap&quot;,&quot;tx_id&quot;:0,&quot;alert&quot;:{&quot;action&quot;:&quot;allowed&quot;,&quot;gid&quot;:1,&quot;signature_id&quot;:9000004,&quot;rev&quot;:1,&quot;signature&quot;:&quot;TRACEHAWK LAB DNS beacon-control query&quot;,&quot;category&quot;:&quot;A Network Trojan was detected&quot;,&quot;severity&quot;:1},&quot;dns&quot;:{&quot;version&quot;:3,&quot;type&quot;:&quot;request&quot;,&quot;tx_id&quot;:0,&quot;id&quot;:17409,&quot;flags&quot;:&quot;100&quot;,&quot;rd&quot;:true,&quot;opcode&quot;:0,&quot;rcode&quot;:&quot;NOERROR&quot;,&quot;queries&quot;:[{&quot;rrname&quot;:&quot;a1.beacon-control.example&quot;,&quot;rrtype&quot;:&quot;A&quot;}]},&quot;app_proto&quot;:&quot;dns&quot;,&quot;direction&quot;:&quot;to_server&quot;,&quot;flow&quot;:{&quot;pkts_toserver&quot;:1,&quot;pkts_toclient&quot;:0,&quot;bytes_toserver&quot;:85,&quot;bytes_toclient&quot;:0,&quot;start&quot;:&quot;2026-07-08T11:20:03.199999+0000&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;src_port&quot;:52001,&quot;dest_port&quot;:53}}</pre>
+          <p><strong>SHA-256:</strong> <code>0b54539398658c179c2e9a7f25d4b41aec1a00ce2f7b23997b9431fc7fb571c2</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 9</h3>
+          <pre>{&quot;timestamp&quot;:&quot;2026-07-08T11:21:23.199999+0000&quot;,&quot;flow_id&quot;:858991076225460,&quot;pcap_cnt&quot;:25,&quot;event_type&quot;:&quot;dns&quot;,&quot;src_ip&quot;:&quot;10.20.0.25&quot;,&quot;src_port&quot;:52005,&quot;dest_ip&quot;:&quot;10.20.0.53&quot;,&quot;dest_port&quot;:53,&quot;proto&quot;:&quot;UDP&quot;,&quot;ip_v&quot;:4,&quot;pkt_src&quot;:&quot;wire/pcap&quot;,&quot;dns&quot;:{&quot;version&quot;:3,&quot;type&quot;:&quot;request&quot;,&quot;tx_id&quot;:0,&quot;id&quot;:17413,&quot;flags&quot;:&quot;100&quot;,&quot;rd&quot;:true,&quot;opcode&quot;:0,&quot;rcode&quot;:&quot;NOERROR&quot;,&quot;queries&quot;:[{&quot;rrname&quot;:&quot;a5.beacon-control.example&quot;,&quot;rrtype&quot;:&quot;A&quot;}]}}</pre>
+          <p><strong>SHA-256:</strong> <code>53750d5400b9d36cc2b34bf3274f9eb71a217071dd1d355343a476aa10e6de0c</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 10</h3>
+          <pre>1783509600.829999	Cxv1l71694nuf2vaY8	10.20.0.25	41001	203.0.113.80	80	1	GET	lab-app.internal	/wp-config.php	-	1.1	Nmap NSE lab probe	-	0	0	404	Not Found	-	-	(empty)	-	-	-	-	-	-	-	-	-</pre>
+          <p><strong>SHA-256:</strong> <code>78a79e495bff318fcd6400765352bada0385399b3bda2e6b2e25c2a17168c90e</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 11</h3>
+          <pre>1783509601.629999	CfmcFT2Sx2NJABguR8	10.20.0.25	41002	203.0.113.80	80	1	GET	lab-app.internal	/admin	-	1.1	Nmap NSE lab probe	-	0	0	404	Not Found	-	-	(empty)	-	-	-	-	-	-	-	-	-</pre>
+          <p><strong>SHA-256:</strong> <code>17f647e18c3eade732b2bb127957cf7e13f593ee45478ea53d444ba189830902</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 12</h3>
+          <pre>1783509602.429999	C82q4qJEbKV3XiXIa	10.20.0.25	41003	203.0.113.80	80	1	GET	lab-app.internal	/backup.zip	-	1.1	Nmap NSE lab probe	-	0	0	404	Not Found	-	-	(empty)	-	-	-	-	-	-	-	-	-</pre>
+          <p><strong>SHA-256:</strong> <code>f4ecb818341f6762447d431a919356a1bdb25ffdee962dcb9266336fa3f89f26</code></p>
+        </section>
+
+
+        <section class="evidence-block">
+          <h3>Line 9</h3>
+          <pre>1783509600.029999	CfJXUp38wOx7cpBtea	10.20.0.25	41000	203.0.113.80	80	1	GET	lab-app.internal	/.env	-	1.1	Nmap NSE lab probe	-	0	0	404	Not Found	-	-	(empty)	-	-	-	-	-	-	-	-	-</pre>
+          <p><strong>SHA-256:</strong> <code>11544cbd40fd9e73087c17765b9703237f558b29b020394c5ce6f959bf33a2cc</code></p>
+        </section>
+
+    </section>
+    <section class="integrity">
+      <h2>Report Integrity Notes</h2>
+      <ul>
+        <li>Findings are deterministic rule outputs.</li>
+        <li>Evidence lines are copied from local logs and include content hashes.</li>
+        <li>Assistant text, when present, is explanatory and does not alter findings.</li>
+        <li>No cloud service is required to generate this report.</li>
+
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "artifacts": {
+    "docs/assets/reports/tracehawk-sample-incident.html": {
+      "bytes": 46790,
+      "sha256": "83ff5e4bf2db0210e9ae6d0dd92f63d2c8330f8c1d0d8975a1b414ec32813917"
+    },
+    "docs/assets/reports/tracehawk-sample-incident.pdf": {
+      "bytes": 23134,
+      "sha256": "ee063c7b920f4597f93ad8b593dbabed50ad837f47492602e607279e2ae36230"
+    }
+  },
+  "case": {
+    "cross_source_link_count": 71,
+    "finding_count": 13,
+    "incident_count": 2,
+    "parser": "case_bundle",
+    "source_count": 4
+  },
+  "selected_incident": {
+    "evidence_line_count": 29,
+    "finding_count": 12,
+    "score": 100,
+    "severity": "critical",
+    "title": "Correlated security activity"
+  }
+}

@@ -1,0 +1,23 @@
+id: kubernetes-privileged-pod-create-001
+title: Kubernetes privileged pod created
+description: A pod creation request included a privileged container.
+severity: critical
+confidence: high
+log_types:
+  - kubernetes_audit
+mitre:
+  tactic: Privilege Escalation
+  technique_id: T1611
+  technique_name: Escape to Host
+conditions:
+  event_type: create_pods
+  field_equals:
+    privileged_container: true
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Approved privileged infrastructure daemon.
+recommendations:
+  - Verify the image, namespace, and service account.
+  - Check whether pod security admission should block this workload.

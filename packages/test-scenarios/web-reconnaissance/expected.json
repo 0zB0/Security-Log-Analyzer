@@ -1,0 +1,17 @@
+{
+  "parser": "web_access",
+  "raw_line_count": 7,
+  "parsed_event_count": 7,
+  "finding_count": 6,
+  "incident_count": 1,
+  "expected_findings": [
+    "web-admin-login-probing-001",
+    "web-404-burst-001",
+    "web-path-traversal-001",
+    "web-scanner-user-agent-001",
+    "web-sensitive-file-access-001",
+    "web-sql-injection-probing-001"
+  ],
+  "expected_mitre": ["T1083", "T1087", "T1190", "T1595.002"],
+  "expected_evidence_lines": [1, 2, 3, 4, 5, 6, 7]
+}

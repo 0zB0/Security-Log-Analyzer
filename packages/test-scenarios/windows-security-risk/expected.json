@@ -1,0 +1,32 @@
+{
+  "parser": "windows_event",
+  "raw_line_count": 9,
+  "parsed_event_count": 9,
+  "finding_count": 5,
+  "incident_count": 2,
+  "expected_findings": [
+    "windows-account-created-001",
+    "windows-admin-group-member-added-001",
+    "windows-audit-log-cleared-001",
+    "windows-failed-logon-burst-001",
+    "windows-success-after-failures-001"
+  ],
+  "expected_mitre": [
+    "T1070.001",
+    "T1078",
+    "T1098",
+    "T1110",
+    "T1136.001"
+  ],
+  "expected_evidence_lines": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ]
+}

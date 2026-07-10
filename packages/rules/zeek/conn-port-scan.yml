@@ -1,0 +1,32 @@
+id: zeek-conn-port-scan-001
+title: Zeek port scan pattern
+description: Zeek connection logs show one source contacting many ports on the same destination.
+severity: high
+confidence: medium
+log_types:
+  - zeek_json
+  - zeek_tsv
+mitre:
+  tactic: Discovery
+  technique_id: T1046
+  technique_name: Network Service Discovery
+conditions:
+  event_type: zeek_conn
+  field_equals:
+    transport_protocol: tcp
+  group_by:
+    - source_ip
+    - destination_ip
+  window_minutes: 2
+  distinct_field: destination_port
+  distinct_count_gte: 10
+evidence:
+  include_matching_lines: true
+  max_lines: 30
+false_positives:
+  - Approved vulnerability scan.
+  - Asset inventory job touching many ports.
+recommendations:
+  - Confirm whether the source was authorized to scan.
+  - Review destination host logs for accepted connections.
+  - Block or isolate the source if outside scope.

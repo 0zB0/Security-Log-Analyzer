@@ -1,0 +1,23 @@
+id: cloudtrail-access-key-created-001
+title: CloudTrail access key created
+description: A new AWS access key was created for an IAM identity.
+severity: high
+confidence: high
+log_types:
+  - cloudtrail
+mitre:
+  tactic: Persistence
+  technique_id: T1098
+  technique_name: Account Manipulation
+conditions:
+  event_type: CreateAccessKey
+  field_equals:
+    eventName: CreateAccessKey
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Planned key rotation for an approved service account.
+recommendations:
+  - Confirm the key owner and rotation ticket.
+  - Disable the key if it was not expected.

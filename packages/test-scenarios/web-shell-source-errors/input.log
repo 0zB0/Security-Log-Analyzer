@@ -1,0 +1,4 @@
+198.51.100.60 - - [05/Jul/2026:13:00:00 +0000] "GET /uploads/shell.php HTTP/1.1" 500 64 "-" "Mozilla/5.0"
+198.51.100.60 - - [05/Jul/2026:13:00:10 +0000] "GET /backup.sql HTTP/1.1" 500 64 "-" "Mozilla/5.0"
+198.51.100.60 - - [05/Jul/2026:13:00:20 +0000] "GET /search?q=%3Bcat%20/etc/passwd HTTP/1.1" 500 64 "-" "Mozilla/5.0"
+198.51.100.60 - - [05/Jul/2026:13:00:30 +0000] "GET /cmd.php?x=1 HTTP/1.1" 404 64 "-" "Mozilla/5.0"

@@ -1,0 +1,29 @@
+{
+  "parser": "zeek_json",
+  "raw_line_count": 8,
+  "parsed_event_count": 8,
+  "finding_count": 4,
+  "incident_count": 1,
+  "expected_findings": [
+    "zeek-dns-burst-001",
+    "zeek-http-sensitive-path-001",
+    "zeek-notice-event-001",
+    "zeek-tls-suspicious-name-001"
+  ],
+  "expected_mitre": [
+    "T1046",
+    "T1071.001",
+    "T1071.004",
+    "T1083"
+  ],
+  "expected_evidence_lines": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ]
+}

@@ -1,0 +1,31 @@
+id: web-scanner-user-agent-001
+title: Known scanner user agent
+description: Web requests used user agents commonly associated with automated reconnaissance tools.
+severity: medium
+confidence: high
+log_types:
+  - web_access
+mitre:
+  tactic: Discovery
+  technique_id: T1595.002
+  technique_name: Vulnerability Scanning
+conditions:
+  event_type: http_request
+  field_contains_any:
+    user_agent:
+      - sqlmap
+      - nikto
+      - nmap
+      - masscan
+      - dirbuster
+  group_by:
+    - source_ip
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Approved vulnerability scan or exposure assessment.
+recommendations:
+  - Identify whether the source IP belongs to an approved scanner.
+  - Review request paths and response status codes for successful access.
+

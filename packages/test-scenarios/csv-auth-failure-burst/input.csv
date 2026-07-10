@@ -1,0 +1,7 @@
+timestamp,source_ip,username,action,message,host,service
+2026-07-08T09:00:00Z,203.0.113.77,admin,login_failed,Failed login for admin,portal,auth
+2026-07-08T09:01:00Z,203.0.113.77,admin,login_failed,Failed login for admin,portal,auth
+2026-07-08T09:02:00Z,203.0.113.77,admin,login_failed,Failed login for admin,portal,auth
+2026-07-08T09:03:00Z,203.0.113.77,admin,login_failed,Failed login for admin,portal,auth
+2026-07-08T09:04:00Z,203.0.113.77,admin,login_failed,Failed login for admin,portal,auth
+2026-07-08T09:05:00Z,203.0.113.77,admin,login_success,Successful login for admin,portal,auth

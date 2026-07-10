@@ -1,0 +1,13 @@
+{
+  "scenario": "network-wireguard-risk",
+  "expected_findings": [
+    "network-wireguard-admin-service-access-001",
+    "network-wireguard-dns-burst-001",
+    "network-wireguard-host-sweep-001",
+    "network-wireguard-packet-burst-001",
+    "network-wireguard-periodic-beacon-001",
+    "network-wireguard-port-scan-001",
+    "network-wireguard-rdp-service-access-001"
+  ],
+  "expected_mitre": ["T1021", "T1021.001", "T1046", "T1071", "T1071.004"]
+}

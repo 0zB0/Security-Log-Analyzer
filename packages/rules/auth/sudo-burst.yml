@@ -1,0 +1,26 @@
+id: sudo-burst-001
+title: Burst of sudo commands
+description: Multiple sudo commands were executed by one user in a short time window.
+severity: medium
+confidence: medium
+log_types:
+  - linux_auth
+mitre:
+  tactic: Execution
+  technique_id: T1059
+  technique_name: Command and Scripting Interpreter
+conditions:
+  event_type: sudo_command
+  group_by:
+    - username
+  window_minutes: 5
+  count_gte: 3
+evidence:
+  include_matching_lines: true
+  max_lines: 15
+false_positives:
+  - Interactive maintenance session by an administrator.
+recommendations:
+  - Review command sequence for unusual account, credential, or persistence actions.
+  - Confirm whether the user had an approved maintenance window.
+

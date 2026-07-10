@@ -1,0 +1,34 @@
+id: network-wireguard-periodic-beacon-001
+title: Interface periodic beacon pattern
+description: One source contacted the same destination and port on a regular interval through the monitored interface.
+severity: medium
+confidence: medium
+log_types:
+  - network_packet
+mitre:
+  tactic: Command and Control
+  technique_id: T1071
+  technique_name: Application Layer Protocol
+conditions:
+  event_type: network_packet
+  field_equals:
+    transport_protocol: tcp
+  group_by:
+    - source_ip
+    - destination_ip
+    - destination_port
+  window_minutes: 10
+  periodic_count_gte: 6
+  periodic_interval_seconds_min: 25
+  periodic_interval_seconds_max: 35
+  periodic_jitter_seconds_lte: 2
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Health checks, uptime monitors, or approved agents with fixed polling intervals.
+  - Backup or management software using regular control-plane traffic.
+recommendations:
+  - Identify the process or peer generating the interval.
+  - Compare with approved monitoring and management tools.
+  - If unexplained, collect endpoint process evidence and preserve a bounded network capture.

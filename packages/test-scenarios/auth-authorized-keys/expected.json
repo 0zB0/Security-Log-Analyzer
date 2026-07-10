@@ -1,0 +1,10 @@
+{
+  "parser": "linux_auth",
+  "raw_line_count": 1,
+  "parsed_event_count": 1,
+  "finding_count": 1,
+  "incident_count": 1,
+  "expected_findings": ["sudo-authorized-keys-001"],
+  "expected_mitre": ["T1098.004"],
+  "expected_evidence_lines": [1]
+}

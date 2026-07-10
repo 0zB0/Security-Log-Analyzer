@@ -1,0 +1,28 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	conn
+#open	2026-07-09-07-59-25
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state	local_orig	local_resp	missed_bytes	history	orig_pkts	orig_ip_bytes	resp_pkts	resp_ip_bytes	tunnel_parents	ip_proto
+#types	time	string	addr	port	addr	port	enum	string	interval	count	count	string	bool	bool	count	string	count	count	count	count	set[string]	count
+1783509603.199999	CyP0Aq30K0aNvpxyy8	10.20.0.25	52001	10.20.0.53	53	udp	dns	-	-	-	S0	T	T	0	D	1	71	0	0	-	17
+1783509623.199999	C3xeuJ3qgTP9IqGiZa	10.20.0.25	52002	10.20.0.53	53	udp	dns	-	-	-	S0	T	T	0	D	1	71	0	0	-	17
+1783509643.199999	C4bKao4vCEJEypGT83	10.20.0.25	52003	10.20.0.53	53	udp	dns	-	-	-	S0	T	T	0	D	1	71	0	0	-	17
+1783509663.199999	CRBHJA1DWw7EABKLG2	10.20.0.25	52004	10.20.0.53	53	udp	dns	-	-	-	S0	T	T	0	D	1	71	0	0	-	17
+1783509683.199999	CaEQGu4f6N2cbSnoz6	10.20.0.25	52005	10.20.0.53	53	udp	dns	-	-	-	S0	T	T	0	D	1	71	0	0	-	17
+1783509740.000000	CEbTPN2ZaqXi10Nygh	10.8.0.44	45000	10.0.0.5	30000	tcp	-	-	-	-	S0	T	T	0	S	1	40	0	0	-	6
+1783509740.200000	CsRlGf188T8TDR18z3	10.8.0.44	45001	10.0.0.5	30001	tcp	-	-	-	-	S0	T	T	0	S	1	40	0	0	-	6
+1783509740.400000	CZT1qf1YD3vW4ThPdi	10.8.0.44	45002	10.0.0.5	30002	tcp	-	-	-	-	S0	T	T	0	S	1	40	0	0	-	6
+1783509740.599999	CohFK03JxFqVkOTb65	10.8.0.44	45003	10.0.0.5	30003	tcp	-	-	-	-	S0	T	T	0	S	1	40	0	0	-	6
+1783509740.799999	C01vUl3kqwaz7K4Qq1	10.8.0.44	45004	10.0.0.5	30004	tcp	-	-	-	-	S0	T	T	0	S	1	40	0	0	-	6
+1783509741.000000	C0VHNWZI2zI4CwVVa	10.8.0.44	45005	10.0.0.5	30005	tcp	-	-	-	-	S0	T	T	0	S	1	40	0	0	-	6
+1783509741.200000	Ccq7MR1NcpSOMhznKa	10.8.0.44	45006	10.0.0.5	30006	tcp	-	-	-	-	S0	T	T	0	S	1	40	0	0	-	6
+1783509741.400000	C8G4vZtcOo5wXbe35	10.8.0.44	45007	10.0.0.5	30007	tcp	-	-	-	-	S0	T	T	0	S	1	40	0	0	-	6
+1783509741.599999	Cb1gXJ2rPD3LPvqaJ2	10.8.0.44	45008	10.0.0.5	30008	tcp	-	-	-	-	S0	T	T	0	S	1	40	0	0	-	6
+1783509741.799999	CwMx5O1nv7gsQnxiti	10.8.0.44	45009	10.0.0.5	30009	tcp	-	-	-	-	S0	T	T	0	S	1	40	0	0	-	6
+1783509600.000000	CfJXUp38wOx7cpBtea	10.20.0.25	41000	203.0.113.80	80	tcp	http	0.039999	91	45	S1	T	T	0	ShADd	3	211	2	125	-	6
+1783509600.799999	Cxv1l71694nuf2vaY8	10.20.0.25	41001	203.0.113.80	80	tcp	http	0.040000	100	45	S1	T	T	0	ShADd	3	220	2	125	-	6
+1783509601.599999	CfmcFT2Sx2NJABguR8	10.20.0.25	41002	203.0.113.80	80	tcp	http	0.040000	92	45	S1	T	T	0	ShADd	3	212	2	125	-	6
+1783509602.399999	C82q4qJEbKV3XiXIa	10.20.0.25	41003	203.0.113.80	80	tcp	http	0.040000	97	45	S1	T	T	0	ShADd	3	217	2	125	-	6
+#close	2026-07-09-07-59-25

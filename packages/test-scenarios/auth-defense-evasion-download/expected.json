@@ -1,0 +1,16 @@
+{
+  "parser": "linux_auth",
+  "raw_line_count": 4,
+  "parsed_event_count": 4,
+  "finding_count": 5,
+  "incident_count": 1,
+  "expected_findings": [
+    "sudo-burst-001",
+    "sudo-cron-persistence-001",
+    "sudo-firewall-disable-001",
+    "sudo-network-download-001",
+    "sudo-service-persistence-001"
+  ],
+  "expected_mitre": ["T1053.003", "T1059", "T1105", "T1543.002", "T1562.004"],
+  "expected_evidence_lines": [1, 2, 3, 4]
+}

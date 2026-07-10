@@ -1,0 +1,34 @@
+id: suricata-http-sensitive-path-001
+title: Suricata HTTP sensitive path access
+description: Suricata EVE HTTP record shows access to common sensitive files or administrative paths.
+severity: high
+confidence: medium
+log_types:
+  - suricata_eve
+mitre:
+  tactic: Discovery
+  technique_id: T1083
+  technique_name: File and Directory Discovery
+conditions:
+  event_type: suricata_http
+  field_contains_any:
+    url_path:
+      - /.env
+      - /wp-config.php
+      - /admin
+      - /config
+      - /backup
+      - id_rsa
+  group_by:
+    - source_ip
+    - http_hostname
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Approved web application scan.
+  - Internal QA request against a test application.
+recommendations:
+  - Confirm the destination application and request path.
+  - Check web server logs for response status and follow-on requests.
+  - Block or challenge the source if not approved.

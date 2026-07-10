@@ -1,0 +1,13 @@
+{
+  "parser": "web_access",
+  "raw_line_count": 4,
+  "parsed_event_count": 4,
+  "finding_count": 2,
+  "incident_count": 1,
+  "expected_findings": [
+    "web-path-traversal-001",
+    "web-sensitive-file-access-001"
+  ],
+  "expected_mitre": ["T1083", "T1190"],
+  "expected_evidence_lines": [1, 2, 3]
+}

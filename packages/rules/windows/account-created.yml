@@ -1,0 +1,26 @@
+id: windows-account-created-001
+title: Windows user account created
+description: A Windows user account creation event was observed.
+severity: high
+confidence: high
+log_types:
+  - windows_event
+mitre:
+  tactic: Persistence
+  technique_id: T1136.001
+  technique_name: Local Account
+conditions:
+  event_type: windows_account_created
+  field_equals:
+    event_id: 4720
+  group_by:
+    - host
+    - subject_user
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Approved identity administration.
+recommendations:
+  - Validate the creator and target account.
+  - Confirm the account was created through the expected workflow.

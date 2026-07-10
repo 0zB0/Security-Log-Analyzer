@@ -1,0 +1,31 @@
+id: web-high-error-rate-001
+title: Burst of HTTP 5xx responses
+description: One source IP triggered multiple server errors in a short window.
+severity: medium
+confidence: medium
+log_types:
+  - web_access
+mitre:
+  tactic: Discovery
+  technique_id: T1595.002
+  technique_name: Vulnerability Scanning
+conditions:
+  event_type: http_request
+  field_contains_any:
+    status_code:
+      - "500"
+      - "502"
+      - "503"
+  group_by:
+    - source_ip
+  window_minutes: 5
+  count_gte: 3
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Application outage affecting legitimate users.
+recommendations:
+  - Check application exceptions around the same timestamps.
+  - Correlate with suspicious path and user-agent rules.
+

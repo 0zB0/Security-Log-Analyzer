@@ -1,0 +1,32 @@
+id: suricata-c2-category-001
+title: Suricata command and control category alert
+description: Suricata EVE alert category or signature indicates possible command and control activity.
+severity: critical
+confidence: medium
+log_types:
+  - suricata_eve
+mitre:
+  tactic: Command and Control
+  technique_id: T1071
+  technique_name: Application Layer Protocol
+conditions:
+  event_type: suricata_alert
+  field_contains_any:
+    category:
+      - trojan
+      - command and control
+      - c2
+      - malware
+  group_by:
+    - source_ip
+    - destination_ip
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - IDS signature matched on benign threat-intel text.
+  - Lab malware traffic generated in an approved exercise.
+recommendations:
+  - Validate the host process and destination domain or IP.
+  - Check adjacent DNS, HTTP, and TLS events for the same flow.
+  - Isolate the endpoint if activity is not explicitly approved.

@@ -1,0 +1,603 @@
+{
+  "generated_at": "2026-07-09T21:39:53.740722+00:00",
+  "methodology": {
+    "precision_note": "Precision is TP / (TP + unexpected rule matches).",
+    "recall_note": "Recall is TP / (TP + missing expected rule matches).",
+    "scope_note": "Contract metrics prove committed labeled scenarios, not population-level production accuracy. External IoT-23 results are reported separately.",
+    "unit": "expected rule match per labeled scenario"
+  },
+  "scenarios": [
+    {
+      "benign": false,
+      "expected": [
+        "sudo-authorized-keys-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "sudo-authorized-keys-001"
+      ],
+      "scenario": "auth-authorized-keys",
+      "true_positives": [
+        "sudo-authorized-keys-001"
+      ]
+    },
+    {
+      "benign": false,
+      "expected": [
+        "sudo-burst-001",
+        "sudo-cron-persistence-001",
+        "sudo-firewall-disable-001",
+        "sudo-network-download-001",
+        "sudo-service-persistence-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "sudo-burst-001",
+        "sudo-cron-persistence-001",
+        "sudo-firewall-disable-001",
+        "sudo-network-download-001",
+        "sudo-service-persistence-001"
+      ],
+      "scenario": "auth-defense-evasion-download",
+      "true_positives": [
+        "sudo-burst-001",
+        "sudo-cron-persistence-001",
+        "sudo-firewall-disable-001",
+        "sudo-network-download-001",
+        "sudo-service-persistence-001"
+      ]
+    },
+    {
+      "benign": false,
+      "expected": [
+        "ssh-bruteforce-001",
+        "ssh-compromise-sequence-001",
+        "ssh-success-after-failures-001",
+        "sudo-user-management-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "ssh-bruteforce-001",
+        "ssh-compromise-sequence-001",
+        "ssh-success-after-failures-001",
+        "sudo-user-management-001"
+      ],
+      "scenario": "auth-ssh-compromise",
+      "true_positives": [
+        "ssh-bruteforce-001",
+        "ssh-compromise-sequence-001",
+        "ssh-success-after-failures-001",
+        "sudo-user-management-001"
+      ]
+    },
+    {
+      "benign": false,
+      "expected": [
+        "sudo-burst-001",
+        "sudo-sensitive-file-access-001",
+        "sudo-user-management-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "sudo-burst-001",
+        "sudo-sensitive-file-access-001",
+        "sudo-user-management-001"
+      ],
+      "scenario": "auth-sudo-burst",
+      "true_positives": [
+        "sudo-burst-001",
+        "sudo-sensitive-file-access-001",
+        "sudo-user-management-001"
+      ]
+    },
+    {
+      "benign": true,
+      "expected": [],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [],
+      "scenario": "benign-no-alert",
+      "true_positives": []
+    },
+    {
+      "benign": true,
+      "expected": [],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [],
+      "scenario": "cloudtrail-benign",
+      "true_positives": []
+    },
+    {
+      "benign": false,
+      "expected": [
+        "cloudtrail-access-key-created-001",
+        "cloudtrail-logging-disabled-001",
+        "cloudtrail-console-login-failure-burst-001",
+        "cloudtrail-iam-policy-attachment-001",
+        "cloudtrail-root-account-usage-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "cloudtrail-access-key-created-001",
+        "cloudtrail-logging-disabled-001",
+        "cloudtrail-console-login-failure-burst-001",
+        "cloudtrail-iam-policy-attachment-001",
+        "cloudtrail-root-account-usage-001"
+      ],
+      "scenario": "cloudtrail-iam-risk",
+      "true_positives": [
+        "cloudtrail-access-key-created-001",
+        "cloudtrail-console-login-failure-burst-001",
+        "cloudtrail-iam-policy-attachment-001",
+        "cloudtrail-logging-disabled-001",
+        "cloudtrail-root-account-usage-001"
+      ]
+    },
+    {
+      "benign": false,
+      "expected": [
+        "csv-admin-login-success-001",
+        "csv-auth-failure-burst-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "csv-admin-login-success-001",
+        "csv-auth-failure-burst-001"
+      ],
+      "scenario": "csv-auth-failure-burst",
+      "true_positives": [
+        "csv-admin-login-success-001",
+        "csv-auth-failure-burst-001"
+      ]
+    },
+    {
+      "benign": true,
+      "expected": [],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [],
+      "scenario": "csv-benign",
+      "true_positives": []
+    },
+    {
+      "benign": false,
+      "expected": [
+        "json-auth-failure-burst-001",
+        "json-encoded-command-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "json-auth-failure-burst-001",
+        "json-encoded-command-001"
+      ],
+      "scenario": "json-auth-encoded",
+      "true_positives": [
+        "json-auth-failure-burst-001",
+        "json-encoded-command-001"
+      ]
+    },
+    {
+      "benign": true,
+      "expected": [],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [],
+      "scenario": "json-benign",
+      "true_positives": []
+    },
+    {
+      "benign": false,
+      "expected": [
+        "json-admin-login-success-001",
+        "json-container-privileged-001",
+        "json-secret-file-read-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "json-admin-login-success-001",
+        "json-container-privileged-001",
+        "json-secret-file-read-001"
+      ],
+      "scenario": "json-container-secret-admin",
+      "true_positives": [
+        "json-admin-login-success-001",
+        "json-container-privileged-001",
+        "json-secret-file-read-001"
+      ]
+    },
+    {
+      "benign": false,
+      "expected": [
+        "kubernetes-clusterrolebinding-create-001",
+        "kubernetes-forbidden-burst-001",
+        "kubernetes-pod-exec-001",
+        "kubernetes-privileged-pod-create-001",
+        "kubernetes-secret-read-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "kubernetes-clusterrolebinding-create-001",
+        "kubernetes-forbidden-burst-001",
+        "kubernetes-pod-exec-001",
+        "kubernetes-privileged-pod-create-001",
+        "kubernetes-secret-read-001"
+      ],
+      "scenario": "kubernetes-audit-risk",
+      "true_positives": [
+        "kubernetes-clusterrolebinding-create-001",
+        "kubernetes-forbidden-burst-001",
+        "kubernetes-pod-exec-001",
+        "kubernetes-privileged-pod-create-001",
+        "kubernetes-secret-read-001"
+      ]
+    },
+    {
+      "benign": true,
+      "expected": [],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [],
+      "scenario": "kubernetes-benign",
+      "true_positives": []
+    },
+    {
+      "benign": false,
+      "expected": [
+        "suricata-alert-burst-001",
+        "suricata-http-sensitive-path-001",
+        "suricata-scan-signature-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "suricata-alert-burst-001",
+        "suricata-http-sensitive-path-001",
+        "suricata-scan-signature-001"
+      ],
+      "scenario": "suricata-alert-burst",
+      "true_positives": [
+        "suricata-alert-burst-001",
+        "suricata-http-sensitive-path-001",
+        "suricata-scan-signature-001"
+      ]
+    },
+    {
+      "benign": true,
+      "expected": [],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [],
+      "scenario": "suricata-benign-no-alert",
+      "true_positives": []
+    },
+    {
+      "benign": false,
+      "expected": [
+        "suricata-c2-category-001",
+        "suricata-dns-burst-001",
+        "suricata-high-severity-alert-001",
+        "suricata-http-sensitive-path-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "suricata-c2-category-001",
+        "suricata-dns-burst-001",
+        "suricata-high-severity-alert-001",
+        "suricata-http-sensitive-path-001"
+      ],
+      "scenario": "suricata-c2-http-dns",
+      "true_positives": [
+        "suricata-c2-category-001",
+        "suricata-dns-burst-001",
+        "suricata-high-severity-alert-001",
+        "suricata-http-sensitive-path-001"
+      ]
+    },
+    {
+      "benign": true,
+      "expected": [],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [],
+      "scenario": "syslog-benign",
+      "true_positives": []
+    },
+    {
+      "benign": false,
+      "expected": [
+        "syslog-error-burst-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "syslog-error-burst-001"
+      ],
+      "scenario": "syslog-error-burst",
+      "true_positives": [
+        "syslog-error-burst-001"
+      ]
+    },
+    {
+      "benign": true,
+      "expected": [],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [],
+      "scenario": "web-benign",
+      "true_positives": []
+    },
+    {
+      "benign": false,
+      "expected": [
+        "web-admin-login-probing-001",
+        "web-404-burst-001",
+        "web-path-traversal-001",
+        "web-scanner-user-agent-001",
+        "web-sensitive-file-access-001",
+        "web-sql-injection-probing-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "web-admin-login-probing-001",
+        "web-404-burst-001",
+        "web-path-traversal-001",
+        "web-scanner-user-agent-001",
+        "web-sensitive-file-access-001",
+        "web-sql-injection-probing-001"
+      ],
+      "scenario": "web-reconnaissance",
+      "true_positives": [
+        "web-404-burst-001",
+        "web-admin-login-probing-001",
+        "web-path-traversal-001",
+        "web-scanner-user-agent-001",
+        "web-sensitive-file-access-001",
+        "web-sql-injection-probing-001"
+      ]
+    },
+    {
+      "benign": false,
+      "expected": [
+        "web-path-traversal-001",
+        "web-sensitive-file-access-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "web-path-traversal-001",
+        "web-sensitive-file-access-001"
+      ],
+      "scenario": "web-sensitive-traversal",
+      "true_positives": [
+        "web-path-traversal-001",
+        "web-sensitive-file-access-001"
+      ]
+    },
+    {
+      "benign": false,
+      "expected": [
+        "web-command-injection-probing-001",
+        "web-high-error-rate-001",
+        "web-path-traversal-001",
+        "web-source-code-extension-access-001",
+        "web-webshell-upload-path-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "web-command-injection-probing-001",
+        "web-high-error-rate-001",
+        "web-path-traversal-001",
+        "web-source-code-extension-access-001",
+        "web-webshell-upload-path-001"
+      ],
+      "scenario": "web-shell-source-errors",
+      "true_positives": [
+        "web-command-injection-probing-001",
+        "web-high-error-rate-001",
+        "web-path-traversal-001",
+        "web-source-code-extension-access-001",
+        "web-webshell-upload-path-001"
+      ]
+    },
+    {
+      "benign": true,
+      "expected": [],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [],
+      "scenario": "windows-benign",
+      "true_positives": []
+    },
+    {
+      "benign": false,
+      "expected": [
+        "windows-account-created-001",
+        "windows-admin-group-member-added-001",
+        "windows-audit-log-cleared-001",
+        "windows-failed-logon-burst-001",
+        "windows-success-after-failures-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "windows-account-created-001",
+        "windows-admin-group-member-added-001",
+        "windows-audit-log-cleared-001",
+        "windows-failed-logon-burst-001",
+        "windows-success-after-failures-001"
+      ],
+      "scenario": "windows-security-risk",
+      "true_positives": [
+        "windows-account-created-001",
+        "windows-admin-group-member-added-001",
+        "windows-audit-log-cleared-001",
+        "windows-failed-logon-burst-001",
+        "windows-success-after-failures-001"
+      ]
+    },
+    {
+      "benign": false,
+      "expected": [
+        "zeek-admin-service-access-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "zeek-admin-service-access-001"
+      ],
+      "scenario": "zeek-admin-service-access",
+      "true_positives": [
+        "zeek-admin-service-access-001"
+      ]
+    },
+    {
+      "benign": true,
+      "expected": [],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [],
+      "scenario": "zeek-admin-service-benign",
+      "true_positives": []
+    },
+    {
+      "benign": true,
+      "expected": [],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [],
+      "scenario": "zeek-benign-no-alert",
+      "true_positives": []
+    },
+    {
+      "benign": false,
+      "expected": [
+        "zeek-dns-burst-001",
+        "zeek-http-sensitive-path-001",
+        "zeek-notice-event-001",
+        "zeek-tls-suspicious-name-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "zeek-dns-burst-001",
+        "zeek-http-sensitive-path-001",
+        "zeek-notice-event-001",
+        "zeek-tls-suspicious-name-001"
+      ],
+      "scenario": "zeek-dns-http-notice",
+      "true_positives": [
+        "zeek-dns-burst-001",
+        "zeek-http-sensitive-path-001",
+        "zeek-notice-event-001",
+        "zeek-tls-suspicious-name-001"
+      ]
+    },
+    {
+      "benign": false,
+      "expected": [
+        "zeek-conn-host-sweep-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "zeek-conn-host-sweep-001"
+      ],
+      "scenario": "zeek-host-sweep",
+      "true_positives": [
+        "zeek-conn-host-sweep-001"
+      ]
+    },
+    {
+      "benign": false,
+      "expected": [
+        "zeek-conn-port-scan-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "zeek-conn-port-scan-001"
+      ],
+      "scenario": "zeek-port-scan",
+      "true_positives": [
+        "zeek-conn-port-scan-001"
+      ]
+    },
+    {
+      "benign": false,
+      "expected": [
+        "network-wireguard-admin-service-access-001",
+        "network-wireguard-dns-burst-001",
+        "network-wireguard-host-sweep-001",
+        "network-wireguard-packet-burst-001",
+        "network-wireguard-periodic-beacon-001",
+        "network-wireguard-port-scan-001",
+        "network-wireguard-rdp-service-access-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "network-wireguard-admin-service-access-001",
+        "network-wireguard-dns-burst-001",
+        "network-wireguard-host-sweep-001",
+        "network-wireguard-packet-burst-001",
+        "network-wireguard-periodic-beacon-001",
+        "network-wireguard-port-scan-001",
+        "network-wireguard-rdp-service-access-001"
+      ],
+      "scenario": "network-wireguard-risk",
+      "true_positives": [
+        "network-wireguard-admin-service-access-001",
+        "network-wireguard-dns-burst-001",
+        "network-wireguard-host-sweep-001",
+        "network-wireguard-packet-burst-001",
+        "network-wireguard-periodic-beacon-001",
+        "network-wireguard-port-scan-001",
+        "network-wireguard-rdp-service-access-001"
+      ]
+    },
+    {
+      "benign": false,
+      "expected": [
+        "zeek-conn-attempt-burst-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "zeek-conn-attempt-burst-001"
+      ],
+      "scenario": "zeek-connection-attempt-burst",
+      "true_positives": [
+        "zeek-conn-attempt-burst-001"
+      ]
+    }
+  ],
+  "summary": {
+    "benign_scenario_count": 11,
+    "benign_scenarios_with_findings": 0,
+    "false_negative_count": 0,
+    "false_positive_count": 0,
+    "missing_positive_rule_ids": [],
+    "positive_rule_coverage": 65,
+    "precision": 1.0,
+    "recall": 1.0,
+    "rule_count": 65,
+    "rules_with_false_positive_notes": 65,
+    "rules_with_mitre_technique": 65,
+    "rules_with_recommendations": 65,
+    "scenario_count": 33,
+    "true_positive_count": 71
+  }
+}

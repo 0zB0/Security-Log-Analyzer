@@ -1,0 +1,29 @@
+id: web-admin-login-probing-001
+title: Admin login probing
+description: A source IP requested common administrative login paths.
+severity: medium
+confidence: medium
+log_types:
+  - web_access
+mitre:
+  tactic: Discovery
+  technique_id: T1087
+  technique_name: Account Discovery
+conditions:
+  event_type: http_request
+  path_contains_any:
+    - /admin
+    - /login
+    - /wp-login.php
+    - /phpmyadmin
+  group_by:
+    - source_ip
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Legitimate user navigating to an application login page.
+recommendations:
+  - Check whether login attempts followed the probing.
+  - Confirm administrative endpoints are not publicly exposed unnecessarily.
+

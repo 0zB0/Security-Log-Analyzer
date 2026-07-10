@@ -1,0 +1,31 @@
+id: sudo-sensitive-file-access-001
+title: Privileged sensitive file access
+description: A sudo command accessed files commonly targeted for credential or configuration review.
+severity: high
+confidence: medium
+log_types:
+  - linux_auth
+mitre:
+  tactic: Credential Access
+  technique_id: T1003.008
+  technique_name: /etc/passwd and /etc/shadow
+conditions:
+  event_type: sudo_command
+  field_contains_any:
+    command:
+      - /etc/shadow
+      - /etc/passwd
+      - /root/.ssh
+      - id_rsa
+  group_by:
+    - username
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Approved system administration or backup validation.
+recommendations:
+  - Confirm whether the command was expected.
+  - Review shell history and process activity for the user.
+  - Rotate credentials if private key or shadow access is suspicious.
+

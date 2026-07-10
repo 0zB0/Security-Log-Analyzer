@@ -1,0 +1,29 @@
+id: network-wireguard-dns-burst-001
+title: Interface DNS burst
+description: One source generated many DNS packets through the monitored interface in a short window.
+severity: medium
+confidence: medium
+log_types:
+  - network_packet
+mitre:
+  tactic: Command and Control
+  technique_id: T1071.004
+  technique_name: DNS
+conditions:
+  event_type: network_packet
+  field_equals:
+    destination_port: 53
+  group_by:
+    - source_ip
+  window_minutes: 1
+  count_gte: 20
+evidence:
+  include_matching_lines: true
+  max_lines: 25
+false_positives:
+  - Legitimate DNS-heavy service startup.
+  - Browser or endpoint reconnect after network outage.
+recommendations:
+  - Compare the source peer with expected DNS usage.
+  - Review resolver logs for queried domains.
+  - Check for tunneling or beaconing patterns if repeated.

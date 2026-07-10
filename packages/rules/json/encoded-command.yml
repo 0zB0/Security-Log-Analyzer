@@ -1,0 +1,29 @@
+id: json-encoded-command-001
+title: JSON encoded command execution
+description: JSON process events include encoded command execution indicators.
+severity: high
+confidence: medium
+log_types:
+  - json_log
+mitre:
+  tactic: Defense Evasion
+  technique_id: T1027
+  technique_name: Obfuscated Files or Information
+conditions:
+  field_contains_any:
+    process.command_line:
+      - base64
+      - encodedcommand
+      - " -enc "
+  group_by:
+    - host
+    - username
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Administrative script that legitimately encodes payloads.
+recommendations:
+  - Decode and review the command payload.
+  - Inspect parent process and user context.
+

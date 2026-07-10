@@ -1,0 +1,29 @@
+id: suricata-high-severity-alert-001
+title: Suricata high severity alert
+description: Suricata EVE alert has severity 1, indicating a high priority IDS match.
+severity: high
+confidence: high
+log_types:
+  - suricata_eve
+mitre:
+  tactic: Initial Access
+  technique_id: T1190
+  technique_name: Exploit Public-Facing Application
+conditions:
+  event_type: suricata_alert
+  field_equals:
+    alert.severity: 1
+  group_by:
+    - source_ip
+    - destination_ip
+    - signature
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Aggressive but authorized scanner.
+  - IDS rule with known environmental false positives.
+recommendations:
+  - Review the raw rule signature and destination service.
+  - Confirm whether exploitation succeeded using host and application logs.
+  - Tune or suppress only after preserving the evidence record.

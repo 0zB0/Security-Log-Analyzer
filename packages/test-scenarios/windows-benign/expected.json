@@ -1,0 +1,10 @@
+{
+  "parser": "windows_event",
+  "raw_line_count": 1,
+  "parsed_event_count": 1,
+  "finding_count": 0,
+  "incident_count": 0,
+  "expected_findings": [],
+  "expected_mitre": [],
+  "expected_evidence_lines": []
+}

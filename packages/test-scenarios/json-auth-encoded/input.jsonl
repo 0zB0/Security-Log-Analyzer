@@ -1,0 +1,6 @@
+{"@timestamp":"2026-07-05T12:00:00Z","event":{"action":"authentication_failure"},"source":{"ip":"203.0.113.91"},"user":{"name":"svc-deploy"},"host":{"name":"api-01"},"message":"failed login"}
+{"@timestamp":"2026-07-05T12:00:15Z","event":{"action":"authentication_failure"},"source":{"ip":"203.0.113.91"},"user":{"name":"svc-deploy"},"host":{"name":"api-01"},"message":"failed login"}
+{"@timestamp":"2026-07-05T12:00:30Z","event":{"action":"authentication_failure"},"source":{"ip":"203.0.113.91"},"user":{"name":"svc-deploy"},"host":{"name":"api-01"},"message":"failed login"}
+{"@timestamp":"2026-07-05T12:00:45Z","event":{"action":"authentication_failure"},"source":{"ip":"203.0.113.91"},"user":{"name":"svc-deploy"},"host":{"name":"api-01"},"message":"failed login"}
+{"@timestamp":"2026-07-05T12:01:00Z","event":{"action":"authentication_failure"},"source":{"ip":"203.0.113.91"},"user":{"name":"svc-deploy"},"host":{"name":"api-01"},"message":"failed login"}
+{"@timestamp":"2026-07-05T12:02:00Z","event":{"action":"process_start"},"source":{"ip":"203.0.113.91"},"user":{"name":"svc-deploy"},"host":{"name":"api-01"},"process":{"command_line":"python -c 'import base64; exec(base64.b64decode(payload))'"},"message":"encoded command"}

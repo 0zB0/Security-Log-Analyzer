@@ -1,0 +1,35 @@
+id: zeek-http-sensitive-path-001
+title: Zeek HTTP sensitive path access
+description: Zeek HTTP logs show access to common sensitive files or administrative paths.
+severity: high
+confidence: medium
+log_types:
+  - zeek_json
+  - zeek_tsv
+mitre:
+  tactic: Discovery
+  technique_id: T1083
+  technique_name: File and Directory Discovery
+conditions:
+  event_type: zeek_http
+  field_contains_any:
+    url_path:
+      - /.env
+      - /wp-config.php
+      - /admin
+      - /config
+      - /backup
+      - id_rsa
+  group_by:
+    - source_ip
+    - http_hostname
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Approved web vulnerability scan.
+  - QA or staging test.
+recommendations:
+  - Confirm request outcome in web server logs.
+  - Review subsequent requests from the same source.
+  - Remove exposed sensitive files if present.

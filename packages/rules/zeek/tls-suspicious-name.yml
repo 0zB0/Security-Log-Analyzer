@@ -1,0 +1,34 @@
+id: zeek-tls-suspicious-name-001
+title: Zeek suspicious TLS server name
+description: Zeek SSL logs show TLS SNI values commonly used by temporary tunnels or suspicious infrastructure.
+severity: medium
+confidence: medium
+log_types:
+  - zeek_json
+  - zeek_tsv
+mitre:
+  tactic: Command and Control
+  technique_id: T1071.001
+  technique_name: Web Protocols
+conditions:
+  event_type: zeek_ssl
+  field_contains_any:
+    tls_sni:
+      - duckdns
+      - no-ip
+      - ngrok
+      - serveo
+      - pastebin
+  group_by:
+    - source_ip
+    - tls_sni
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Developer tunneling tool in an approved window.
+  - Personal dynamic DNS service allowed by policy.
+recommendations:
+  - Confirm business justification for the TLS destination.
+  - Pivot to endpoint process and proxy logs.
+  - Block the domain if it is not approved.

@@ -1,0 +1,1 @@
+{"eventVersion":"1.09","eventTime":"2026-07-09T12:00:00Z","eventSource":"ec2.amazonaws.com","eventName":"DescribeInstances","awsRegion":"eu-central-1","sourceIPAddress":"203.0.113.20","userIdentity":{"type":"IAMUser","userName":"inventory-reader"}}

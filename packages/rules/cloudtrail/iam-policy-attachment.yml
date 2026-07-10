@@ -1,0 +1,26 @@
+id: cloudtrail-iam-policy-attachment-001
+title: CloudTrail IAM policy attachment
+description: An IAM policy was attached or modified, changing effective permissions.
+severity: high
+confidence: medium
+log_types:
+  - cloudtrail
+mitre:
+  tactic: Persistence
+  technique_id: T1098
+  technique_name: Account Manipulation
+conditions:
+  field_in:
+    eventName:
+      - AttachUserPolicy
+      - AttachRolePolicy
+      - PutUserPolicy
+      - PutRolePolicy
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Planned IAM administration by the cloud platform team.
+recommendations:
+  - Review the attached policy ARN or inline policy.
+  - Confirm the actor and ticket that authorized the permission change.

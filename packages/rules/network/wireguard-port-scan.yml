@@ -1,0 +1,31 @@
+id: network-wireguard-port-scan-001
+title: Interface port scan pattern
+description: One source contacted many distinct destination ports on the same host through the monitored interface.
+severity: high
+confidence: medium
+log_types:
+  - network_packet
+mitre:
+  tactic: Discovery
+  technique_id: T1046
+  technique_name: Network Service Discovery
+conditions:
+  event_type: network_packet
+  field_equals:
+    transport_protocol: tcp
+  group_by:
+    - source_ip
+    - destination_ip
+  window_minutes: 2
+  distinct_field: destination_port
+  distinct_count_gte: 10
+evidence:
+  include_matching_lines: true
+  max_lines: 30
+false_positives:
+  - Approved vulnerability scan over the monitored interface.
+  - Asset inventory job touching many services.
+recommendations:
+  - Confirm whether the source peer was authorized to scan.
+  - Compare the destination host with approved assessment scope.
+  - If unauthorized, isolate the peer and preserve a bounded capture for evidence.

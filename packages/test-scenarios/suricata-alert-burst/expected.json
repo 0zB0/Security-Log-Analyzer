@@ -1,0 +1,22 @@
+{
+  "parser": "suricata_eve",
+  "raw_line_count": 5,
+  "parsed_event_count": 5,
+  "finding_count": 3,
+  "incident_count": 1,
+  "expected_findings": [
+    "suricata-alert-burst-001",
+    "suricata-http-sensitive-path-001",
+    "suricata-scan-signature-001"
+  ],
+  "expected_mitre": [
+    "T1083",
+    "T1595.002"
+  ],
+  "expected_evidence_lines": [
+    1,
+    2,
+    3,
+    5
+  ]
+}

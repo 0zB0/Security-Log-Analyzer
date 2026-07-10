@@ -1,0 +1,28 @@
+id: sudo-authorized-keys-001
+title: Privileged SSH authorized keys modification
+description: A sudo command touched SSH authorized_keys material, which can indicate persistence.
+severity: high
+confidence: medium
+log_types:
+  - linux_auth
+mitre:
+  tactic: Persistence
+  technique_id: T1098.004
+  technique_name: SSH Authorized Keys
+conditions:
+  event_type: sudo_command
+  field_contains_any:
+    command:
+      - authorized_keys
+      - .ssh/authorized_keys
+  group_by:
+    - username
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Approved administrator key rotation.
+recommendations:
+  - Verify the account and key owner.
+  - Remove unauthorized keys and rotate impacted credentials.
+

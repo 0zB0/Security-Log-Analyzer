@@ -1,0 +1,31 @@
+id: ssh-success-after-failures-001
+title: SSH successful login after repeated failures
+description: A successful SSH login occurred after repeated failures from the same source.
+severity: critical
+confidence: high
+log_types:
+  - linux_auth
+mitre:
+  tactic: Defense Evasion
+  technique_id: T1078
+  technique_name: Valid Accounts
+conditions:
+  sequence:
+    - event_type: ssh_failed_login
+      count_gte: 10
+    - event_type: ssh_successful_login
+  group_by:
+    - source_ip
+    - username
+  window_minutes: 15
+evidence:
+  include_matching_lines: true
+  max_lines: 25
+false_positives:
+  - Legitimate user mistyped a password repeatedly before succeeding.
+  - Automated job retried with stale credentials before receiving updated secrets.
+recommendations:
+  - Validate whether the successful login was expected.
+  - Review commands executed after the login.
+  - Rotate credentials if the login is suspicious.
+

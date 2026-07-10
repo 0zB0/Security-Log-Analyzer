@@ -1,0 +1,4 @@
+Jul 05 10:18:12 labhost sudo:    admin : TTY=pts/0 ; PWD=/home/admin ; USER=root ; COMMAND=/usr/sbin/useradd backupadm
+Jul 05 10:18:34 labhost sudo:    admin : TTY=pts/0 ; PWD=/home/admin ; USER=root ; COMMAND=/usr/bin/cat /etc/shadow
+Jul 05 10:19:03 labhost sudo:    admin : TTY=pts/0 ; PWD=/home/admin ; USER=root ; COMMAND=/usr/bin/chmod 4755 /tmp/.cache-update
+

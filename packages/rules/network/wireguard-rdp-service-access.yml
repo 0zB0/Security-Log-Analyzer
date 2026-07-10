@@ -1,0 +1,28 @@
+id: network-wireguard-rdp-service-access-001
+title: Interface RDP service access
+description: Traffic over the monitored interface reached RDP, which should be rare and explicitly approved.
+severity: high
+confidence: medium
+log_types:
+  - network_packet
+mitre:
+  tactic: Lateral Movement
+  technique_id: T1021.001
+  technique_name: Remote Desktop Protocol
+conditions:
+  event_type: network_packet
+  field_equals:
+    transport_protocol: tcp
+    destination_port: 3389
+  group_by:
+    - source_ip
+    - destination_ip
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Approved remote support session.
+recommendations:
+  - Confirm the destination host and user.
+  - Check Windows security logs around the same timestamp.
+  - Restrict RDP access to approved peers only.

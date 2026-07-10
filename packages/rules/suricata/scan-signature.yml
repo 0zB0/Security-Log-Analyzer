@@ -1,0 +1,32 @@
+id: suricata-scan-signature-001
+title: Suricata scan signature
+description: Suricata EVE alert signature indicates scanning or reconnaissance.
+severity: high
+confidence: medium
+log_types:
+  - suricata_eve
+mitre:
+  tactic: Reconnaissance
+  technique_id: T1595.002
+  technique_name: Vulnerability Scanning
+conditions:
+  event_type: suricata_alert
+  field_contains_any:
+    signature:
+      - scan
+      - nmap
+      - masscan
+      - nikto
+      - sqlmap
+  group_by:
+    - source_ip
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Approved security scanner.
+  - External uptime monitor using scanner-like probes.
+recommendations:
+  - Verify the source against the approved testing scope.
+  - Review impacted destination hosts and services.
+  - Correlate with Zeek connection logs for scan breadth.

@@ -1,0 +1,30 @@
+id: ssh-bruteforce-001
+title: SSH brute force attempt
+description: Multiple failed SSH login attempts from one source IP and username.
+severity: high
+confidence: high
+log_types:
+  - linux_auth
+mitre:
+  tactic: Credential Access
+  technique_id: T1110.001
+  technique_name: Password Guessing
+conditions:
+  event_type: ssh_failed_login
+  group_by:
+    - source_ip
+    - username
+  window_minutes: 10
+  count_gte: 10
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Misconfigured internal service repeatedly using an old password.
+  - Approved vulnerability scanner or password audit.
+recommendations:
+  - Review whether any successful login followed the failed attempts.
+  - Block or investigate the source IP if confirmed malicious.
+  - Disable password authentication where possible.
+  - Enforce MFA for remote access.
+

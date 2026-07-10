@@ -1,0 +1,5 @@
+Jul 08 09:10:00 vpn01 wg-quick[1201]: error resolving endpoint for peer alpha from 198.51.100.44
+Jul 08 09:10:20 vpn01 wg-quick[1201]: failed to update route for peer alpha
+Jul 08 09:10:40 vpn01 wg-quick[1201]: denied handshake from 198.51.100.44
+Jul 08 09:11:00 vpn01 wg-quick[1201]: timeout while refreshing peer alpha
+Jul 08 09:11:20 vpn01 wg-quick[1201]: rejected invalid endpoint update from 198.51.100.44

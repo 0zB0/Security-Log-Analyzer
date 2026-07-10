@@ -1,0 +1,25 @@
+id: kubernetes-pod-exec-001
+title: Kubernetes pod exec observed
+description: An interactive exec request into a pod was observed.
+severity: high
+confidence: high
+log_types:
+  - kubernetes_audit
+mitre:
+  tactic: Execution
+  technique_id: T1609
+  technique_name: Container and Resource Discovery
+conditions:
+  event_type: create_pods_exec
+  field_equals:
+    verb: create
+    objectRef.resource: pods
+    objectRef.subresource: exec
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Approved live debugging session by an on-call engineer.
+recommendations:
+  - Confirm the user, namespace, and pod owner.
+  - Review commands from runtime or shell history evidence where available.

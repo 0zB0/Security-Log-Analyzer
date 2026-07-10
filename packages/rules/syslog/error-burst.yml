@@ -1,0 +1,27 @@
+id: syslog-error-burst-001
+title: Syslog error burst
+description: Generic syslog messages show repeated failures or errors from one host and service.
+severity: medium
+confidence: medium
+log_types:
+  - syslog
+mitre:
+  tactic: Defense Evasion
+  technique_id: T1562
+  technique_name: Impair Defenses
+conditions:
+  event_type: syslog_error
+  group_by:
+    - host
+    - service
+  window_minutes: 5
+  count_gte: 5
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Benign service outage or misconfiguration.
+  - Maintenance window with repeated restart failures.
+recommendations:
+  - Review service status and adjacent logs.
+  - Confirm whether the errors align with approved maintenance.

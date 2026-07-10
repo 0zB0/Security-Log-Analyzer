@@ -1,0 +1,29 @@
+id: web-sensitive-file-access-001
+title: Sensitive file access attempt
+description: Web request attempted to access files that often contain secrets or application configuration.
+severity: high
+confidence: high
+log_types:
+  - web_access
+mitre:
+  tactic: Discovery
+  technique_id: T1083
+  technique_name: File and Directory Discovery
+conditions:
+  event_type: http_request
+  path_contains_any:
+    - /.env
+    - /.git/config
+    - /wp-config.php
+    - /config.php
+    - /etc/passwd
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Internal scanner checking exposure of sensitive files.
+recommendations:
+  - Confirm the requested file was not served.
+  - Review adjacent requests from the same IP.
+  - Add detection or blocking rules for repeated probing.
+

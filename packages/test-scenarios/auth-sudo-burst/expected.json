@@ -1,0 +1,14 @@
+{
+  "parser": "linux_auth",
+  "raw_line_count": 3,
+  "parsed_event_count": 3,
+  "finding_count": 3,
+  "incident_count": 1,
+  "expected_findings": [
+    "sudo-burst-001",
+    "sudo-sensitive-file-access-001",
+    "sudo-user-management-001"
+  ],
+  "expected_mitre": ["T1003.008", "T1059", "T1136.001"],
+  "expected_evidence_lines": [1, 2, 3]
+}

@@ -1,0 +1,105 @@
+{
+  "aggregate_scan_window_metrics": {
+    "false_negative_windows": 1,
+    "false_positive_rate": 0.0011,
+    "false_positive_windows": 1,
+    "precision": 0.5,
+    "recall": 0.5,
+    "true_negative_windows": 877,
+    "true_positive_windows": 1,
+    "window_count": 880
+  },
+  "citation": "Stratosphere Laboratory. A labeled dataset with malicious and benign IoT network traffic. Agustin Parmisano, Sebastian Garcia, Maria Jose Erquiaga.",
+  "dataset": "IoT-23",
+  "datasets": [
+    {
+      "bytes": 2926718,
+      "filename": "iot23-34-1-conn.log.labeled",
+      "label_counts": {
+        "Benign": 1923,
+        "C&C": 6706,
+        "DDoS": 14394,
+        "PartOfAHorizontalPortScan": 122
+      },
+      "parsed_rows": 23145,
+      "scan_window_metrics": {
+        "detected_rule_windows": {
+          "zeek-conn-attempt-burst-001": 2
+        },
+        "false_negative_examples": [
+          {
+            "event_count": 5,
+            "label_counts": {
+              "Benign": 4,
+              "PartOfAHorizontalPortScan": 1
+            },
+            "observed_rule_ids": [],
+            "sample_endpoints": [
+              "192.168.1.195 -> 1.1.1.1 -> 1",
+              "192.168.1.195 -> 1.1.1.1 -> 256"
+            ],
+            "window_start": "2018-12-22T05:22:00+00:00"
+          }
+        ],
+        "false_negative_windows": 1,
+        "false_positive_examples": [
+          {
+            "event_count": 151,
+            "label_counts": {
+              "C&C": 18,
+              "DDoS": 133
+            },
+            "observed_rule_ids": [
+              "zeek-conn-attempt-burst-001"
+            ],
+            "sample_endpoints": [
+              "192.168.1.195 -> 185.244.25.235 -> 6667",
+              "192.168.1.195 -> 71.61.66.148 -> 80"
+            ],
+            "window_start": "2018-12-22T10:50:00+00:00"
+          }
+        ],
+        "false_positive_windows": 1,
+        "true_negative_windows": 696,
+        "true_positive_windows": 1,
+        "window_count": 699
+      },
+      "sha256": "d69e49b2aae8c1bd33286936531658202dec47d989f0439bad3f8be180467a6e",
+      "source_url": "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/CTU-IoT-Malware-Capture-34-1/bro/conn.log.labeled"
+    },
+    {
+      "bytes": 61653,
+      "filename": "iot23-benign-4-1-conn.log.labeled",
+      "label_counts": {
+        "Benign": 452
+      },
+      "parsed_rows": 452,
+      "scan_window_metrics": {
+        "detected_rule_windows": {},
+        "false_negative_examples": [],
+        "false_negative_windows": 0,
+        "false_positive_examples": [],
+        "false_positive_windows": 0,
+        "true_negative_windows": 181,
+        "true_positive_windows": 0,
+        "window_count": 181
+      },
+      "sha256": "aebe40ea0e03b120265a5c7bc140dd9b0d3fe2fce65559e84776b7dd5360e71e",
+      "source_url": "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/CTU-Honeypot-Capture-4-1/bro/conn.log.labeled"
+    }
+  ],
+  "generated_at": "2026-07-09T21:39:21.333994+00:00",
+  "license": "CC-BY; source citation required.",
+  "methodology": {
+    "ground_truth_positive": "A window contains at least one `PartOfAHorizontalPortScan` flow.",
+    "limitations": [
+      "Fixed windows can split activity across a boundary.",
+      "Only scan rules are scored; C&C and DDoS labels are outside this evaluation.",
+      "IoT-23 is a controlled research dataset and is not current production traffic.",
+      "Metrics are window-level, not packet-level or host-level prevalence estimates."
+    ],
+    "objective": "Evaluate deterministic Zeek connection-attempt, host-sweep, and port-scan findings against the IoT-23 PartOfAHorizontalPortScan label.",
+    "prediction_positive": "A window produces a Zeek connection-attempt burst, host-sweep, or port-scan finding.",
+    "window_seconds": 120
+  }
+}

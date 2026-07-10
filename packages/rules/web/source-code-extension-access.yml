@@ -1,0 +1,30 @@
+id: web-source-code-extension-access-001
+title: Source code file requested over web
+description: A web request attempted to fetch source or backup file extensions.
+severity: medium
+confidence: medium
+log_types:
+  - web_access
+mitre:
+  tactic: Discovery
+  technique_id: T1083
+  technique_name: File and Directory Discovery
+conditions:
+  event_type: http_request
+  path_contains_any:
+    - .bak
+    - .old
+    - .swp
+    - .sql
+    - .tar.gz
+  group_by:
+    - source_ip
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Broken links to historical files.
+recommendations:
+  - Remove exposed backup/source files from web roots.
+  - Review deployment artifacts.
+

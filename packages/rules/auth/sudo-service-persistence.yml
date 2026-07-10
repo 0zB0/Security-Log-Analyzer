@@ -1,0 +1,29 @@
+id: sudo-service-persistence-001
+title: Privileged service enablement
+description: A sudo command enabled or installed a service, which can create persistence.
+severity: medium
+confidence: medium
+log_types:
+  - linux_auth
+mitre:
+  tactic: Persistence
+  technique_id: T1543.002
+  technique_name: Systemd Service
+conditions:
+  event_type: sudo_command
+  field_contains_any:
+    command:
+      - systemctl enable
+      - systemctl daemon-reload
+      - /etc/systemd/system
+  group_by:
+    - username
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Approved package or service deployment.
+recommendations:
+  - Inspect the service unit and executable path.
+  - Confirm the change was expected.
+

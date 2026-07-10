@@ -1,0 +1,8 @@
+{"_path":"dns","ts":1783540201.0,"uid":"Cdns01","id.orig_h":"10.2.0.9","id.orig_p":53001,"id.resp_h":"10.2.0.53","id.resp_p":53,"proto":"udp","query":"a1.beacon-control.example","qtype_name":"A"}
+{"_path":"dns","ts":1783540211.0,"uid":"Cdns02","id.orig_h":"10.2.0.9","id.orig_p":53002,"id.resp_h":"10.2.0.53","id.resp_p":53,"proto":"udp","query":"a2.beacon-control.example","qtype_name":"A"}
+{"_path":"dns","ts":1783540221.0,"uid":"Cdns03","id.orig_h":"10.2.0.9","id.orig_p":53003,"id.resp_h":"10.2.0.53","id.resp_p":53,"proto":"udp","query":"a3.beacon-control.example","qtype_name":"A"}
+{"_path":"dns","ts":1783540231.0,"uid":"Cdns04","id.orig_h":"10.2.0.9","id.orig_p":53004,"id.resp_h":"10.2.0.53","id.resp_p":53,"proto":"udp","query":"a4.beacon-control.example","qtype_name":"A"}
+{"_path":"dns","ts":1783540241.0,"uid":"Cdns05","id.orig_h":"10.2.0.9","id.orig_p":53005,"id.resp_h":"10.2.0.53","id.resp_p":53,"proto":"udp","query":"a5.beacon-control.example","qtype_name":"A"}
+{"_path":"http","ts":1783540250.0,"uid":"Chttp01","id.orig_h":"10.2.0.9","id.orig_p":53100,"id.resp_h":"198.51.100.44","id.resp_p":80,"method":"GET","host":"app.example","uri":"/.env","user_agent":"curl/8.0","status_code":404}
+{"_path":"notice","ts":1783540260.0,"uid":"Cnotice01","id.orig_h":"10.2.0.9","id.orig_p":53101,"id.resp_h":"198.51.100.44","id.resp_p":443,"src":"10.2.0.9","dst":"198.51.100.44","note":"Scan::Port_Scan","msg":"10.2.0.9 scanned at least 15 ports"}
+{"_path":"ssl","ts":1783540270.0,"uid":"Cssl01","id.orig_h":"10.2.0.9","id.orig_p":53102,"id.resp_h":"203.0.113.44","id.resp_p":443,"server_name":"ops-tunnel.ngrok-free.app","version":"TLSv12"}

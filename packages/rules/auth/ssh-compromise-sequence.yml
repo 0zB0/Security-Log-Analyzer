@@ -1,0 +1,34 @@
+id: ssh-compromise-sequence-001
+title: SSH compromise followed by privileged persistence
+description: Repeated SSH failures were followed by a successful login and a privileged persistence or account-management command.
+severity: critical
+confidence: high
+log_types:
+  - linux_auth
+mitre:
+  tactic: Persistence
+  technique_id: T1136.001
+  technique_name: Local Account
+  note: The ordered sequence combines credential access evidence with a privileged persistence action.
+conditions:
+  sequence:
+    - event_type: ssh_failed_login
+      count_gte: 10
+    - event_type: ssh_successful_login
+    - event_type: sudo_command
+      field_contains_any:
+        command:
+          - useradd
+          - authorized_keys
+          - crontab
+  group_by:
+    - username
+  window_minutes: 30
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Authorized credential testing followed by approved administrator account maintenance.
+recommendations:
+  - Confirm whether the source address, user, and privileged command were approved.
+  - Isolate the host and preserve authentication, process, and endpoint evidence if unauthorized.

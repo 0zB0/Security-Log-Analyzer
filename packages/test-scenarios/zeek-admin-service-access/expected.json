@@ -1,0 +1,10 @@
+{
+  "parser": "zeek_json",
+  "raw_line_count": 1,
+  "parsed_event_count": 1,
+  "finding_count": 1,
+  "incident_count": 1,
+  "expected_findings": ["zeek-admin-service-access-001"],
+  "expected_mitre": ["T1021"],
+  "expected_evidence_lines": [1]
+}

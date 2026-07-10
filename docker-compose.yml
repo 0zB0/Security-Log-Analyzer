@@ -1,0 +1,70 @@
+services:
+  tracehawk:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - tracehawk-data:/data
+    environment:
+      TRACEHAWK_DB_PATH: /data/tracehawk.db
+      TRACEHAWK_LLM_PROVIDER: mock
+      MAX_UPLOAD_BYTES: 2000000
+      MAX_UPLOAD_LINES: 100000
+      MAX_CASE_FILES: 8
+      MAX_CASE_TOTAL_BYTES: 8000000
+      RATE_LIMIT_PER_MINUTE: 120
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/ready', timeout=3)
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    profiles:
+      - production
+
+  api:
+    build:
+      context: ./apps/api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./packages:/workspace/packages:ro
+      - tracehawk-data:/data
+    environment:
+      TRACEHAWK_DB_PATH: /data/tracehawk.db
+      TRACEHAWK_OLLAMA_URL: http://host.docker.internal:11434
+      MAX_UPLOAD_BYTES: 2000000
+      MAX_UPLOAD_LINES: 100000
+      MAX_CASE_FILES: 8
+      MAX_CASE_TOTAL_BYTES: 8000000
+      RATE_LIMIT_PER_MINUTE: 120
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/ready', timeout=3)
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    profiles:
+      - app
+
+  web:
+    build:
+      context: ./apps/web
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+    profiles:
+      - app
+
+volumes:
+  tracehawk-data:

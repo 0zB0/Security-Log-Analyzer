@@ -1,0 +1,31 @@
+id: network-wireguard-host-sweep-001
+title: Interface host sweep pattern
+description: One source contacted the same destination service across many hosts through the monitored interface.
+severity: high
+confidence: medium
+log_types:
+  - network_packet
+mitre:
+  tactic: Discovery
+  technique_id: T1046
+  technique_name: Network Service Discovery
+conditions:
+  event_type: network_packet
+  field_equals:
+    transport_protocol: tcp
+  group_by:
+    - source_ip
+    - destination_port
+  window_minutes: 2
+  distinct_field: destination_ip
+  distinct_count_gte: 10
+evidence:
+  include_matching_lines: true
+  max_lines: 30
+false_positives:
+  - Approved vulnerability scan or service inventory.
+  - Monitoring system checking one service across many hosts.
+recommendations:
+  - Check whether the source peer is an approved scanner.
+  - Validate that all destination hosts are in the authorized test scope.
+  - Review follow-on authentication or exploitation attempts from the same source.

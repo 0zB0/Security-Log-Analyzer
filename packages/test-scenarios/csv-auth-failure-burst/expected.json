@@ -1,0 +1,23 @@
+{
+  "parser": "csv_log",
+  "raw_line_count": 7,
+  "parsed_event_count": 6,
+  "finding_count": 2,
+  "incident_count": 1,
+  "expected_findings": [
+    "csv-admin-login-success-001",
+    "csv-auth-failure-burst-001"
+  ],
+  "expected_mitre": [
+    "T1078",
+    "T1110"
+  ],
+  "expected_evidence_lines": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ]
+}

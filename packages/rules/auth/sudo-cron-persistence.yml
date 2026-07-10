@@ -1,0 +1,29 @@
+id: sudo-cron-persistence-001
+title: Privileged cron persistence change
+description: A sudo command modified cron configuration or user crontabs.
+severity: high
+confidence: medium
+log_types:
+  - linux_auth
+mitre:
+  tactic: Persistence
+  technique_id: T1053.003
+  technique_name: Cron
+conditions:
+  event_type: sudo_command
+  field_contains_any:
+    command:
+      - crontab
+      - /etc/cron
+      - cron.d
+  group_by:
+    - username
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Scheduled job maintenance by an administrator.
+recommendations:
+  - Review the scheduled command and owner.
+  - Compare cron files against a known-good baseline.
+

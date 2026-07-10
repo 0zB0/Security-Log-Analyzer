@@ -1,0 +1,3 @@
+{"@timestamp":"2026-07-05T13:10:00Z","event":{"action":"login_success"},"source":{"ip":"10.0.0.5"},"user":{"name":"admin"},"host":{"name":"worker-01"},"message":"admin login"}
+{"@timestamp":"2026-07-05T13:11:00Z","event":{"action":"container_start"},"user":{"name":"admin"},"host":{"name":"worker-01"},"container":{"name":"debug-shell","privileged":true},"message":"privileged container started"}
+{"@timestamp":"2026-07-05T13:12:00Z","event":{"action":"file_read"},"user":{"name":"admin"},"host":{"name":"worker-01"},"file":{"path":"/app/.env"},"message":"secret file read"}

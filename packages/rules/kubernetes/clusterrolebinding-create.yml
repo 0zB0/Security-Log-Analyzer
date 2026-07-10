@@ -1,0 +1,24 @@
+id: kubernetes-clusterrolebinding-create-001
+title: Kubernetes cluster role binding created
+description: A cluster-wide role binding was created.
+severity: critical
+confidence: high
+log_types:
+  - kubernetes_audit
+mitre:
+  tactic: Privilege Escalation
+  technique_id: T1098
+  technique_name: Account Manipulation
+conditions:
+  event_type: create_clusterrolebindings
+  field_equals:
+    verb: create
+    objectRef.resource: clusterrolebindings
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Planned cluster administration with approved change record.
+recommendations:
+  - Review the subject and roleRef in the created binding.
+  - Confirm the actor had authorization to grant cluster-wide privileges.

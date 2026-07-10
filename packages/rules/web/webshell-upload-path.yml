@@ -1,0 +1,30 @@
+id: web-webshell-upload-path-001
+title: Possible web shell upload path
+description: A web request targeted upload paths commonly abused for web shells.
+severity: high
+confidence: medium
+log_types:
+  - web_access
+mitre:
+  tactic: Persistence
+  technique_id: T1505.003
+  technique_name: Web Shell
+conditions:
+  event_type: http_request
+  field_contains_any:
+    url_target:
+      - upload.php
+      - shell.php
+      - cmd.php
+      - /uploads/
+  group_by:
+    - source_ip
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Legitimate upload endpoint testing.
+recommendations:
+  - Inspect uploaded files and web server write paths.
+  - Confirm executable uploads are blocked.
+

@@ -1,0 +1,3 @@
+Jul 05 14:00:00 lab sshd[2001]: Accepted password for alice from 10.0.0.10 port 51222 ssh2
+Jul 05 14:02:00 lab sudo:   alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/systemctl status nginx
+Jul 05 14:04:00 lab sshd[2005]: Accepted password for bob from 10.0.0.11 port 51224 ssh2

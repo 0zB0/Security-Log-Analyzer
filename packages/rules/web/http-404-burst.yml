@@ -1,0 +1,27 @@
+id: web-404-burst-001
+title: Burst of HTTP 404 responses
+description: One source IP generated multiple not-found responses in a short window.
+severity: low
+confidence: medium
+log_types:
+  - web_access
+mitre:
+  tactic: Discovery
+  technique_id: T1595.002
+  technique_name: Vulnerability Scanning
+conditions:
+  event_type: http_request
+  field_equals:
+    status_code: 404
+  group_by:
+    - source_ip
+  window_minutes: 5
+  count_gte: 5
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Broken links or a crawler hitting stale paths.
+recommendations:
+  - Review requested paths for scanning patterns.
+  - Correlate with user agent and sensitive file access rules.

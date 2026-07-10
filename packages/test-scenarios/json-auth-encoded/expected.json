@@ -1,0 +1,13 @@
+{
+  "parser": "json_log",
+  "raw_line_count": 6,
+  "parsed_event_count": 6,
+  "finding_count": 2,
+  "incident_count": 1,
+  "expected_findings": [
+    "json-auth-failure-burst-001",
+    "json-encoded-command-001"
+  ],
+  "expected_mitre": ["T1027", "T1110"],
+  "expected_evidence_lines": [1, 2, 3, 4, 5, 6]
+}

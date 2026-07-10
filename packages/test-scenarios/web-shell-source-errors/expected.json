@@ -1,0 +1,16 @@
+{
+  "parser": "web_access",
+  "raw_line_count": 4,
+  "parsed_event_count": 4,
+  "finding_count": 5,
+  "incident_count": 1,
+  "expected_findings": [
+    "web-command-injection-probing-001",
+    "web-high-error-rate-001",
+    "web-path-traversal-001",
+    "web-source-code-extension-access-001",
+    "web-webshell-upload-path-001"
+  ],
+  "expected_mitre": ["T1083", "T1190", "T1505.003", "T1595.002"],
+  "expected_evidence_lines": [1, 2, 3, 4]
+}

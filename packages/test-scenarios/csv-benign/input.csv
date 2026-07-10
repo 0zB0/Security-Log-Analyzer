@@ -1,0 +1,2 @@
+timestamp,event_type,source_ip,username,message
+2026-07-09T12:00:00Z,heartbeat,203.0.113.20,service,healthy

@@ -1,0 +1,3 @@
+Jul 05 10:12:20 lab sudo:   admin : TTY=pts/0 ; PWD=/home/admin ; USER=root ; COMMAND=/bin/cat /etc/shadow
+Jul 05 10:12:44 lab sudo:   admin : TTY=pts/0 ; PWD=/home/admin ; USER=root ; COMMAND=/usr/sbin/useradd backupadm
+Jul 05 10:13:10 lab sudo:   admin : TTY=pts/0 ; PWD=/home/admin ; USER=root ; COMMAND=/usr/bin/id

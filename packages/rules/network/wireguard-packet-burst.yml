@@ -1,0 +1,26 @@
+id: network-wireguard-packet-burst-001
+title: Interface packet burst
+description: One source generated a high packet rate through the monitored interface.
+severity: medium
+confidence: low
+log_types:
+  - network_packet
+mitre:
+  tactic: Discovery
+  technique_id: T1046
+  technique_name: Network Service Discovery
+conditions:
+  event_type: network_packet
+  group_by:
+    - source_ip
+  window_minutes: 1
+  count_gte: 100
+evidence:
+  include_matching_lines: true
+  max_lines: 25
+false_positives:
+  - File transfer, backup, update, or legitimate high-volume session.
+recommendations:
+  - Identify the peer and destination services.
+  - Compare packet rate with the approved activity window.
+  - If unexplained, capture a bounded PCAP with explicit authorization.

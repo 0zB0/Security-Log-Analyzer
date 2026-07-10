@@ -1,0 +1,27 @@
+id: json-container-privileged-001
+title: JSON privileged container start
+description: JSON container events show a privileged container being started.
+severity: high
+confidence: medium
+log_types:
+  - json_log
+mitre:
+  tactic: Privilege Escalation
+  technique_id: T1611
+  technique_name: Escape to Host
+conditions:
+  event_type: container_start
+  field_equals:
+    container.privileged: true
+  group_by:
+    - host
+    - username
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Approved infrastructure container requiring host access.
+recommendations:
+  - Verify the image, mounts, and runtime arguments.
+  - Avoid privileged mode unless explicitly required.
+

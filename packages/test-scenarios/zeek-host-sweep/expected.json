@@ -1,0 +1,25 @@
+{
+  "parser": "zeek_tsv",
+  "raw_line_count": 17,
+  "parsed_event_count": 10,
+  "finding_count": 1,
+  "incident_count": 1,
+  "expected_findings": [
+    "zeek-conn-host-sweep-001"
+  ],
+  "expected_mitre": [
+    "T1046"
+  ],
+  "expected_evidence_lines": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ]
+}

@@ -1,0 +1,28 @@
+id: windows-admin-group-member-added-001
+title: Windows admin group membership changed
+description: A member was added to a privileged Windows group.
+severity: critical
+confidence: high
+log_types:
+  - windows_event
+mitre:
+  tactic: Privilege Escalation
+  technique_id: T1098
+  technique_name: Account Manipulation
+conditions:
+  event_type: windows_admin_group_member_added
+  field_in:
+    event_id:
+      - 4728
+      - 4732
+  group_by:
+    - host
+    - subject_user
+evidence:
+  include_matching_lines: true
+  max_lines: 10
+false_positives:
+  - Approved administrator group maintenance.
+recommendations:
+  - Review the added member and target group.
+  - Confirm the change ticket and administrator identity.

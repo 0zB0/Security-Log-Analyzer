@@ -1,0 +1,5 @@
+{
+  "scenario": "zeek-connection-attempt-burst",
+  "expected_findings": ["zeek-conn-attempt-burst-001"],
+  "expected_mitre": ["T1046"]
+}
