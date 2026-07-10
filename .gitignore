@@ -9,6 +9,7 @@ coverage.xml
 gl-sbom-*.json
 .venv/
 venv/
+*.egg-info/
 
 # Node
 node_modules/
@@ -25,6 +26,7 @@ reports/generated/
 # Environment
 .env
 .env.*
+!.env.example
 .envrc
 *.env
 *.env.local
