@@ -62,7 +62,8 @@ docker compose --profile production up --build
 ```
 
 Open `http://localhost:8000`, click **Real lab case**, then open **Incidents**, **Evidence**, or
-**Reports**. Local Docker mode runs without external authentication and without a cloud LLM.
+**Reports**. Local Docker mode runs without external authentication and without a cloud LLM. The
+committed Compose file therefore publishes the service on `127.0.0.1` only.
 
 Stop the container while keeping the named SQLite volume:
 

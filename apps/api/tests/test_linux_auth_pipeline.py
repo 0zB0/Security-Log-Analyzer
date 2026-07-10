@@ -24,7 +24,7 @@ def test_linux_auth_parser_extracts_ssh_events() -> None:
     assert [event.event_type for event in events].count("ssh_failed_login") == 10
     assert [event.event_type for event in events].count("ssh_successful_login") == 1
     assert [event.event_type for event in events].count("sudo_command") == 1
-    assert events[0].source_ip == "185.34.22.10"
+    assert events[0].source_ip == "198.51.100.10"
     assert events[0].username == "admin"
     assert events[-1].normalized_fields["command"] == "/usr/sbin/useradd backupadm"
 
@@ -113,7 +113,7 @@ def test_auth_findings_correlate_into_compromise_incident() -> None:
     assert incident.severity == "critical"
     assert incident.score == 100
     assert len(incident.finding_ids) == 4
-    assert "ip:185.34.22.10" in incident.entities
+    assert "ip:198.51.100.10" in incident.entities
     assert "user:admin" in incident.entities
     assert incident.mitre_techniques == ["T1078", "T1110.001", "T1136.001"]
     assert len(incident.timeline) == 12

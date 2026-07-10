@@ -69,7 +69,7 @@ def test_incident_markdown_report_can_redact_sensitive_values() -> None:
             "incident": analysis["incidents"][0],
             "findings": analysis["findings"],
             "evidence": analysis["evidence"],
-            "assistant_summary": "Source 185.34.22.10 used admin.",
+            "assistant_summary": "Source 198.51.100.10 used admin.",
             "redaction": {"enabled": True},
         },
     )
@@ -77,7 +77,7 @@ def test_incident_markdown_report_can_redact_sensitive_values() -> None:
     assert report_response.status_code == 200
     content = report_response.json()["content"]
 
-    assert "185.34.22.10" not in content
+    assert "198.51.100.10" not in content
     assert "admin" not in content
     assert "[REDACTED_IP]" in content
     assert "[REDACTED_USER]" in content

@@ -52,7 +52,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(
     title="TraceHawk API",
     description="Local-only live SOC assistant API.",
-    version="0.7.0",
+    version="0.7.1",
     lifespan=lifespan,
 )
 
@@ -120,7 +120,7 @@ def version() -> dict[str, str]:
     return {
         "app": "tracehawk",
         "api_version": app.version,
-        "release": "v0.7.0",
+        "release": "v0.7.1",
         "build_commit": settings.build_commit,
         "runtime_mode": settings.runtime_mode,
         "llm_provider": settings.llm_provider,

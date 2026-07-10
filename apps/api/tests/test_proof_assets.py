@@ -65,3 +65,19 @@ def test_asset_manifest_hashes_every_readme_artifact() -> None:
         "docs/assets/reports/tracehawk-sample-incident.pdf",
     ):
         assert relative_path in readme
+
+
+def test_distribution_manifests_exclude_source_only_output() -> None:
+    overlay_root = ROOT / "public/github"
+    manifest_root = overlay_root if overlay_root.is_dir() else ROOT
+    manifest_paths = (
+        manifest_root / "docs/assets/manifest.json",
+        manifest_root / "docs/assets/reports/manifest.json",
+    )
+
+    for manifest_path in manifest_paths:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        artifacts = manifest["artifacts"]
+        assert artifacts
+        assert all(path.startswith("docs/assets/") for path in artifacts)
+        assert not any(path.startswith("output/") for path in artifacts)

@@ -1,0 +1,34 @@
+name: Feature request
+description: Propose a bounded, evidence-backed product improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the analyst or operator problem, not only a preferred implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Required outcome
+      description: State observable behavior and acceptance evidence.
+    validations:
+      required: true
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Security and scope boundaries
+      description: Note data handling, authentication, performance, false-positive, and compatibility impact.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public-safety confirmation
+      options:
+        - label: The request contains no confidential logs, credentials, personal data, or internal infrastructure details.
+          required: true

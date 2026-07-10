@@ -3,7 +3,7 @@ services:
     build:
       context: .
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - tracehawk-data:/data
     environment:
@@ -31,7 +31,7 @@ services:
     build:
       context: ./apps/api
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./packages:/workspace/packages:ro
       - tracehawk-data:/data
@@ -60,7 +60,7 @@ services:
     build:
       context: ./apps/web
     ports:
-      - "5173:5173"
+      - "127.0.0.1:5173:5173"
     environment:
       VITE_API_BASE_URL: http://localhost:8000
     profiles:

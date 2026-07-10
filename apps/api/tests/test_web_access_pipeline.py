@@ -24,7 +24,7 @@ def test_web_access_parser_extracts_request_fields() -> None:
 
     assert len(events) == 4
     assert all(event.event_type == "http_request" for event in events)
-    assert events[0].source_ip == "185.34.22.10"
+    assert events[0].source_ip == "198.51.100.10"
     assert events[0].normalized_fields["http_method"] == "GET"
     assert events[0].normalized_fields["url_path"] == "/.env"
     assert events[0].normalized_fields["status_code"] == 404
@@ -117,5 +117,5 @@ def test_analyze_upload_supports_nginx_probing_log() -> None:
         "web-sensitive-file-access-001",
     }
     assert body["incidents"][0]["title"] == "Web probing against sensitive files"
-    assert body["incidents"][0]["entities"] == ["ip:185.34.22.10"]
+    assert body["incidents"][0]["entities"] == ["ip:198.51.100.10"]
     assert len(body["evidence"]) == 4

@@ -18,7 +18,7 @@ into one incident.
 Findings become part of the same incident when their correlation entity sets overlap. This lets
 TraceHawk join related evidence such as:
 
-- SSH brute force from `185.34.22.10` against `admin`;
+- SSH brute force from `198.51.100.10` against `admin`;
 - successful SSH login by `admin`;
 - subsequent sudo command by `admin` without a source IP in the sudo log line.
 

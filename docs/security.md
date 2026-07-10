@@ -15,6 +15,8 @@ internal topology.
 - the Docker image runs as a non-root user and has a healthcheck;
 - request logs omit bodies, query strings, and evidence;
 - local mode ignores deployment identity headers;
+- committed local Docker profiles publish ports on loopback only because local mode has no external
+  authentication;
 - deployed-auth mode fails closed and enforces viewer/analyst/admin RBAC;
 - report rendering escapes interpolated values and supports evidence redaction;
 - CI runs Gitleaks, Semgrep, Python and npm audits, tests, and Docker build verification.

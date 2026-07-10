@@ -2,7 +2,7 @@
 
 Target demo sequence:
 
-1. Web probing from `185.34.22.10`.
+1. Web probing from `198.51.100.10`.
 2. Sensitive file access attempts.
 3. SSH brute force against `admin`.
 4. Successful login after repeated failures.

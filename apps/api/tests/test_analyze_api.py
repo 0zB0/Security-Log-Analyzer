@@ -47,7 +47,7 @@ def test_analyze_upload_returns_findings_and_evidence() -> None:
     assert body["incidents"][0]["title"] == "Possible SSH credential compromise"
     assert body["incidents"][0]["severity"] == "critical"
     assert len(body["incidents"][0]["finding_ids"]) == 4
-    assert "ip:185.34.22.10" in body["incidents"][0]["entities"]
+    assert "ip:198.51.100.10" in body["incidents"][0]["entities"]
     assert "T1136.001" in body["incidents"][0]["mitre_techniques"]
     assert len(body["evidence"]) == 12
     assert body["evidence"][0]["raw_text"].startswith("Jul 05 10:02:11")

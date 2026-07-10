@@ -117,8 +117,8 @@ def test_version_exposes_public_build_metadata(monkeypatch) -> None:
     assert response.status_code == 200
     assert response.json() == {
         "app": "tracehawk",
-        "api_version": "0.7.0",
-        "release": "v0.7.0",
+        "api_version": "0.7.1",
+        "release": "v0.7.1",
         "build_commit": "abc1234",
         "runtime_mode": "azure-container-apps",
         "llm_provider": "mock",

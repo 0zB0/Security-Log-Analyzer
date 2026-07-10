@@ -38,7 +38,7 @@ lint:
 	@.venv/bin/python -m ruff check apps/api/tracehawk_api apps/api/tests tools
 
 api-dev:
-	@.venv/bin/python -m uvicorn tracehawk_api.main:app --reload --app-dir apps/api --host 0.0.0.0 --port 8000
+	@.venv/bin/python -m uvicorn tracehawk_api.main:app --reload --app-dir apps/api --host 127.0.0.1 --port 8000
 
 web-dev:
 	@npm --prefix apps/web run dev
@@ -47,7 +47,8 @@ web-build:
 	@npm --prefix apps/web run build
 
 compose-check:
-	@docker compose config >/dev/null
+	@test "$$(docker compose --profile production config --services)" = "tracehawk"
+	@test "$$(docker compose --profile app config --services | tr '\n' ' ')" = "api web "
 	@echo "Docker Compose config OK"
 
 smoke-live:

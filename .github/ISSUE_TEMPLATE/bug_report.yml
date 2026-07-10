@@ -1,0 +1,58 @@
+name: Bug report
+description: Report a reproducible TraceHawk defect using sanitized evidence only.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not submit credentials, production logs, client data, private hostnames, internal topology, or vulnerability details. Use the private process in SECURITY.md for security reports.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: v0.7.1 or full commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected surface
+      options:
+        - API or parser
+        - Detection or correlation
+        - Web UI
+        - Reports
+        - Docker or local deployment
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Sanitized reproduction
+      description: Include minimal steps and synthetic or RFC 5737 data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public-safety confirmation
+      options:
+        - label: I removed credentials, private logs, client data, personal data, and internal infrastructure details.
+          required: true
+        - label: This is not a vulnerability disclosure.
+          required: true

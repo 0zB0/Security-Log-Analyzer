@@ -7,17 +7,17 @@ from pathlib import Path
 
 SCENARIOS = {
     "ssh-compromise": [
-        "Jul 05 10:02:11 lab sshd[1201]: Failed password for admin from 185.34.22.10 port 49210 ssh2",
-        "Jul 05 10:02:32 lab sshd[1205]: Failed password for admin from 185.34.22.10 port 49212 ssh2",
-        "Jul 05 10:02:51 lab sshd[1211]: Failed password for admin from 185.34.22.10 port 49214 ssh2",
-        "Jul 05 10:03:07 lab sshd[1216]: Failed password for admin from 185.34.22.10 port 49216 ssh2",
-        "Jul 05 10:03:19 lab sshd[1221]: Failed password for admin from 185.34.22.10 port 49218 ssh2",
-        "Jul 05 10:03:42 lab sshd[1228]: Failed password for admin from 185.34.22.10 port 49220 ssh2",
-        "Jul 05 10:04:01 lab sshd[1233]: Failed password for admin from 185.34.22.10 port 49222 ssh2",
-        "Jul 05 10:04:16 lab sshd[1239]: Failed password for admin from 185.34.22.10 port 49224 ssh2",
-        "Jul 05 10:04:34 lab sshd[1244]: Failed password for admin from 185.34.22.10 port 49226 ssh2",
-        "Jul 05 10:04:55 lab sshd[1250]: Failed password for admin from 185.34.22.10 port 49228 ssh2",
-        "Jul 05 10:05:21 lab sshd[1261]: Accepted password for admin from 185.34.22.10 port 49230 ssh2",
+        "Jul 05 10:02:11 lab sshd[1201]: Failed password for admin from 198.51.100.10 port 49210 ssh2",
+        "Jul 05 10:02:32 lab sshd[1205]: Failed password for admin from 198.51.100.10 port 49212 ssh2",
+        "Jul 05 10:02:51 lab sshd[1211]: Failed password for admin from 198.51.100.10 port 49214 ssh2",
+        "Jul 05 10:03:07 lab sshd[1216]: Failed password for admin from 198.51.100.10 port 49216 ssh2",
+        "Jul 05 10:03:19 lab sshd[1221]: Failed password for admin from 198.51.100.10 port 49218 ssh2",
+        "Jul 05 10:03:42 lab sshd[1228]: Failed password for admin from 198.51.100.10 port 49220 ssh2",
+        "Jul 05 10:04:01 lab sshd[1233]: Failed password for admin from 198.51.100.10 port 49222 ssh2",
+        "Jul 05 10:04:16 lab sshd[1239]: Failed password for admin from 198.51.100.10 port 49224 ssh2",
+        "Jul 05 10:04:34 lab sshd[1244]: Failed password for admin from 198.51.100.10 port 49226 ssh2",
+        "Jul 05 10:04:55 lab sshd[1250]: Failed password for admin from 198.51.100.10 port 49228 ssh2",
+        "Jul 05 10:05:21 lab sshd[1261]: Accepted password for admin from 198.51.100.10 port 49230 ssh2",
         "Jul 05 10:12:20 lab sudo:   admin : TTY=pts/0 ; PWD=/home/admin ; USER=root ; COMMAND=/usr/sbin/useradd backupadm",
     ],
     "benign": [

@@ -233,7 +233,7 @@ function App() {
           <strong>{viewTitle(activeView)}</strong>
           <span className="version-pill">
             <span className="status-dot" />
-            TraceHawk v0.7.0
+            TraceHawk v0.7.1
           </span>
         </div>
         <div className="topbar-actions">

@@ -4,7 +4,23 @@ All notable public TraceHawk releases are documented here.
 
 ## [Unreleased]
 
-- No public changes after v0.7.0.
+- No public changes after v0.7.1.
+
+## [0.7.1] - 2026-07-10
+
+### Changed
+
+- local Docker ports bind to loopback and self-host instructions use the required Compose profile;
+- synthetic SSH and web fixtures use RFC 5737 TEST-NET addressing;
+- screenshots and release proof assets were regenerated from the corrected fixtures;
+- public CI publishes Semgrep SARIF to GitHub code scanning;
+- issue forms, pull request guidance, and a code of conduct complete the public contribution surface.
+
+### Security
+
+- the unauthenticated local admin surface is no longer published to the surrounding LAN by default;
+- the clean-room export rejects the previously used routable synthetic address;
+- GitHub secret scanning and push protection are enabled for the public mirror.
 
 ## [0.7.0] - 2026-07-09
 
@@ -35,5 +51,6 @@ All notable public TraceHawk releases are documented here.
 - no multi-tenant isolation or autonomous response;
 - the documented IoT-23 slice is deliberately small and not a production accuracy claim.
 
-[Unreleased]: https://github.com/0zB0/Security-Log-Analyzer/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/0zB0/Security-Log-Analyzer/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.7.1
 [0.7.0]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.7.0

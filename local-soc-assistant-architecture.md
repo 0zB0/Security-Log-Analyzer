@@ -115,7 +115,7 @@ Brute force detected.
 Dober output:
 
 ```text
-SSH brute force detected against user "admin" from 185.34.22.10.
+SSH brute force detected against user "admin" from 198.51.100.10.
 43 failed attempts were observed in an 8 minute window, followed by one successful login.
 MITRE: T1110.001 Password Guessing, possible T1078 Valid Accounts.
 Evidence: auth.log lines 118-161 and line 188.
@@ -865,8 +865,8 @@ Correlation engine združi findings po:
 Input findings:
 
 ```text
-F1: 43 failed SSH logins from 185.34.22.10
-F2: successful SSH login from 185.34.22.10
+F1: 43 failed SSH logins from 198.51.100.10
+F2: successful SSH login from 198.51.100.10
 F3: sudo command executed by admin
 F4: new user "backupadm" created
 ```
@@ -1021,14 +1021,14 @@ Dobi strukturiran kontekst:
     }
   ],
   "timeline": [
-    "43 failed SSH login attempts from 185.34.22.10 against admin",
+    "43 failed SSH login attempts from 198.51.100.10 against admin",
     "1 successful login from same IP",
     "sudo command executed 2 minutes later"
   ],
   "evidence_refs": [
     {
       "id": "line_118",
-      "text": "Jul 05 10:02:11 server sshd[123]: Failed password for admin from 185.34.22.10"
+      "text": "Jul 05 10:02:11 server sshd[123]: Failed password for admin from 198.51.100.10"
     }
   ]
 }
