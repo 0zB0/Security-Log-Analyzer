@@ -1,15 +1,18 @@
-from datetime import UTC, datetime
-
 from tracehawk_api.models.domain import Incident
 from tracehawk_api.services.analysis import EvidenceLine
 
-from .common import _case_report_filename, _report_filename, _score_component_label
+from .common import (
+    _case_report_filename,
+    _report_created_at,
+    _report_filename,
+    _score_component_label,
+)
 from .models import CaseReportRequest, ReportRequest, ReportResponse
 from .redaction import _case_redactor, _redact_text, _redact_values
 
 
 def render_incident_markdown_report(request: ReportRequest) -> ReportResponse:
-    created_at = datetime.now(UTC)
+    created_at = _report_created_at()
     incident = request.incident
     linked_findings = [
         finding for finding in request.findings if finding.id in set(incident.finding_ids)
@@ -132,7 +135,7 @@ def render_incident_markdown_report(request: ReportRequest) -> ReportResponse:
 
 
 def render_case_markdown_report(request: CaseReportRequest) -> ReportResponse:
-    created_at = datetime.now(UTC)
+    created_at = _report_created_at()
     analysis = request.analysis
     redactor = _case_redactor(request)
     lines: list[str] = [
@@ -177,7 +180,14 @@ def render_case_markdown_report(request: CaseReportRequest) -> ReportResponse:
         )
 
     if request.assistant_summary:
-        lines.extend(["## Local Assistant Summary", "", _redact_text(redactor, request.assistant_summary), ""])
+        lines.extend(
+            [
+                "## Local Assistant Summary",
+                "",
+                _redact_text(redactor, request.assistant_summary),
+                "",
+            ]
+        )
 
     lines.extend(["## Sources", ""])
     if analysis.sources:

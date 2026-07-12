@@ -31,6 +31,7 @@ Introduce `0001_current_schema` as the adoption baseline:
 
 - blank database → head;
 - pre-Alembic database with a sanitized saved analysis → adopted head with record preserved;
+- partial or unknown unversioned schema → rejected without a false stamp;
 - head → base → head structural round trip.
 
 ```bash
@@ -42,6 +43,7 @@ make test
 ## Residual Risk
 
 The baseline freezes explicit table, column, constraint, and index operations generated from the
-v0.7.1 SQLAlchemy metadata; it does not import live application metadata. The next model change must
-use a separate explicit Alembic revision and a field-level data-transform fixture. Production
-downgrade of a data-bearing baseline remains destructive; restore a verified backup instead.
+v0.7.1 SQLAlchemy metadata. Revision `0002_case_integrity` proves the next evolution path by adding
+case summaries and scoring rationale without recreating retained evidence. Future field transforms
+still require explicit fixtures. Production downgrade of a data-bearing baseline remains
+destructive; restore a verified backup instead.

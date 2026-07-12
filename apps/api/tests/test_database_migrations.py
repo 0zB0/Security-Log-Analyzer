@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from sqlalchemy import inspect, select
 
 from tracehawk_api import database
@@ -20,27 +21,37 @@ def test_blank_database_upgrades_to_alembic_head(tmp_path: Path) -> None:
         migrated_columns = {column["name"] for column in schema.get_columns(table_name)}
         assert migrated_columns == set(table.columns.keys())
     with database.engine.connect() as connection:
-        assert connection.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one() == "0001_current_schema"
+        assert (
+            connection.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one()
+            == "0002_case_integrity"
+        )
 
 
 def test_existing_pre_alembic_database_is_adopted_without_losing_records(tmp_path: Path) -> None:
     path = tmp_path / "legacy.db"
     database.configure_database(str(path))
-    database.Base.metadata.create_all(bind=database.engine)
-    with database.SessionLocal() as session:
-        session.add(
-            AnalysisRunRecord(
-                id="analysis:legacy",
-                source_id="source:legacy",
-                filename="sanitized.log",
-                parser="linux_auth",
-                raw_line_count=1,
-                parsed_event_count=1,
-                finding_count=0,
-                incident_count=0,
-            )
+    database.migrate_database("0001_current_schema")
+    with database.engine.begin() as connection:
+        connection.exec_driver_sql("DROP TABLE alembic_version")
+        connection.exec_driver_sql(
+            """
+            INSERT INTO analysis_runs (
+                id, source_id, filename, parser, raw_line_count, parsed_event_count,
+                finding_count, incident_count, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "analysis:legacy",
+                "source:legacy",
+                "sanitized.log",
+                "linux_auth",
+                1,
+                1,
+                0,
+                0,
+                "2026-07-12 12:00:00",
+            ),
         )
-        session.commit()
 
     database.init_db()
 
@@ -51,6 +62,18 @@ def test_existing_pre_alembic_database_is_adopted_without_losing_records(tmp_pat
         assert record is not None
         assert record.filename == "sanitized.log"
     assert "alembic_version" in inspect(database.engine).get_table_names()
+
+
+def test_partial_unversioned_database_is_rejected_instead_of_stamped(tmp_path: Path) -> None:
+    path = tmp_path / "partial.db"
+    database.configure_database(str(path))
+    with database.engine.begin() as connection:
+        connection.exec_driver_sql("CREATE TABLE analysis_runs (id VARCHAR(64) PRIMARY KEY)")
+
+    with pytest.raises(RuntimeError, match="Refusing to adopt an unversioned database"):
+        database.init_db()
+
+    assert "alembic_version" not in inspect(database.engine).get_table_names()
 
 
 def test_baseline_downgrade_and_reupgrade_are_explicitly_supported(tmp_path: Path) -> None:

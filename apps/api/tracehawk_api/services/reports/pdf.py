@@ -1,5 +1,4 @@
 from base64 import b64encode
-from datetime import UTC, datetime
 from io import BytesIO
 import textwrap
 
@@ -25,6 +24,7 @@ from tracehawk_api.services.analysis import EvidenceLine
 
 from .common import (
     _case_report_filename,
+    _report_created_at,
     _report_filename,
     _score_component_label,
     _xml_text,
@@ -34,7 +34,7 @@ from .redaction import _case_redactor, _redact_text, _redact_values
 
 
 def render_case_pdf_report(request: CaseReportRequest) -> ReportResponse:
-    created_at = datetime.now(UTC)
+    created_at = _report_created_at()
     analysis = request.analysis
     redactor = _case_redactor(request)
     buffer = BytesIO()
@@ -46,6 +46,7 @@ def render_case_pdf_report(request: CaseReportRequest) -> ReportResponse:
         topMargin=0.7 * inch,
         bottomMargin=0.65 * inch,
         title="TraceHawk Case Report",
+        invariant=1,
     )
     styles = _pdf_styles()
     story = [
@@ -83,15 +84,27 @@ def render_case_pdf_report(request: CaseReportRequest) -> ReportResponse:
                 Paragraph("Case Quality Summary", styles["Heading2"]),
                 _pdf_meta_table(
                     [
-                        ("Strongest incident", analysis.case_quality.strongest_incident_title or "None"),
+                        (
+                            "Strongest incident",
+                            analysis.case_quality.strongest_incident_title or "None",
+                        ),
                         ("Strongest score", str(analysis.case_quality.strongest_incident_score)),
-                        ("Sequence-backed incidents", str(analysis.case_quality.sequence_backed_incident_count)),
+                        (
+                            "Sequence-backed incidents",
+                            str(analysis.case_quality.sequence_backed_incident_count),
+                        ),
                         (
                             "Cross-source backed incidents",
                             str(analysis.case_quality.cross_source_corroborated_incident_count),
                         ),
-                        ("Total cross-source links", str(analysis.case_quality.total_cross_source_links)),
-                        ("Top scoring reason", _redact_text(redactor, analysis.case_quality.top_scoring_reason)),
+                        (
+                            "Total cross-source links",
+                            str(analysis.case_quality.total_cross_source_links),
+                        ),
+                        (
+                            "Top scoring reason",
+                            _redact_text(redactor, analysis.case_quality.top_scoring_reason),
+                        ),
                     ],
                     styles,
                 ),
@@ -163,7 +176,10 @@ def render_case_pdf_report(request: CaseReportRequest) -> ReportResponse:
         story.extend(
             [
                 Paragraph(_xml_text(finding.title), styles["Heading3"]),
-                Paragraph(_xml_text(f"{finding.rule_id} | {finding.severity} | {finding.confidence}"), styles["Small"]),
+                Paragraph(
+                    _xml_text(f"{finding.rule_id} | {finding.severity} | {finding.confidence}"),
+                    styles["Small"],
+                ),
                 Paragraph(_xml_text(_redact_text(redactor, finding.summary)), styles["Body"]),
             ]
         )
@@ -205,7 +221,7 @@ def render_case_pdf_report(request: CaseReportRequest) -> ReportResponse:
 
 
 def render_incident_pdf_report(request: ReportRequest) -> ReportResponse:
-    created_at = datetime.now(UTC)
+    created_at = _report_created_at()
     incident = request.incident
     linked_findings = [
         finding for finding in request.findings if finding.id in set(incident.finding_ids)
@@ -219,6 +235,7 @@ def render_incident_pdf_report(request: ReportRequest) -> ReportResponse:
         topMargin=0.7 * inch,
         bottomMargin=0.65 * inch,
         title=f"TraceHawk Incident Report - {_redact_text(request, incident.title)}",
+        invariant=1,
     )
     styles = _pdf_styles()
     story = [
@@ -257,7 +274,9 @@ def render_incident_pdf_report(request: ReportRequest) -> ReportResponse:
             [
                 Spacer(1, 10),
                 Paragraph("Local Assistant Summary", styles["Heading2"]),
-                Paragraph(_xml_text(_redact_text(request, request.assistant_summary)), styles["Body"]),
+                Paragraph(
+                    _xml_text(_redact_text(request, request.assistant_summary)), styles["Body"]
+                ),
             ]
         )
 
@@ -288,7 +307,9 @@ def render_incident_pdf_report(request: ReportRequest) -> ReportResponse:
         story.append(Paragraph("No linked findings supplied.", styles["Body"]))
 
     story.extend([PageBreak(), Paragraph("Timeline", styles["Heading2"])])
-    story.append(_pdf_bullets([f"`{_redact_text(request, item)}`" for item in incident.timeline], styles))
+    story.append(
+        _pdf_bullets([f"`{_redact_text(request, item)}`" for item in incident.timeline], styles)
+    )
 
     story.extend([PageBreak(), Paragraph("Evidence", styles["Heading2"])])
     if request.evidence:
@@ -466,7 +487,9 @@ def _pdf_footer(canvas, document) -> None:
 
 
 def _pdf_evidence_text(value: str) -> str:
-    printable = value.replace("\t", "    ").encode("ascii", errors="backslashreplace").decode("ascii")
+    printable = (
+        value.replace("\t", "    ").encode("ascii", errors="backslashreplace").decode("ascii")
+    )
     wrapped: list[str] = []
     for line in printable.splitlines() or [""]:
         wrapped.extend(

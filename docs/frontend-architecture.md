@@ -2,7 +2,7 @@
 
 > Audience: frontend engineers, full-stack reviewers, and accessibility reviewers
 > Canonical for: React workspace state, derived views, API integration, and UI verification
-> Verified against: TraceHawk v0.7.1
+> Verified against: TraceHawk v0.8.0
 
 TraceHawk's React application is an investigation workspace, not a generic metrics dashboard. It
 keeps the current analysis and analyst selection in one top-level workspace, then projects that
@@ -188,13 +188,13 @@ screen-reader, and browser-level coverage remains a documented gap.
 | --- | --- | --- |
 | View composition | `WorkspaceBody.tsx` | `WorkspaceBody.test.tsx` |
 | Pure derived state | `workspaceSelectors.ts` | `workspaceSelectors.test.ts` |
-| Type/API compatibility | `lib/api.ts` | TypeScript production build and UI smoke |
-| Analysis intake and navigation | `app/main.tsx` | browser-driven smoke, backend API tests |
+| Type/API compatibility | `lib/api.ts` | TypeScript production build, component tests, API tests |
+| Analysis intake and navigation | `app/main.tsx` | Playwright browser E2E, component tests, backend API tests |
 | Incident and notes workflow | `IncidentPanels.tsx` | backend note/auth tests; manual/UI proof |
 | Case evidence links | `CasePanels.tsx` | selector tests, case API tests, UI proof |
-| Live snapshots | `LiveMonitor.tsx` | backend live tests and UI smoke |
-| Reports | `ReportPanel.tsx` | backend report tests and UI smoke |
-| Assistant | `AssistantPanels.tsx` | backend assistant tests and UI smoke |
+| Live snapshots | `LiveMonitor.tsx` | backend live authorization tests and component coverage |
+| Reports | `ReportPanel.tsx` | backend report tests, component tests, Playwright E2E |
+| Assistant | `AssistantPanels.tsx` | backend assistant tests and targeted component coverage |
 
 Run:
 

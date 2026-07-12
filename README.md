@@ -12,7 +12,6 @@ correlated incidents, line-level evidence, MITRE ATT&CK context, and analyst rep
 Detection authority remains in transparent YAML rules. Optional local Ollama explanations are
 grounded in selected evidence and cannot create or alter findings.
 
-[Live protected demo](https://ca-security-log-analyzer.bluebush-2bdd630a.germanywestcentral.azurecontainerapps.io/) ·
 [Portfolio](https://ozbejbohanec.com) ·
 [Documentation](docs/README.md) ·
 [Engineering guide](docs/engineering-portfolio-guide.md) ·
@@ -115,8 +114,8 @@ make verify-all
 
 The public gate covers backend tests, end-to-end rule scenarios, all 65 rule contracts,
 performance budgets, web build, Docker Compose validation, live analysis, local AI fallback,
-report generation, and UI smoke. GitHub Actions additionally runs Gitleaks, Semgrep, dependency
-audits, and a Docker build.
+report generation, component tests, and Playwright browser E2E. GitHub Actions additionally runs
+Gitleaks, Semgrep, dependency audits, a pinned-action build, and a Trivy container scan.
 
 Useful commands:
 
@@ -131,8 +130,8 @@ make security-scan
 ## Security And Scope
 
 TraceHawk is a single-replica, local-first portfolio system, not a multi-tenant SIEM. Do not upload
-production logs, credentials, client data, internal topology, or confidential evidence. The hosted
-demo is protected; local mode is intended for sanitized evaluation data.
+production logs, credentials, client data, internal topology, or confidential evidence. The local
+mode is intended for sanitized evaluation data and binds to loopback by default.
 
 Read before deployment or evaluation:
 

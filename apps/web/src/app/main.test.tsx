@@ -33,7 +33,10 @@ describe("application investigation workflow", () => {
       authenticated: false,
       email: null,
       allowed: true,
+      role: "admin",
+      auth_mode: "disabled",
       allowlist_enabled: false,
+      local_admin: true,
     });
     mockedAssistantStatus.mockResolvedValue({
       enabled: false,
@@ -65,7 +68,10 @@ describe("application investigation workflow", () => {
       authenticated: false,
       email: null,
       allowed: false,
+      role: null,
+      auth_mode: "azure_easy_auth",
       allowlist_enabled: true,
+      local_admin: false,
     });
     mockedAnalyzeDemo.mockRejectedValue(new Error("Demo analysis unavailable"));
     render(<App />);
@@ -78,5 +84,25 @@ describe("application investigation workflow", () => {
     fireEvent.click(screen.getByRole("button", { name: /^run demo$/i }));
 
     expect(await screen.findByText("Demo analysis unavailable")).toBeInTheDocument();
+  });
+
+  it("hides host controls from analysts while keeping investigation workflows", async () => {
+    mockedAuthStatus.mockResolvedValue({
+      authenticated: true,
+      email: "analyst@example.com",
+      allowed: true,
+      role: "analyst",
+      auth_mode: "azure_easy_auth",
+      allowlist_enabled: true,
+      local_admin: false,
+    });
+    render(<App />);
+
+    expect(await screen.findByText("Signed in: analyst@example.com (analyst)")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /live monitor/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^settings$/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^run demo$/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Logout" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Login" })).not.toBeInTheDocument();
   });
 });

@@ -11,6 +11,7 @@
   bounded packet metadata. It is not a full SIEM parser library.
 - Mixed line-oriented text dumps are routed per line. Stateful CSV and Zeek TSV sections require
   their header metadata before their data rows; arbitrarily interleaved headerless rows are skipped.
-- Google OAuth, fail-closed email allowlisting, viewer/analyst/admin RBAC, and a SQLite audit trail
-  protect the single-instance Azure demo. This is not tenant isolation or an enterprise identity
-  lifecycle system, and horizontally scaled deployments need a centralized immutable audit sink.
+- Optional trusted-proxy authentication, fail-closed email allowlisting, viewer/analyst/admin RBAC,
+  and a SQLite audit trail protect a single application instance. This is not tenant isolation or
+  an enterprise identity lifecycle system, and horizontally scaled deployments need a centralized
+  immutable audit sink.

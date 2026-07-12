@@ -12,14 +12,18 @@ internal topology.
   are bounded independently;
 - uploaded file objects are not retained, while bounded analysis evidence is stored in SQLite;
 - only UTF-8 text is accepted; compressed archives and binary captures are rejected;
-- the Docker image runs as a non-root user and has a healthcheck;
+- the Docker image uses digest-pinned bases, installs the API wheel as a non-root user, and has a
+  healthcheck;
 - request logs omit bodies, query strings, and evidence;
 - local mode ignores deployment identity headers;
 - committed local Docker profiles publish ports on loopback only because local mode has no external
   authentication;
 - deployed-auth mode fails closed and enforces viewer/analyst/admin RBAC;
 - report rendering escapes interpolated values and supports evidence redaction;
-- CI runs Gitleaks, Semgrep, Python and npm audits, tests, and Docker build verification.
+- CI runs Gitleaks, Semgrep, Python and npm audits, component and Playwright tests, a Docker build,
+  and a Trivy HIGH/CRITICAL image gate;
+- GitHub Actions are SHA-pinned, scheduled weekly, and covered by Dependabot together with Python,
+  npm, and Docker dependencies.
 
 ## Remaining Boundaries
 

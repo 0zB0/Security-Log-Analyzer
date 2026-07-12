@@ -227,9 +227,9 @@ async def _authorize_live(websocket: WebSocket) -> bool:
         await websocket.close(code=4403, reason="Account is not allowed.")
         return False
     assert principal is not None
-    if not has_required_role(principal, "analyst"):
+    if not has_required_role(principal, "admin"):
         _audit_websocket(websocket, principal, 403, request_id)
-        await websocket.close(code=4403, reason="The analyst role is required.")
+        await websocket.close(code=4403, reason="The admin role is required for host live sources.")
         return False
     websocket.state.principal = principal
     websocket.state.request_id = request_id

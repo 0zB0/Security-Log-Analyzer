@@ -24,12 +24,13 @@ def test_release_visual_assets_are_complete_and_readable() -> None:
 
     with Image.open(ROOT / "docs/assets/demo/tracehawk-demo.gif") as demo:
         assert demo.format == "GIF"
-        assert demo.n_frames == 4
-        duration_ms = 0
-        for frame in range(demo.n_frames):
-            demo.seek(frame)
-            duration_ms += int(demo.info.get("duration", 0))
-        assert 30_000 <= duration_ms <= 60_000
+        assert demo.n_frames == 16
+        assert demo.size == (1280, 720)
+        total_duration = 0
+        for frame_index in range(demo.n_frames):
+            demo.seek(frame_index)
+            total_duration += int(demo.info.get("duration", 0))
+        assert 5_000 <= total_duration <= 8_000
 
 
 def test_sample_report_artifacts_are_readable() -> None:

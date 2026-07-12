@@ -150,6 +150,28 @@ def test_expensive_endpoint_rate_limit(monkeypatch) -> None:
     RATE_LIMITER.clear()
 
 
+def test_local_rate_limit_ignores_spoofed_azure_identity(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "auth_mode", "disabled")
+    monkeypatch.setattr(settings, "rate_limit_per_minute", 1)
+    RATE_LIMITER.clear()
+    payload = SAMPLE.read_bytes()
+    client = TestClient(app)
+
+    first = client.post(
+        "/api/analyze/upload",
+        headers={"x-ms-client-principal-name": "spoof-a@example.com"},
+        files={"file": ("first.log", payload, "text/plain")},
+    )
+    second = client.post(
+        "/api/analyze/upload",
+        headers={"x-ms-client-principal-name": "spoof-b@example.com"},
+        files={"file": ("second.log", payload, "text/plain")},
+    )
+
+    assert [first.status_code, second.status_code] == [200, 429]
+    RATE_LIMITER.clear()
+
+
 def test_security_headers_are_attached_to_api_responses() -> None:
     response = TestClient(app).get("/api/health")
 
@@ -158,6 +180,8 @@ def test_security_headers_are_attached_to_api_responses() -> None:
     assert response.headers["x-frame-options"] == "DENY"
     assert response.headers["referrer-policy"] == "no-referrer"
     assert "default-src 'self'" in response.headers["content-security-policy"]
+    assert "object-src 'none'" in response.headers["content-security-policy"]
+    assert "frame-ancestors 'none'" in response.headers["content-security-policy"]
 
 
 def _analysis_run_count() -> int:

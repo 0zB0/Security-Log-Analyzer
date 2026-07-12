@@ -80,7 +80,9 @@ class SecurityHeadersMiddleware:
                         (
                             b"content-security-policy",
                             b"default-src 'self'; connect-src 'self' ws: wss:; "
-                            b"img-src 'self' data:; style-src 'self' 'unsafe-inline'",
+                            b"img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
+                            b"object-src 'none'; base-uri 'self'; form-action 'self'; "
+                            b"frame-ancestors 'none'",
                         ),
                         (b"referrer-policy", b"no-referrer"),
                         (b"x-content-type-options", b"nosniff"),
@@ -165,9 +167,8 @@ def _too_large_response(limit: int) -> JSONResponse:
 
 
 def _rate_limit_key(request: Request) -> str:
-    principal = request.headers.get("x-ms-client-principal-name")
-    if principal:
-        # nosemgrep: python.flask.security.audit.directly-returned-format-string.directly-returned-format-string -- internal rate-limit key, never rendered
-        return f"principal:{principal.lower()}"
+    principal = getattr(request.state, "principal", None)
+    if principal is not None and principal.authenticated:
+        return f"principal:{principal.audit_actor.lower()}"
     client_host = request.client.host if request.client else "unknown"
     return f"client:{client_host}"

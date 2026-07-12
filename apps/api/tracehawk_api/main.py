@@ -52,7 +52,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(
     title="TraceHawk API",
     description="Local-only live SOC assistant API.",
-    version="0.7.1",
+    version="0.8.0",
     lifespan=lifespan,
 )
 
@@ -70,7 +70,7 @@ app.add_middleware(
         "http://127.0.0.1:5174",
     ],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PATCH", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -120,7 +120,7 @@ def version() -> dict[str, str]:
     return {
         "app": "tracehawk",
         "api_version": app.version,
-        "release": "v0.7.1",
+        "release": "v0.8.0",
         "build_commit": settings.build_commit,
         "runtime_mode": settings.runtime_mode,
         "llm_provider": settings.llm_provider,

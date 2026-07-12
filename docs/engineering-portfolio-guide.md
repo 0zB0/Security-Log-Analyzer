@@ -2,7 +2,7 @@
 
 > Audience: employers, engineering managers, technical interviewers, academic reviewers, and contributors
 > Canonical for: mapping TraceHawk capabilities to engineering disciplines and review evidence
-> Verified against: TraceHawk v0.7.1
+> Verified against: TraceHawk v0.8.0
 
 TraceHawk is best evaluated as a compact, full-stack security product rather than as a small script
 or an attempted enterprise SIEM. This guide maps each engineering area to its implementation,
@@ -150,8 +150,8 @@ file storage.
 Strong signal: the documentation explicitly distinguishes “file not retained” from “raw evidence
 text persisted.”
 
-Current limitation: no schema migration framework, immutable evidence ledger, encryption design, or
-horizontal-write model.
+Current limitation: Alembic now manages schema evolution, but no immutable evidence ledger,
+encryption design, or horizontal-write model is present.
 
 Be prepared to explain what remains after raw-evidence purge and why a hash cannot reconstruct
 deleted text or establish chain of custody.
@@ -163,7 +163,7 @@ MITRE, library, live, assistant, and report projections.
 
 | Implementation | Verification | Canonical documentation |
 | --- | --- | --- |
-| `app/main.tsx` | production build and UI smoke | [Frontend architecture](frontend-architecture.md) |
+| `app/main.tsx` | production build, component tests, and Playwright E2E | [Frontend architecture](frontend-architecture.md) |
 | `WorkspaceBody.tsx` | component test | same canonical guide |
 | `workspaceSelectors.ts` | selector tests | same canonical guide |
 | specialized workspace panels | backend integration proof and screenshots | case workflow/proof |
@@ -210,7 +210,8 @@ scanning.
 | audit service | auth/audit tests | [Threat model](threat-model.md) |
 | CI security jobs | pipeline proof | current CI/security proof |
 
-Strong signal: local and Azure trust modes are explicit; Azure headers are not trusted in local mode.
+Strong signal: local and trusted-proxy modes are explicit; deployment headers are not trusted in
+local mode.
 
 Current limitation: the single-instance audit sink, local rate limiter, and SQLite boundary are not
 enterprise multi-tenant controls.
@@ -220,13 +221,13 @@ first if the app is horizontally scaled.
 
 ## DevSecOps And Operations
 
-The delivery path validates code, dependencies, secrets, static findings, SBOMs, immutable images,
-Azure revisions, readiness, and exact deployed commits.
+The GitHub delivery path validates code, dependencies, secrets, static findings, SBOM inputs,
+browser behavior, digest-pinned images, and container vulnerabilities.
 
 | Implementation | Verification | Canonical documentation |
 | --- | --- | --- |
 | `Dockerfile`, `docker-compose.yml` | compose and smoke gates | [Self-hosted deployment](deployment-selfhost.md) |
-| `.gitlab-ci.yml` | pipeline evidence | GitLab source CI/CD documentation |
+| `.github/workflows/ci.yml` | scheduled and change-triggered pipeline evidence | [Testing strategy](testing-strategy.md) |
 | health/metrics/observability | health tests and operational proof | [Operations](operations.md) |
 | backup/rollback tools | tool tests and runbooks | `docs/runbooks/` |
 

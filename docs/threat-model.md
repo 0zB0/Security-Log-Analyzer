@@ -2,10 +2,10 @@
 
 ## Scope And Assumptions
 
-TraceHawk is a local-first investigation assistant and a protected single-user portfolio demo. It
-is not a multi-tenant SIEM. The Azure deployment relies on Azure Container Apps Easy Auth before
-the application-level email allowlist. Self-hosted deployments must provide an equivalent trusted
-identity boundary or keep the service private.
+TraceHawk is a local-first investigation assistant and a single-user portfolio system. It is not a
+multi-tenant SIEM. The public quick start binds to loopback and uses local admin mode. Any deployment
+that enables trusted-proxy authentication must place a header-sanitizing identity boundary before
+the application-level email allowlist.
 
 ## Assets
 
@@ -20,7 +20,7 @@ identity boundary or keep the service private.
 
 ```text
 Browser or API client
-  -> Azure Easy Auth / private reverse proxy
+  -> loopback boundary or trusted identity proxy
   -> FastAPI request-body and identity middleware
   -> parser, detection, correlation, and report services
   -> SQLite volume and optional local Ollama service
@@ -38,11 +38,11 @@ fields; the optional LLM receives bounded evidence only and cannot create findin
 | Parser confusion | Parser selection is deterministic and covered by parser-specific fixtures | Mixed input confidence remains a separate hardening milestone |
 | Malicious log prompt injection | Local-only LLM, structured prompt, bounded evidence, response validation, deterministic findings remain authoritative | LLM explanation can still be wrong and must not be treated as evidence |
 | Sensitive report disclosure | Optional redaction, authenticated demo, bounded evidence, explicit handling guidance | Authorized users can still export sensitive data |
-| Header spoofing | Identity headers are ignored in local mode and trusted only in explicit `azure_easy_auth` mode behind Azure's header-sanitizing identity boundary | A self-hosted deployment that exposes this mode without an equivalent trusted proxy is vulnerable to forged headers |
+| Header spoofing | Identity headers are ignored in local mode and trusted only in explicit `azure_easy_auth` compatibility mode behind a header-sanitizing identity boundary | Exposing this mode without a trusted proxy permits forged headers |
 | Privilege misuse | Least-privileged viewer default, analyst/admin capability gates, server-attributed note authors, and persistent audit events | Application administrators can still access all locally persisted evidence |
 | Request flooding | Per-principal/client in-memory rate limit and single-replica deployment | Limits are not shared across replicas and reset on restart |
 | Stored evidence exposure | Private SQLite volume, retention and purge workflow, no original file retention | Evidence text needed for reports remains sensitive at rest |
-| Supply-chain compromise | GitLab CI tests and container build | SBOM and vulnerability policy are planned operational hardening |
+| Supply-chain compromise | Locked dependencies, SHA-pinned GitHub Actions, Dependabot, Gitleaks, Semgrep, CycloneDX SBOM, and Trivy image scanning | Upstream registries and newly disclosed vulnerabilities still require scheduled review and dependency updates |
 
 ## Security Invariants
 

@@ -33,7 +33,7 @@ Expected discussion points:
 - evidence-grounded summary
 - false-positive notes
 - MITRE mapping
-- secure Azure deployment with Google login and email allowlist
+- loopback-only local defaults and explicit viewer/analyst/admin boundaries
 
 The scenario defines the story, not the implementation. For the processing path see the
 [event-processing pipeline](event-processing-pipeline.md); current and historical evidence is

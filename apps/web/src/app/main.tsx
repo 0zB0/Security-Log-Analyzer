@@ -51,6 +51,7 @@ export function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isAdmin = authStatus?.role === "admin" || authStatus?.local_admin === true;
 
   const selectedFinding = useMemo(() => {
     if (!result) {
@@ -233,15 +234,19 @@ export function App() {
           <strong>{viewTitle(activeView)}</strong>
           <span className="version-pill">
             <span className="status-dot" />
-            TraceHawk v0.7.1
+            TraceHawk v0.8.0
           </span>
         </div>
         <div className="topbar-actions">
           <span className="demo-label">{authLabel(authStatus)}</span>
           {authStatus?.allowlist_enabled ? (
             <div className="auth-links">
-              <a href="/.auth/login/google?post_login_redirect_uri=%2F">Login</a>
-              <a href="/.auth/logout?post_logout_redirect_uri=%2F">Logout</a>
+              {!authStatus.authenticated ? (
+                <a href="/.auth/login/google?post_login_redirect_uri=%2F">Login</a>
+              ) : null}
+              {authStatus.authenticated ? (
+                <a href="/.auth/logout?post_logout_redirect_uri=%2F">Logout</a>
+              ) : null}
             </div>
           ) : null}
           <div className={`status ${assistantStatus?.enabled ? "" : "muted"}`}>
@@ -282,12 +287,14 @@ export function App() {
           >
             <Network size={16} /> Case
           </button>
-          <button
-            className={activeView === "live" ? "nav-active" : ""}
-            onClick={() => setActiveView("live")}
-          >
-            <RadioTower size={16} /> Live Monitor
-          </button>
+          {isAdmin ? (
+            <button
+              className={activeView === "live" ? "nav-active" : ""}
+              onClick={() => setActiveView("live")}
+            >
+              <RadioTower size={16} /> Live Monitor
+            </button>
+          ) : null}
           <button
             className={activeView === "entities" ? "nav-active" : ""}
             onClick={() => setActiveView("entities")}
@@ -330,12 +337,14 @@ export function App() {
           >
             <BookOpen size={16} /> Library
           </button>
-          <button
-            className={activeView === "settings" ? "nav-active" : ""}
-            onClick={() => setActiveView("settings")}
-          >
-            <SlidersHorizontal size={16} /> Settings
-          </button>
+          {isAdmin ? (
+            <button
+              className={activeView === "settings" ? "nav-active" : ""}
+              onClick={() => setActiveView("settings")}
+            >
+              <SlidersHorizontal size={16} /> Settings
+            </button>
+          ) : null}
         </aside>
         <section className="panel investigation">
           <section className="intake-strip">
@@ -478,11 +487,14 @@ export function App() {
 }
 
 function authLabel(status: AuthStatus | null): string {
-  if (!status?.allowlist_enabled) {
-    return "Local-only demo";
+  if (!status) {
+    return "Auth status unavailable";
+  }
+  if (status.local_admin || status.auth_mode === "disabled") {
+    return "Local admin mode";
   }
   if (status.allowed && status.email) {
-    return `Signed in: ${status.email}`;
+    return `Signed in: ${status.email} (${status.role ?? "viewer"})`;
   }
   if (status.authenticated && status.email) {
     return `Account denied: ${status.email}`;

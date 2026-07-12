@@ -182,15 +182,27 @@ def test_local_mode_ignores_spoofed_azure_header(monkeypatch) -> None:
     assert response.json()["local_admin"] is True
 
 
-def test_viewer_cannot_open_live_websocket(monkeypatch) -> None:
+@pytest.mark.parametrize("email", [VIEWER, ANALYST])
+def test_non_admin_cannot_open_host_live_websocket(monkeypatch, email: str) -> None:
     _configure_azure_auth(monkeypatch)
     client = TestClient(app)
 
     with pytest.raises(WebSocketDisconnect) as exc:
-        with client.websocket_connect("/api/live/file?path=/tmp/missing", headers=_headers(VIEWER)):
+        with client.websocket_connect("/api/live/file?path=/tmp/missing", headers=_headers(email)):
             pass
 
     assert exc.value.code == 4403
+
+
+def test_admin_reaches_host_live_source_validation(monkeypatch) -> None:
+    _configure_azure_auth(monkeypatch)
+    client = TestClient(app)
+
+    with pytest.raises(WebSocketDisconnect) as exc:
+        with client.websocket_connect("/api/live/file?path=/tmp/missing", headers=_headers(OWNER)):
+            pass
+
+    assert exc.value.code == 1008
 
 
 def test_azure_mode_rejects_role_binding_outside_allowlist(monkeypatch) -> None:

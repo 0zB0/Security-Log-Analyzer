@@ -2,10 +2,10 @@
 
 ## Authentication And Roles
 
-Local development defaults to `TRACEHAWK_AUTH_MODE=disabled` and runs as a local admin. The Azure
-deployment uses Easy Auth plus application RBAC. Viewer covers read-only investigation, analyst
-covers analysis/report/note operations, and admin covers settings, retention deletion, and audit
-access. See `docs/auth-rbac.md` for the exact matrix.
+Local development defaults to `TRACEHAWK_AUTH_MODE=disabled`, binds to loopback, and runs as a local
+admin. Optional trusted-proxy mode adds application RBAC. Viewer covers read-only investigation,
+analyst covers analysis/report/note operations, and admin covers host live sources, settings,
+retention deletion, and audit access. See `docs/auth-rbac.md` for the exact matrix.
 
 Every protected HTTP response includes `X-Request-ID`. Clients may supply that header to correlate
 an operation with its audit event.
@@ -163,6 +163,10 @@ Returns recent locally persisted incidents ordered by score and last seen time.
 Pass `analysis_id` to scope the result to one persisted analysis run.
 
 ## Live File Tail
+
+All `/api/live/*` WebSocket endpoints require the `admin` role. This is intentionally stricter than
+ordinary analysis because the connection selects filesystem, Docker, or network-interface resources
+on the API host. Local `disabled` auth mode runs as the trusted local admin.
 
 ```text
 WS /api/live/file?path=/absolute/or/relative/file.log&start_at_end=true

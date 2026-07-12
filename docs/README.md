@@ -1,8 +1,7 @@
 # TraceHawk Community Documentation
 
-This is the public documentation hub for the curated TraceHawk community release. GitLab remains
-the complete engineering source of truth; this GitHub repository contains the runnable product,
-tests, sanitized fixtures, public evidence, and public-safe technical documentation.
+This is the public documentation hub for TraceHawk. The GitHub repository contains the runnable
+product, tests, sanitized fixtures, public evidence, and public-safe technical documentation.
 
 ## Start Here
 
@@ -54,7 +53,8 @@ tests, sanitized fixtures, public evidence, and public-safe technical documentat
 - [Current IoT-23 evaluation](proof-pack/current-iot23-evaluation.md)
 - [Current performance result](proof-pack/current-performance.md)
 - [Current scale result](proof-pack/current-scale-performance.md)
-- [Public release notes](releases/v0.7.1.md)
+- [Current v0.8.0 release notes](releases/v0.8.0.md)
+- [Historical v0.7.1 release notes](releases/v0.7.1.md)
 
 ## Architecture Decisions
 

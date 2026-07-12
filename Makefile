@@ -1,4 +1,4 @@
-.PHONY: check-structure docs-check lock-check tree test test-scenarios detection-quality detection-quality-check iot23-evaluation benchmark-smoke benchmark benchmark-scale lint typecheck api-dev web-dev web-test web-build compose-check smoke-live smoke-ollama smoke-reports smoke-ui smoke-azure-public real-lab-proof security-scan sbom release-assets verify-all
+.PHONY: check-structure docs-check lock-check tree test test-scenarios detection-quality detection-quality-check iot23-evaluation benchmark-smoke benchmark benchmark-scale lint typecheck api-dev web-dev web-test web-build web-e2e compose-check smoke-live smoke-ollama smoke-reports smoke-ui smoke-azure-public real-lab-proof security-scan sbom release-assets verify-all
 
 check-structure:
 	@test -f local-soc-assistant-architecture.md
@@ -53,7 +53,7 @@ lint:
 	@.venv/bin/python -m ruff check --no-cache apps/api/tracehawk_api apps/api/migrations apps/api/tests tools
 
 typecheck:
-	@cd apps/api && $(CURDIR)/.venv/bin/python -m mypy
+	@cd apps/api && "$(CURDIR)/.venv/bin/python" -m mypy
 
 api-dev:
 	@.venv/bin/python -m uvicorn tracehawk_api.main:app --reload --app-dir apps/api --host 127.0.0.1 --port 8000
@@ -66,6 +66,9 @@ web-test:
 
 web-build:
 	@npm --prefix apps/web run build
+
+web-e2e:
+	@npm --prefix apps/web run test:e2e
 
 compose-check:
 	@test "$$(docker compose --profile production config --services)" = "tracehawk"
@@ -104,5 +107,5 @@ release-assets:
 	@.venv/bin/python tools/generate_release_assets.py
 	@.venv/bin/python -m pytest apps/api/tests/test_proof_assets.py -q
 
-verify-all: check-structure docs-check lock-check test lint typecheck web-test web-build compose-check test-scenarios detection-quality-check benchmark-smoke smoke-live smoke-ollama smoke-reports smoke-ui
+verify-all: check-structure docs-check lock-check test lint typecheck web-test web-build web-e2e compose-check test-scenarios detection-quality-check benchmark-smoke smoke-live smoke-ollama smoke-reports smoke-ui
 	@echo "TraceHawk local verification OK"

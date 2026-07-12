@@ -199,3 +199,27 @@ def test_incident_report_formats_preserve_core_fields_and_redaction_parity() -> 
         assert "[REDACTED_USER]" in content, report_format
         assert "Possible SSH credential compromise" in content, report_format
         assert "Scoring Rationale" in content, report_format
+
+
+def test_release_report_formats_are_byte_reproducible_with_fixed_timestamp(monkeypatch) -> None:
+    monkeypatch.setenv("TRACEHAWK_REPORT_TIMESTAMP", "2026-07-12T00:00:00+00:00")
+    client = TestClient(app)
+    sample = ROOT / "packages/sample-data/auth/ssh-bruteforce.log"
+
+    with sample.open("rb") as file:
+        analysis = client.post(
+            "/api/analyze/upload",
+            files={"file": ("ssh-bruteforce.log", file, "text/plain")},
+        ).json()
+
+    payload = {
+        "incident": analysis["incidents"][0],
+        "findings": analysis["findings"],
+        "evidence": analysis["evidence"],
+    }
+    for report_format in ("markdown", "html", "pdf"):
+        first = client.post(f"/api/reports/incident?format={report_format}", json=payload)
+        second = client.post(f"/api/reports/incident?format={report_format}", json=payload)
+        assert first.status_code == second.status_code == 200
+        assert first.json()["content"] == second.json()["content"]
+        assert first.json()["created_at"] == "2026-07-12T00:00:00Z"

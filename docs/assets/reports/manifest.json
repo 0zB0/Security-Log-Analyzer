@@ -1,12 +1,12 @@
 {
   "artifacts": {
     "docs/assets/reports/tracehawk-sample-incident.html": {
-      "bytes": 46790,
-      "sha256": "a71fac4f80476b4914f1f7a4eb6ee84cc805618114cac539242437800d9db8ec"
+      "bytes": 46783,
+      "sha256": "845dd638f166140637165bd36c467dd39f79e2b6b6d3efda20684c1b85053146"
     },
     "docs/assets/reports/tracehawk-sample-incident.pdf": {
-      "bytes": 23137,
-      "sha256": "838dd5cf39039803401ae4d7c2dfd05f190f304c69fea71d6af9bd2c58acf866"
+      "bytes": 23124,
+      "sha256": "e961515fc8d5b77952a45576945eba615f6102f50e8438358e22c123bde47ac7"
     }
   },
   "case": {

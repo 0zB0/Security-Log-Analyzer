@@ -2,7 +2,7 @@
 
 > Audience: backend engineers, security reviewers, privacy reviewers, and operators
 > Canonical for: stored investigation state, evidence provenance, retention, and recovery
-> Verified against: TraceHawk v0.7.1
+> Verified against: TraceHawk v0.8.0
 
 TraceHawk uses SQLite to reopen bounded local investigations without retaining the original uploaded
 file as a file. It does persist selected investigation state, including raw evidence text required
@@ -75,8 +75,9 @@ general analytics warehouse.
 
 The SQLAlchemy schema is defined in `apps/api/tracehawk_api/database.py`. Alembic revisions under
 `apps/api/migrations/` initialize and evolve that schema. A pre-Alembic database that already has
-the complete v0.7.1 schema is adopted at the baseline revision without recreating tables or deleting
-records. Conversion between domain models and database records is in `services/persistence.py`.
+the complete v0.7.1 schema is recognized column by column, adopted at the baseline revision, and
+upgraded to v0.8.0 without deleting records. Partial or unknown unversioned schemas are rejected.
+Conversion between domain models and database records is in `services/persistence.py`.
 
 ## Schema Migration Lifecycle
 
@@ -205,7 +206,7 @@ protection as the primary database.
 
 Before broader production use, the persistence layer needs at least:
 
-- multiple real schema revisions beyond the v0.7.1 baseline and field-level data transforms;
+- field-level transforms beyond the v0.8.0 case-integrity revision;
 - a documented immutable-history policy;
 - encryption and key-management decisions for stored evidence and backups;
 - centralized audit and rate-limit state for multiple replicas;

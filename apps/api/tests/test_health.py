@@ -14,6 +14,19 @@ def test_health() -> None:
     assert response.json()["mode"] == "local-only"
 
 
+def test_local_frontend_cors_allows_assistant_settings_put() -> None:
+    response = TestClient(app).options(
+        "/api/assistant/settings",
+        headers={
+            "origin": "http://localhost:5173",
+            "access-control-request-method": "PUT",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "PUT" in response.headers["access-control-allow-methods"]
+
+
 def test_liveness_and_readiness_expose_operational_state() -> None:
     client = TestClient(app)
 
@@ -117,8 +130,8 @@ def test_version_exposes_public_build_metadata(monkeypatch) -> None:
     assert response.status_code == 200
     assert response.json() == {
         "app": "tracehawk",
-        "api_version": "0.7.1",
-        "release": "v0.7.1",
+        "api_version": "0.8.0",
+        "release": "v0.8.0",
         "build_commit": "abc1234",
         "runtime_mode": "azure-container-apps",
         "llm_provider": "mock",

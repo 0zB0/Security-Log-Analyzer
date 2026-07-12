@@ -1,31 +1,34 @@
-from datetime import UTC, datetime
 from html import escape
 
 from tracehawk_api.models.domain import Incident
 
-from .common import _report_filename, _score_component_label
+from .common import _report_created_at, _report_filename, _score_component_label
 from .models import ReportRequest, ReportResponse
 from .redaction import _redact_text, _redact_values
 
 
 def render_incident_html_report(request: ReportRequest) -> ReportResponse:
-    created_at = datetime.now(UTC)
+    created_at = _report_created_at()
     incident = request.incident
     linked_findings = [
         finding for finding in request.findings if finding.id in set(incident.finding_ids)
     ]
-    evidence_blocks = "\n".join(
-        f"""
+    evidence_blocks = (
+        "\n".join(
+            f"""
         <section class="evidence-block">
           <h3>Line {line.line_number}</h3>
           <pre>{escape(_redact_text(request, line.raw_text))}</pre>
           <p><strong>SHA-256:</strong> <code>{escape(line.content_hash)}</code></p>
         </section>
         """
-        for line in request.evidence
-    ) or "<p>No evidence lines supplied.</p>"
-    finding_blocks = "\n".join(
-        f"""
+            for line in request.evidence
+        )
+        or "<p>No evidence lines supplied.</p>"
+    )
+    finding_blocks = (
+        "\n".join(
+            f"""
         <section class="finding">
           <h3>{escape(_redact_text(request, finding.title))}</h3>
           <dl>
@@ -39,8 +42,10 @@ def render_incident_html_report(request: ReportRequest) -> ReportResponse:
           <p>{escape(_redact_text(request, finding.reason))}</p>
         </section>
         """
-        for finding in linked_findings
-    ) or "<p>No linked findings supplied.</p>"
+            for finding in linked_findings
+        )
+        or "<p>No linked findings supplied.</p>"
+    )
     assistant_block = (
         f"""
         <section>
@@ -147,7 +152,7 @@ def render_incident_html_report(request: ReportRequest) -> ReportResponse:
     </section>
     <section>
       <h2>Timeline</h2>
-      <ul>{''.join(f'<li><code>{escape(_redact_text(request, item))}</code></li>' for item in incident.timeline) or '<li>No timeline entries supplied.</li>'}</ul>
+      <ul>{"".join(f"<li><code>{escape(_redact_text(request, item))}</code></li>" for item in incident.timeline) or "<li>No timeline entries supplied.</li>"}</ul>
     </section>
     <section>
       <h2>Evidence</h2>
@@ -160,7 +165,7 @@ def render_incident_html_report(request: ReportRequest) -> ReportResponse:
         <li>Evidence lines are copied from local logs and include content hashes.</li>
         <li>Assistant text, when present, is explanatory and does not alter findings.</li>
         <li>No cloud service is required to generate this report.</li>
-        {('<li>Sensitive values were redacted from rendered report text.</li>' if request.redaction.enabled else '')}
+        {("<li>Sensitive values were redacted from rendered report text.</li>" if request.redaction.enabled else "")}
       </ul>
     </section>
   </main>

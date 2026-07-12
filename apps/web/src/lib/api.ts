@@ -195,7 +195,10 @@ export interface AuthStatus {
   authenticated: boolean;
   email: string | null;
   allowed: boolean;
+  role: "viewer" | "analyst" | "admin" | null;
+  auth_mode: "disabled" | "azure_easy_auth" | string;
   allowlist_enabled: boolean;
+  local_admin: boolean;
 }
 
 export interface AnalystNote {

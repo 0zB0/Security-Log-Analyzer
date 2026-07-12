@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from hashlib import sha256
 
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from tracehawk_api.database import (
@@ -14,8 +14,21 @@ from tracehawk_api.database import (
     ParsedEventRecord,
     RawLogLineRecord,
 )
-from tracehawk_api.models.domain import Entity, Finding, Incident, MitreMapping, ParsedEvent, RawLogLine
-from tracehawk_api.services.analysis import AnalysisResult, EvidenceLine
+from tracehawk_api.models.domain import (
+    Entity,
+    Finding,
+    Incident,
+    MitreMapping,
+    ParsedEvent,
+    RawLogLine,
+)
+from tracehawk_api.services.analysis import (
+    AnalysisResult,
+    CaseQualitySummary,
+    CrossSourceLink,
+    EvidenceLine,
+    SourceSummary,
+)
 from tracehawk_api.services.entities import build_entities
 
 
@@ -43,6 +56,8 @@ def persist_analysis(
     analysis_id = analysis_id or _analysis_id(filename, result.source_id)
     now = datetime.now(UTC)
 
+    _delete_previous_analysis_children(session, analysis_id)
+
     session.merge(
         AnalysisRunRecord(
             id=analysis_id,
@@ -53,6 +68,11 @@ def persist_analysis(
             parsed_event_count=result.parsed_event_count,
             finding_count=result.finding_count,
             incident_count=result.incident_count,
+            sources=[source.model_dump(mode="json") for source in result.sources],
+            cross_source_links=[link.model_dump(mode="json") for link in result.cross_source_links],
+            case_quality=(
+                result.case_quality.model_dump(mode="json") if result.case_quality else None
+            ),
             created_at=now,
         )
     )
@@ -149,7 +169,9 @@ def get_analysis_result(session: Session, analysis_id: str) -> AnalysisResult | 
         for record in session.scalars(
             select(EntityRecord)
             .where(EntityRecord.analysis_id == analysis_id)
-            .order_by(EntityRecord.risk_score.desc(), EntityRecord.event_count.desc(), EntityRecord.value)
+            .order_by(
+                EntityRecord.risk_score.desc(), EntityRecord.event_count.desc(), EntityRecord.value
+            )
         )
     ]
     evidence = [
@@ -179,6 +201,13 @@ def get_analysis_result(session: Session, analysis_id: str) -> AnalysisResult | 
         incidents=incidents,
         entities=entities,
         evidence=evidence,
+        sources=[SourceSummary.model_validate(source) for source in run.sources],
+        cross_source_links=[
+            CrossSourceLink.model_validate(link) for link in run.cross_source_links
+        ],
+        case_quality=(
+            CaseQualitySummary.model_validate(run.case_quality) if run.case_quality else None
+        ),
     )
 
 
@@ -197,7 +226,9 @@ def list_incidents(
     return [_incident_from_record(record) for record in records]
 
 
-def list_entities(session: Session, analysis_id: str | None = None, limit: int = 100) -> list[Entity]:
+def list_entities(
+    session: Session, analysis_id: str | None = None, limit: int = 100
+) -> list[Entity]:
     statement = select(EntityRecord).order_by(
         EntityRecord.risk_score.desc(),
         EntityRecord.event_count.desc(),
@@ -217,6 +248,18 @@ def get_entity(session: Session, entity_id: str) -> Entity | None:
 def _analysis_id(filename: str, source_id: str) -> str:
     digest = sha256(f"{filename}:{source_id}".encode()).hexdigest()[:16]
     return f"analysis:{digest}"
+
+
+def _delete_previous_analysis_children(session: Session, analysis_id: str) -> None:
+    for record_type in (
+        EntityRecord,
+        IncidentRecord,
+        FindingRecord,
+        ParsedEventRecord,
+        RawLogLineRecord,
+        LogSourceRecord,
+    ):
+        session.execute(delete(record_type).where(record_type.analysis_id == analysis_id))
 
 
 def _event_record(analysis_id: str, event: ParsedEvent) -> ParsedEventRecord:
@@ -269,6 +312,8 @@ def _incident_record(analysis_id: str, incident: Incident) -> IncidentRecord:
         entities=incident.entities,
         timeline=incident.timeline,
         mitre_techniques=incident.mitre_techniques,
+        score_breakdown=incident.score_breakdown,
+        score_rationale=incident.score_rationale,
     )
 
 
@@ -335,6 +380,8 @@ def _incident_from_record(record: IncidentRecord) -> Incident:
         entities=record.entities,
         timeline=record.timeline,
         mitre_techniques=record.mitre_techniques,
+        score_breakdown=record.score_breakdown,
+        score_rationale=record.score_rationale,
     )
 
 

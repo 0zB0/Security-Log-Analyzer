@@ -4,17 +4,36 @@ All notable public TraceHawk releases are documented here.
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [0.8.0] - 2026-07-12
+
 ### Added
 
 - frontend tests, accessibility assertions, and coverage enforcement;
 - reproducible Python and npm dependency locks;
 - 10, 50, and 100 MB offline scale evidence and robustness tests;
-- architecture decision records and an executable technical walkthrough.
+- architecture decision records and an executable technical walkthrough;
+- Alembic case-integrity migration with strict legacy-schema recognition;
+- complete case and scoring round-trip persistence tests;
+- rendered Playwright investigation and report E2E;
+- Dependabot and scheduled GitHub security verification.
 
 ### Changed
 
 - the workspace frontend and report service are split into focused modules;
-- public CI validates frontend tests before build.
+- public CI validates frontend tests before build;
+- repeated analysis replaces stale child records;
+- release exports require a clean tree and identify dirty previews explicitly;
+- production containers use digest-pinned bases and wheel installation;
+- release reports use a fixed release clock and invariant PDF output.
+
+### Security
+
+- SQLite foreign keys are enabled for every application connection;
+- local rate limiting cannot be bypassed with spoofed deployment identity headers;
+- host live sources and assistant settings follow role-aware frontend/backend boundaries;
+- Actions are SHA-pinned and Trivy rejects fixed HIGH or CRITICAL image vulnerabilities.
 
 ## [0.7.1] - 2026-07-10
 
@@ -61,6 +80,7 @@ All notable public TraceHawk releases are documented here.
 - no multi-tenant isolation or autonomous response;
 - the documented IoT-23 slice is deliberately small and not a production accuracy claim.
 
-[Unreleased]: https://github.com/0zB0/Security-Log-Analyzer/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/0zB0/Security-Log-Analyzer/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.8.0
 [0.7.1]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.7.1
 [0.7.0]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.7.0

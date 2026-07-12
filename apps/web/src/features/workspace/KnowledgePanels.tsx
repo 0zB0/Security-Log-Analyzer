@@ -197,8 +197,8 @@ export function DetectionLibrary({
   }, [category, foundOnly, matchedRuleIds, query, rules]);
   const selectedRule =
     filteredRules.find((rule) => rule.id === activeRuleId) ??
-    rules.find((rule) => rule.id === activeRuleId) ??
     filteredRules[0] ??
+    rules.find((rule) => rule.id === activeRuleId) ??
     rules[0] ??
     null;
   const relatedFindings = useMemo(

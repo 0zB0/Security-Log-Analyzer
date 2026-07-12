@@ -2,7 +2,7 @@
 
 > Audience: engineers, security reviewers, and operators
 > Canonical for: system components, boundaries, core objects, and architectural invariants
-> Verified against: TraceHawk v0.7.1
+> Verified against: TraceHawk v0.8.0
 
 TraceHawk is a single-replica, local-first investigation service. It accepts bounded logs or
 lightweight telemetry, produces deterministic findings, correlates them into explainable incidents,
@@ -24,13 +24,13 @@ flowchart LR
     E --> DB["SQLite investigation state"]
     E --> R["Markdown, HTML, and PDF reports"]
     E -. "bounded selected evidence" .-> O["Optional local Ollama"]
-    CI["GitLab CI/CD"] --> C["Container image"]
+    CI["GitHub Actions"] --> C["Verified container image"]
     C --> API
 ```
 
-The public Azure deployment and local Docker deployment use the same application image. Local mode
-can run without external authentication or a cloud LLM. Azure mode uses its configured identity
-boundary and application allowlists.
+The public repository targets the loopback-bound Docker profile. It runs without external
+authentication or a cloud LLM. Optional proxy-auth mode requires a trusted header-sanitizing
+identity boundary and explicit application allowlists.
 
 ## Component View
 
@@ -99,7 +99,7 @@ Matching TypeScript interfaces in `apps/web/src/lib/api.ts` define the current f
 flowchart LR
     X["Untrusted upload or live source"] --> B1["Validation boundary"]
     B1 --> A["Application process"]
-    ID["Azure identity headers"] --> B2["Configured auth-mode boundary"]
+    ID["Trusted proxy identity headers"] --> B2["Configured auth-mode boundary"]
     B2 --> A
     A --> D["Local SQLite data"]
     A --> B3["LLM prompt boundary"]
@@ -111,7 +111,7 @@ The [threat model](threat-model.md) owns abuse cases and security invariants. Im
 boundaries are:
 
 - input is untrusted until validated and parsed;
-- Azure identity headers are trusted only in explicit Azure auth mode;
+- proxy identity headers are ignored in local mode and trusted only in explicit proxy-auth mode;
 - uploaded original files are not retained as files;
 - persisted raw evidence text is sensitive local data;
 - LLM input is a bounded projection of already selected evidence;
@@ -141,19 +141,18 @@ FastAPI container. A named volume stores SQLite state. Ports bind to loopback by
 
 FastAPI and Vite run as separate services. The web app calls the configured API base URL.
 
-### Azure demo
+### GitHub release path
 
 ```text
-GitLab validation and security jobs
-→ immutable container image in Azure Container Registry
-→ Azure Container Apps revision
-→ configured Google/Easy Auth boundary
-→ application email allowlist and RBAC
+GitHub pull request or main push
+→ tests, coverage, Playwright, Gitleaks, Semgrep, and dependency audits
+→ digest-pinned container build
+→ Trivy HIGH/CRITICAL image gate
+→ clean allowlisted public export receipt
 ```
 
-The community deployment path is documented in
-[self-hosted deployment](deployment-selfhost.md). GitLab-to-Azure delivery details remain in the
-complete source repository and are intentionally omitted from the curated community export.
+The supported public deployment path is documented in
+[self-hosted deployment](deployment-selfhost.md).
 
 ## Key Decisions
 
@@ -179,5 +178,7 @@ Run the executable review path in the [technical walkthrough](technical-walkthro
 
 The architecture deliberately does not include a distributed log store, collector fleet,
 multi-tenant isolation, centralized rate limiter, immutable external audit sink, automated response,
-or database migration framework. See [current limitations](limitations.md) before treating the
-system as more than a bounded local or portfolio deployment.
+or tenant-aware immutable evidence ledger. Alembic manages the SQLite schema, including strict
+recognition of the pre-versioned baseline and the v0.8.0 case-integrity migration. See
+[current limitations](limitations.md) before treating the system as more than a bounded local or
+portfolio deployment.

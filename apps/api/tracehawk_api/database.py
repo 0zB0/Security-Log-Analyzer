@@ -4,7 +4,18 @@ from pathlib import Path
 from threading import Lock
 from typing import Any
 
-from sqlalchemy import JSON, DateTime, Engine, ForeignKey, Integer, String, Text, create_engine, inspect
+from sqlalchemy import (
+    JSON,
+    DateTime,
+    Engine,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    create_engine,
+    event,
+    inspect,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
 from tracehawk_api.config import settings
@@ -25,6 +36,9 @@ class AnalysisRunRecord(Base):
     parsed_event_count: Mapped[int] = mapped_column(Integer)
     finding_count: Mapped[int] = mapped_column(Integer)
     incident_count: Mapped[int] = mapped_column(Integer)
+    sources: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    cross_source_links: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    case_quality: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC), index=True
     )
@@ -39,7 +53,9 @@ class LogSourceRecord(Base):
     source_type: Mapped[str] = mapped_column(String(40))
     parser_type: Mapped[str] = mapped_column(String(80))
     status: Mapped[str] = mapped_column(String(40), default="stopped")
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
 
 
 class RawLogLineRecord(Base):
@@ -105,6 +121,8 @@ class IncidentRecord(Base):
     entities: Mapped[list[str]] = mapped_column(JSON, default=list)
     timeline: Mapped[list[str]] = mapped_column(JSON, default=list)
     mitre_techniques: Mapped[list[str]] = mapped_column(JSON, default=list)
+    score_breakdown: Mapped[dict[str, int]] = mapped_column(JSON, default=dict)
+    score_rationale: Mapped[list[str]] = mapped_column(JSON, default=list)
 
 
 class EntityRecord(Base):
@@ -141,7 +159,9 @@ class AppSettingRecord(Base):
 
     key: Mapped[str] = mapped_column(String(120), primary_key=True)
     value: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
 
 
 class AuditEventRecord(Base):
@@ -171,10 +191,21 @@ def _sqlite_url(path: str) -> str:
 
 
 def _create_database_engine(path: str) -> Engine:
-    return create_engine(
+    database_engine = create_engine(
         _sqlite_url(path),
         connect_args={"check_same_thread": False},
     )
+    event.listen(database_engine, "connect", _configure_sqlite_connection)
+    return database_engine
+
+
+def _configure_sqlite_connection(dbapi_connection: Any, _: Any) -> None:
+    cursor = dbapi_connection.cursor()
+    try:
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.execute("PRAGMA busy_timeout=5000")
+    finally:
+        cursor.close()
 
 
 engine = _create_database_engine(settings.db_path)
@@ -214,12 +245,51 @@ def migrate_database(revision: str = "head") -> None:
     migration_config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
     with _migration_lock, engine.begin() as connection:
         migration_config.attributes["connection"] = connection
-        tables = set(inspect(connection).get_table_names())
-        if "analysis_runs" in tables and "alembic_version" not in tables:
-            command.stamp(migration_config, "0001_current_schema")
+        schema = inspect(connection)
+        tables = set(schema.get_table_names())
+        application_tables = set(Base.metadata.tables)
+        existing_application_tables = tables & application_tables
+        if existing_application_tables and "alembic_version" not in tables:
+            if _schema_matches_metadata(schema, omitted_columns=_CASE_INTEGRITY_COLUMNS):
+                command.stamp(migration_config, "0001_current_schema")
+                command.upgrade(migration_config, revision)
+            elif _schema_matches_metadata(schema):
+                command.stamp(migration_config, "0002_case_integrity")
+                command.upgrade(migration_config, revision)
+            else:
+                raise RuntimeError(
+                    "Refusing to adopt an unversioned database whose tables or columns do not "
+                    "match a recognized TraceHawk schema. Restore a backup or migrate it explicitly."
+                )
         else:
             command.upgrade(migration_config, revision)
     _migrated_database_url = database_url if revision == "head" else None
+
+
+_CASE_INTEGRITY_COLUMNS = {
+    "analysis_runs": {"sources", "cross_source_links", "case_quality"},
+    "incidents": {"score_breakdown", "score_rationale"},
+}
+
+
+def _schema_matches_metadata(
+    schema: Any,
+    *,
+    omitted_columns: dict[str, set[str]] | None = None,
+) -> bool:
+    omitted_columns = omitted_columns or {}
+    tables = set(schema.get_table_names())
+    expected_tables = set(Base.metadata.tables)
+    if not expected_tables <= tables:
+        return False
+    for table_name, table in Base.metadata.tables.items():
+        expected_columns = {column.name for column in table.columns} - omitted_columns.get(
+            table_name, set()
+        )
+        actual_columns = {column["name"] for column in schema.get_columns(table_name)}
+        if actual_columns != expected_columns:
+            return False
+    return True
 
 
 def downgrade_database(revision: str = "base") -> None:

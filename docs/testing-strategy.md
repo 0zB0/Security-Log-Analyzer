@@ -2,7 +2,7 @@
 
 > Audience: engineers, security reviewers, and academic evaluators
 > Canonical for: verification layers and the claims each layer can support
-> Verified against: TraceHawk v0.7.1
+> Verified against: TraceHawk v0.8.0
 
 TraceHawk uses multiple verification layers because no single test type proves parser correctness,
 detection quality, UI behavior, operational safety, and production readiness at once.
@@ -112,7 +112,8 @@ long-running production database lifecycle.
 
 Allowed and denied tests cover explicit local/Azure auth modes, viewer/analyst/admin boundaries,
 server-side note attribution, audit events, upload validation, malformed input, and HTTP/WebSocket
-authorization.
+authorization. Host live sources are an admin boundary because they select API-host paths,
+containers, or interfaces; tests prove both analyst denial and admin access to source validation.
 
 Security tests must include both successful and denied behavior. A test that only proves an admin
 can perform an action does not prove a viewer cannot.
@@ -135,8 +136,8 @@ Smoke tools verify real process boundaries that unit tests do not:
 | `make smoke-live` | live file/folder analysis path |
 | `make smoke-ollama` | configured local assistant boundary |
 | `make smoke-reports` | rendered report path |
-| `make smoke-ui` | browser-facing application workflow |
-| `make smoke-azure-public` | deployed public/auth posture |
+| `make smoke-ui` | fast Vite/source contract smoke; not a rendered interaction test |
+| `npm --prefix apps/web run test:e2e` | rendered Chromium investigation and report workflow |
 | `make real-lab-proof` | real Zeek/Suricata replay/export path |
 
 Smoke tests are narrower than full E2E product tests. They prove a chosen critical path, not every
@@ -195,7 +196,7 @@ make verify-all
 | Rule matches its contract | positive and benign scenarios | population-level precision/recall |
 | Correlation score is stable | scoring unit/integration tests | causal correctness |
 | Analysis can be reopened | persistence integration test | multi-version migration history |
-| UI builds and critical path renders | build, component test, UI smoke | all interactions, browsers, and accessibility states |
+| UI builds and critical path renders | build, component tests, Playwright Chromium E2E | cross-browser matrix and every accessibility state |
 | Public revision is current | exact-commit deployment check | long-term reliability and SLOs |
 | Backup is readable | online backup and integrity test | full disaster-recovery objective |
 
