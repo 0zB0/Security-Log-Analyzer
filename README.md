@@ -1,20 +1,22 @@
-# TraceHawk
+# TraceHawk — Security Log Analyzer
 
 [![CI](https://github.com/0zB0/Security-Log-Analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/0zB0/Security-Log-Analyzer/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/0zB0/Security-Log-Analyzer)](https://github.com/0zB0/Security-Log-Analyzer/releases)
 [![Python](https://img.shields.io/badge/python-3.12-3776AB)](apps/api/pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 
-Evidence-first SOC investigation for local logs and multi-source Zeek/Suricata cases. TraceHawk
-parses heterogeneous security logs, runs 65 transparent YAML rules, correlates findings into scored
-incidents, preserves line-level evidence, maps MITRE ATT&CK context, and exports analyst reports.
-Detections stay deterministic; the optional local Ollama layer can explain but never create or
-change findings.
+TraceHawk is a local-first, evidence-first security log analyzer for homelabs and small teams. It
+turns Linux, cloud, container, Windows, Zeek, and Suricata telemetry into deterministic findings,
+correlated incidents, line-level evidence, MITRE ATT&CK context, and analyst reports.
+
+Detection authority remains in transparent YAML rules. Optional local Ollama explanations are
+grounded in selected evidence and cannot create or alter findings.
 
 [Live protected demo](https://ca-security-log-analyzer.bluebush-2bdd630a.germanywestcentral.azurecontainerapps.io/) ·
 [Portfolio](https://ozbejbohanec.com) ·
 [Documentation](docs/README.md) ·
 [Engineering guide](docs/engineering-portfolio-guide.md) ·
+[AI disclosure](docs/ai-assisted-development.md) ·
 [Threat model](docs/threat-model.md) ·
 [Limitations](docs/limitations.md)
 
