@@ -12,6 +12,13 @@ Describe the smallest behavioral change that resolves it.
 - [ ] Relevant focused tests are included or updated
 - [ ] Documentation and proof assets match the behavior
 
+## AI assistance
+
+- [ ] No substantive AI assistance was used, or its model/tool, scope, and manual verification are
+      disclosed below
+
+<!-- Describe AI-assisted design, code, tests, debugging, or documentation. Do not paste secrets or confidential prompts. -->
+
 ## Public-safety checklist
 
 - [ ] No credentials, tokens, cookies, private keys, production logs, client data, or personal data

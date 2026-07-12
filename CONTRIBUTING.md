@@ -22,3 +22,15 @@ real logs, credentials, client data, internal infrastructure, or other confident
 
 Open a pull request with a concise problem statement, behavioral change, and exact verification
 commands. Security reports must follow [SECURITY.md](SECURITY.md), not a public issue.
+
+## AI-Assisted Contributions
+
+Substantive AI assistance is allowed but must be disclosed in the pull request. Name the tool or
+model when known, describe whether it was used for design, code, tests, debugging, or documentation,
+and state how the output was manually verified. The human contributor remains accountable for the
+change and must be able to explain and modify it.
+
+Do not submit unreviewed generated code, fabricated citations, prompt transcripts containing
+confidential data, or changes whose verification burden exceeds their value. Read the project
+[AI-assisted development disclosure](docs/ai-assisted-development.md) for the repository's own
+development history.

@@ -13,6 +13,8 @@ change findings.
 
 [Live protected demo](https://ca-security-log-analyzer.bluebush-2bdd630a.germanywestcentral.azurecontainerapps.io/) ·
 [Portfolio](https://ozbejbohanec.com) ·
+[Documentation](docs/README.md) ·
+[Engineering guide](docs/engineering-portfolio-guide.md) ·
 [Threat model](docs/threat-model.md) ·
 [Limitations](docs/limitations.md)
 
@@ -138,6 +140,16 @@ Read before deployment or evaluation:
 - [operational boundaries](docs/operations.md)
 - [detection quality and IoT-23 error analysis](docs/detection-quality.md)
 - [performance method and budgets](docs/performance.md)
+
+## Development Transparency
+
+TraceHawk was built with extensive generative AI assistance. The maintainer estimates that
+approximately 99% of the implementation code was initially generated or drafted by AI, then
+reviewed, tested, debugged, and accepted under human responsibility. The contribution is the
+demonstrated understanding of the architecture, security boundaries, tests, tradeoffs, and
+limitations—not a claim that every line was typed manually.
+
+Read the full [AI-assisted development disclosure](docs/ai-assisted-development.md).
 
 ## Public Repository Boundary
 

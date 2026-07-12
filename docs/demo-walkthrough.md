@@ -1,5 +1,8 @@
 # Demo Walkthrough
 
+> Canonical for: the actions required to reproduce the primary demo
+> For the expected data and incident narrative, use the [demo scenario](demo-scenario.md).
+
 ## Target Scenario
 
 The demo should show a realistic small incident:
@@ -51,3 +54,6 @@ ws://localhost:8000/api/live/docker?container=my-container&tail=50
 - The report is understandable without opening the app.
 - Docker Compose validates with `docker compose config`.
 - Backend tests and frontend build pass before recording screenshots.
+
+Historical screenshots and generated reports are indexed from the applicable source or community
+[documentation hub](README.md).
