@@ -1,9 +1,10 @@
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
+from threading import Lock
 from typing import Any
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text, create_engine
+from sqlalchemy import JSON, DateTime, Engine, ForeignKey, Integer, String, Text, create_engine, inspect
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
 from tracehawk_api.config import settings
@@ -169,15 +170,73 @@ def _sqlite_url(path: str) -> str:
     return f"sqlite:///{db_path}"
 
 
-engine = create_engine(
-    _sqlite_url(settings.db_path),
-    connect_args={"check_same_thread": False},
-)
+def _create_database_engine(path: str) -> Engine:
+    return create_engine(
+        _sqlite_url(path),
+        connect_args={"check_same_thread": False},
+    )
+
+
+engine = _create_database_engine(settings.db_path)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
+_migration_lock = Lock()
+_migrated_database_url: str | None = None
+
+
+def configure_database(path: str) -> None:
+    """Rebind the process database, primarily for isolated tests and controlled migrations."""
+    global engine, _migrated_database_url
+
+    previous_engine = engine
+    engine = _create_database_engine(path)
+    SessionLocal.configure(bind=engine)
+    _migrated_database_url = None
+    previous_engine.dispose()
 
 
 def init_db() -> None:
-    Base.metadata.create_all(bind=engine)
+    migrate_database("head")
+
+
+def migrate_database(revision: str = "head") -> None:
+    """Upgrade the active database and adopt the current pre-Alembic schema safely."""
+    global _migrated_database_url
+
+    database_url = engine.url.render_as_string(hide_password=False)
+    if revision == "head" and _migrated_database_url == database_url:
+        return
+
+    from alembic import command
+    from alembic.config import Config
+
+    config_path = Path(__file__).resolve().parents[1] / "alembic.ini"
+    migration_config = Config(config_path)
+    migration_config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
+    with _migration_lock, engine.begin() as connection:
+        migration_config.attributes["connection"] = connection
+        tables = set(inspect(connection).get_table_names())
+        if "analysis_runs" in tables and "alembic_version" not in tables:
+            command.stamp(migration_config, "0001_current_schema")
+        else:
+            command.upgrade(migration_config, revision)
+    _migrated_database_url = database_url if revision == "head" else None
+
+
+def downgrade_database(revision: str = "base") -> None:
+    """Downgrade explicitly; callers must take a backup before using this on retained evidence."""
+    global _migrated_database_url
+
+    from alembic import command
+    from alembic.config import Config
+
+    config_path = Path(__file__).resolve().parents[1] / "alembic.ini"
+    migration_config = Config(config_path)
+    database_url = engine.url.render_as_string(hide_password=False)
+    migration_config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
+    with _migration_lock, engine.begin() as connection:
+        migration_config.attributes["connection"] = connection
+        command.downgrade(migration_config, revision)
+    _migrated_database_url = None
 
 
 def get_session() -> Iterator[Session]:

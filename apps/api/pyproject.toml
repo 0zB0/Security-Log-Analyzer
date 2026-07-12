@@ -8,6 +8,7 @@ version = "0.7.1"
 description = "FastAPI backend for TraceHawk local-only live SOC assistant"
 requires-python = ">=3.12"
 dependencies = [
+  "alembic>=1.18.4,<2",
   "fastapi>=0.139.0,<1",
   "uvicorn[standard]>=0.51.0,<1",
   "pydantic>=2.13.4,<3",
@@ -36,6 +37,16 @@ dev = [
 
 [tool.ruff]
 line-length = 100
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = [
+  "tracehawk_api/config.py",
+  "tracehawk_api/database.py",
+  "tracehawk_api/models/domain.py",
+  "tracehawk_api/services/uploads.py",
+]
 
 [tool.setuptools.packages.find]
 include = ["tracehawk_api*"]

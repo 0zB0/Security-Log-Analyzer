@@ -79,3 +79,41 @@ docker build -t tracehawk:walkthrough .
 
 Record the problem, behavioral change, failed test, passing test, and exact commands in the merge
 request. Keep deployment and public publication as separate explicit decisions.
+
+## 7. Defend test and persistence boundaries
+
+Explain why tests must never inherit `tracehawk.db`, then run:
+
+```bash
+.venv/bin/python -m pytest apps/api/tests/test_database_isolation.py \
+  apps/api/tests/test_database_migrations.py -q
+```
+
+Identify the difference between a blank migration, adoption of a pre-Alembic current schema, and a
+future data-transform revision. Explain why the baseline downgrade is not a data-preserving rollback.
+
+## 8. Interpret external detection evidence
+
+Open `docs/proof-pack/current-iot23-evaluation.md` and answer:
+
+1. Why can precision and recall both be 0.5 while the false-positive rate is about 0.0011?
+2. Why are the precision and recall confidence intervals wide?
+3. Why is the DDoS-labeled false positive still operationally suspicious?
+4. Which new capture would test generalization without tuning on the final evaluation input?
+
+Verify the statistical implementation independently:
+
+```bash
+.venv/bin/python -m pytest apps/api/tests/test_evaluation_metrics.py -q
+```
+
+## 9. Review real engineering decisions
+
+Read and reproduce the commands in:
+
+- `docs/engineering-case-studies/test-database-isolation.md`;
+- `docs/engineering-case-studies/iot23-small-sample-interpretation.md`;
+- `docs/engineering-case-studies/schema-migration-baseline.md`.
+
+These are evidence of diagnosis and tradeoffs. They do not replace a live explanation or create an
+external reviewer where none exists.

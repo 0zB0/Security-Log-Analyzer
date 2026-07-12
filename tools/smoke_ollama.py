@@ -1,11 +1,26 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import tempfile
+from pathlib import Path
+
 from fastapi.testclient import TestClient
+from tracehawk_api.config import settings
+from tracehawk_api.database import configure_database
 from tracehawk_api.main import app
 
 
 def main() -> int:
+    original_path = settings.db_path
+    with tempfile.TemporaryDirectory() as tmpdir:
+        configure_database(str(Path(tmpdir) / "tracehawk-smoke.db"))
+        try:
+            return _run_smoke()
+        finally:
+            configure_database(original_path)
+
+
+def _run_smoke() -> int:
     client = TestClient(app)
     status_response = client.get("/api/assistant/status")
     status_response.raise_for_status()

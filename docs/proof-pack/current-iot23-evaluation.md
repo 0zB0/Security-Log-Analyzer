@@ -1,6 +1,6 @@
 # Current IoT-23 Detection Evaluation
 
-Generated: `2026-07-09T21:39:21.333994+00:00`
+Generated: `2026-07-12T14:09:10.447514+00:00`
 
 ## Dataset And Scope
 
@@ -23,8 +23,25 @@ Evaluate deterministic Zeek connection-attempt, host-sweep, and port-scan findin
 | False-negative windows | 1 |
 | True-negative windows | 877 |
 | Precision | 0.5000 |
+| Precision 95% Wilson interval | 0.0945–0.9055 |
 | Recall | 0.5000 |
+| Recall 95% Wilson interval | 0.0945–0.9055 |
+| F1 | 0.5000 |
+| Specificity | 0.9989 |
+| Balanced accuracy | 0.7494 |
+| Positive prevalence | 0.0023 |
 | False-positive rate | 0.0011 |
+
+The wide precision and recall intervals are material: only two predicted-positive and
+two ground-truth-positive windows are present. Point estimates must not be presented as
+stable detection-quality estimates for the complete product.
+
+## Per-Capture And Per-Rule Results
+
+| Capture | Windows | TP | FP | FN | TN | Detected rule windows |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| iot23-34-1-conn.log.labeled | 699 | 1 | 1 | 1 | 696 | zeek-conn-attempt-burst-001: 2 |
+| iot23-benign-4-1-conn.log.labeled | 181 | 0 | 0 | 0 | 181 | none |
 
 ## Limitations
 

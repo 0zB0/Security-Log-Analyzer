@@ -154,7 +154,9 @@ state. A measurement from a dirty tree remains evidence with a limitation, not a
 ## External Dataset Evaluation
 
 IoT-23 evaluation scores selected Zeek scan rules in fixed windows against an external label and a
-separate benign capture. It records hashes, method, false positives, false negatives, and scope.
+separate benign capture. It records hashes, method, false positives, false negatives, per-capture
+and per-rule prediction counts, F1, specificity, balanced accuracy, prevalence, and Wilson confidence
+intervals. Raw confusion-matrix counts remain authoritative when the sample is small.
 
 The current evaluation is intentionally narrow. It cannot validate all parser families, rule
 families, modern enterprise traffic, or production prevalence.
@@ -174,8 +176,9 @@ come from a previous healthy deployment.
 ## Primary Commands
 
 ```bash
-ruff check apps/api/tracehawk_api apps/api/tests tools
-pytest apps/api/tests -W error -q
+make lint
+make typecheck
+make test
 npm --prefix apps/web run test:coverage
 npm --prefix apps/web run build
 make detection-quality-check
@@ -198,9 +201,10 @@ make verify-all
 
 ## Known Gaps And Priorities
 
-1. Include all maintained frontend files in coverage and add component tests for primary workflows.
+1. Raise whole-source frontend coverage from its honest initial baseline with assistant, knowledge,
+   live, and case interaction tests.
 2. Add browser E2E coverage for demo, real-lab case, report export, and auth boundaries.
 3. Expand external datasets across rule families and current traffic shapes.
 4. Run longer-lived collector and persistence soak tests.
-5. Add schema migration and upgrade/rollback tests before evolving persisted deployments.
+5. Add a second schema revision and data-transform fixture before changing production fields.
 6. Add independent-user reproduction evidence rather than relying only on maintainer-generated proof.

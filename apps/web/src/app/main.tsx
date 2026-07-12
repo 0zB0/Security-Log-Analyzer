@@ -35,7 +35,7 @@ import { SAMPLE_OPTIONS } from "./workspaceOptions";
 import { ReportFormat, WorkspaceView } from "./workspaceTypes";
 import "../styles/main.css";
 
-function App() {
+export function App() {
   const [activeView, setActiveView] = useState<WorkspaceView>("upload");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
@@ -544,4 +544,7 @@ function viewDescription(view: WorkspaceView): string {
   }
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  createRoot(rootElement).render(<App />);
+}

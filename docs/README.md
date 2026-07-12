@@ -42,6 +42,7 @@ tests, sanitized fixtures, public evidence, and public-safe technical documentat
 - [Self-hosted deployment](deployment-selfhost.md)
 - [Operations](operations.md)
 - [Technical walkthrough](technical-walkthrough.md)
+- [Engineering case studies](engineering-case-studies/)
 - [Local LLM privacy model](llm-privacy-model.md)
 
 ## Demo And Public Evidence

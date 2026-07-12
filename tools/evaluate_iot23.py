@@ -13,6 +13,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 API_ROOT = ROOT / "apps/api"
+TOOLS_ROOT = ROOT / "tools"
 RULES_ROOT = ROOT / "packages/rules"
 DEFAULT_JSON = ROOT / "docs/proof-pack/current-iot23-evaluation.json"
 DEFAULT_MARKDOWN = ROOT / "docs/proof-pack/current-iot23-evaluation.md"
@@ -32,21 +33,24 @@ SCAN_RULE_IDS = {
 }
 
 sys.path.insert(0, str(API_ROOT))
+sys.path.insert(0, str(TOOLS_ROOT))
 
 from tracehawk_api.models.domain import ParsedEvent  # noqa: E402
 from tracehawk_api.services.detection import run_detection  # noqa: E402
 from tracehawk_api.services.rules import load_rules  # noqa: E402
 from tracehawk_api.services.zeek_tsv_parser import ZeekTsvParser  # noqa: E402
+from evaluation_metrics import confusion_metrics  # noqa: E402
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Evaluate TraceHawk on IoT-23 labeled Zeek logs.")
-    parser.add_argument("--input", required=True, type=Path, help="IoT-23 malicious conn.log.labeled")
+    parser.add_argument("--input", required=True, action="append", type=Path, help="IoT-23 malicious conn.log.labeled; repeat for more captures")
     parser.add_argument(
         "--benign-input",
         required=True,
+        action="append",
         type=Path,
-        help="IoT-23 benign-device conn.log.labeled",
+        help="IoT-23 benign-device conn.log.labeled; repeat for more captures",
     )
     parser.add_argument("--json-output", type=Path, default=DEFAULT_JSON)
     parser.add_argument("--markdown-output", type=Path, default=DEFAULT_MARKDOWN)
@@ -59,21 +63,32 @@ def main() -> int:
     metrics = report["aggregate_scan_window_metrics"]
     print(
         "iot23_evaluation=ok "
-        f"rows={report['datasets'][0]['parsed_rows'] + report['datasets'][1]['parsed_rows']} "
+        f"rows={sum(dataset['parsed_rows'] for dataset in report['datasets'])} "
         f"tp={metrics['true_positive_windows']} fp={metrics['false_positive_windows']} "
         f"fn={metrics['false_negative_windows']} tn={metrics['true_negative_windows']}"
     )
     return 0
 
 
-def evaluate_iot23(malicious_path: Path, benign_path: Path) -> dict[str, Any]:
-    malicious_events, malicious_labels = _parse_labeled_zeek(malicious_path)
-    benign_events, benign_labels = _parse_labeled_zeek(benign_path, force_benign=True)
+def evaluate_iot23(
+    malicious_paths: Path | list[Path], benign_paths: Path | list[Path]
+) -> dict[str, Any]:
+    malicious_paths = [malicious_paths] if isinstance(malicious_paths, Path) else malicious_paths
+    benign_paths = [benign_paths] if isinstance(benign_paths, Path) else benign_paths
     rules = [rule for rule in load_rules(RULES_ROOT / "zeek") if rule.id in SCAN_RULE_IDS]
-
-    malicious_metrics = _evaluate_windows(malicious_events, malicious_labels, rules)
-    benign_metrics = _evaluate_windows(benign_events, benign_labels, rules)
-    aggregate = _combine_metrics(malicious_metrics, benign_metrics)
+    datasets: list[dict[str, Any]] = []
+    capture_metrics: list[dict[str, Any]] = []
+    for path, force_benign in [
+        *((path, False) for path in malicious_paths),
+        *((path, True) for path in benign_paths),
+    ]:
+        events, labels = _parse_labeled_zeek(path, force_benign=force_benign)
+        metrics = _evaluate_windows(events, labels, rules)
+        capture_metrics.append(metrics)
+        datasets.append(
+            _dataset_metadata(path, _source_url(path, force_benign), events, labels, metrics)
+        )
+    aggregate = _combine_metrics(*capture_metrics)
 
     return {
         "generated_at": datetime.now(UTC).isoformat(),
@@ -100,22 +115,7 @@ def evaluate_iot23(malicious_path: Path, benign_path: Path) -> dict[str, Any]:
                 "Metrics are window-level, not packet-level or host-level prevalence estimates.",
             ],
         },
-        "datasets": [
-            _dataset_metadata(
-                malicious_path,
-                MALICIOUS_URL,
-                malicious_events,
-                malicious_labels,
-                malicious_metrics,
-            ),
-            _dataset_metadata(
-                benign_path,
-                BENIGN_URL,
-                benign_events,
-                benign_labels,
-                benign_metrics,
-            ),
-        ],
+        "datasets": datasets,
         "aggregate_scan_window_metrics": aggregate,
     }
 
@@ -240,10 +240,20 @@ def _combine_metrics(*metrics: dict[str, Any]) -> dict[str, Any]:
     fp = combined["false_positive_windows"]
     fn = combined["false_negative_windows"]
     tn = combined["true_negative_windows"]
-    combined["precision"] = round(tp / (tp + fp) if tp + fp else 0.0, 4)
-    combined["recall"] = round(tp / (tp + fn) if tp + fn else 0.0, 4)
-    combined["false_positive_rate"] = round(fp / (fp + tn) if fp + tn else 0.0, 4)
+    derived = confusion_metrics(tp, fp, fn, tn)
+    combined.update({key: value for key, value in derived.items() if key not in {
+        "true_positive", "false_positive", "false_negative", "true_negative", "sample_count"
+    }})
     return combined
+
+
+def _source_url(path: Path, force_benign: bool) -> str:
+    if "34-1" in path.name:
+        return MALICIOUS_URL
+    if "benign-4-1" in path.name.lower() or "honeypot-4-1" in path.name.lower():
+        return BENIGN_URL
+    capture_kind = "benign" if force_benign else "malicious"
+    return f"IoT-23 local {capture_kind} capture; source URL must be recorded in the evaluation manifest"
 
 
 def _dataset_metadata(
@@ -299,8 +309,38 @@ def render_markdown(report: dict[str, Any]) -> str:
             f"| False-negative windows | {metrics['false_negative_windows']} |",
             f"| True-negative windows | {metrics['true_negative_windows']} |",
             f"| Precision | {metrics['precision']:.4f} |",
+            f"| Precision 95% Wilson interval | {metrics['precision_wilson_95'][0]:.4f}–{metrics['precision_wilson_95'][1]:.4f} |",
             f"| Recall | {metrics['recall']:.4f} |",
+            f"| Recall 95% Wilson interval | {metrics['recall_wilson_95'][0]:.4f}–{metrics['recall_wilson_95'][1]:.4f} |",
+            f"| F1 | {metrics['f1']:.4f} |",
+            f"| Specificity | {metrics['specificity']:.4f} |",
+            f"| Balanced accuracy | {metrics['balanced_accuracy']:.4f} |",
+            f"| Positive prevalence | {metrics['positive_prevalence']:.4f} |",
             f"| False-positive rate | {metrics['false_positive_rate']:.4f} |",
+            "",
+            "The wide precision and recall intervals are material: only two predicted-positive and",
+            "two ground-truth-positive windows are present. Point estimates must not be presented as",
+            "stable detection-quality estimates for the complete product.",
+            "",
+            "## Per-Capture And Per-Rule Results",
+            "",
+            "| Capture | Windows | TP | FP | FN | TN | Detected rule windows |",
+            "| --- | ---: | ---: | ---: | ---: | ---: | --- |",
+        ]
+    )
+    for dataset in report["datasets"]:
+        capture = dataset["scan_window_metrics"]
+        detected = ", ".join(
+            f"{rule_id}: {count}"
+            for rule_id, count in capture["detected_rule_windows"].items()
+        ) or "none"
+        rows.append(
+            f"| {dataset['filename']} | {capture['window_count']} | "
+            f"{capture['true_positive_windows']} | {capture['false_positive_windows']} | "
+            f"{capture['false_negative_windows']} | {capture['true_negative_windows']} | {detected} |"
+        )
+    rows.extend(
+        [
             "",
             "## Limitations",
             "",

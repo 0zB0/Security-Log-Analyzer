@@ -1,4 +1,4 @@
-.PHONY: check-structure docs-check lock-check tree test test-scenarios detection-quality detection-quality-check iot23-evaluation benchmark-smoke benchmark benchmark-scale lint api-dev web-dev web-test web-build compose-check smoke-live smoke-ollama smoke-reports smoke-ui smoke-azure-public real-lab-proof security-scan sbom release-assets verify-all
+.PHONY: check-structure docs-check lock-check tree test test-scenarios detection-quality detection-quality-check iot23-evaluation benchmark-smoke benchmark benchmark-scale lint typecheck api-dev web-dev web-test web-build compose-check smoke-live smoke-ollama smoke-reports smoke-ui smoke-azure-public real-lab-proof security-scan sbom release-assets verify-all
 
 check-structure:
 	@test -f local-soc-assistant-architecture.md
@@ -25,7 +25,7 @@ tree:
 	@find . -path ./.git -prune -o -maxdepth 4 -type f -print | sort
 
 test:
-	@.venv/bin/python -m pytest apps/api/tests -W error -q
+	@.venv/bin/python -m pytest apps/api/tests --cov=tracehawk_api --cov-report=term --cov-fail-under=85 -W error -q
 
 test-scenarios:
 	@.venv/bin/python -m pytest apps/api/tests/test_scenarios.py -q
@@ -50,7 +50,10 @@ benchmark-scale:
 	@.venv/bin/python tools/benchmark_analysis.py --profile scale --check
 
 lint:
-	@.venv/bin/python -m ruff check apps/api/tracehawk_api apps/api/tests tools
+	@.venv/bin/python -m ruff check --no-cache apps/api/tracehawk_api apps/api/migrations apps/api/tests tools
+
+typecheck:
+	@cd apps/api && $(CURDIR)/.venv/bin/python -m mypy
 
 api-dev:
 	@.venv/bin/python -m uvicorn tracehawk_api.main:app --reload --app-dir apps/api --host 127.0.0.1 --port 8000
@@ -91,7 +94,7 @@ security-scan:
 	@.venv/bin/pip-audit --progress-spinner off
 	@npm --prefix apps/web audit --omit=dev --audit-level=high
 	@docker run --rm -v "$(CURDIR):/repo" -w /repo zricethezav/gitleaks:v8.30.1 git --no-banner --redact .
-	@docker run --rm -v "$(CURDIR):/src" -w /src semgrep/semgrep:1.164.0 semgrep scan --config p/python --config p/typescript --exclude-rule python.django.security.injection.raw-html-format.raw-html-format --error apps/api/tracehawk_api apps/web/src tools
+	@docker run --rm -v "$(CURDIR):/src" -w /src semgrep/semgrep:1.164.0 semgrep scan --config p/python --config p/typescript --exclude-rule python.django.security.injection.raw-html-format.raw-html-format --error apps/api/tracehawk_api apps/api/migrations apps/web/src tools
 
 sbom:
 	@.venv/bin/cyclonedx-py environment .venv/bin/python --pyproject apps/api/pyproject.toml --output-reproducible --of JSON -o gl-sbom-python.cdx.json
@@ -101,5 +104,5 @@ release-assets:
 	@.venv/bin/python tools/generate_release_assets.py
 	@.venv/bin/python -m pytest apps/api/tests/test_proof_assets.py -q
 
-verify-all: check-structure docs-check lock-check test lint web-test web-build compose-check test-scenarios detection-quality-check benchmark-smoke smoke-live smoke-ollama smoke-reports smoke-ui
+verify-all: check-structure docs-check lock-check test lint typecheck web-test web-build compose-check test-scenarios detection-quality-check benchmark-smoke smoke-live smoke-ollama smoke-reports smoke-ui
 	@echo "TraceHawk local verification OK"

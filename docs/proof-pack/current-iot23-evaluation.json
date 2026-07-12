@@ -1,10 +1,26 @@
 {
   "aggregate_scan_window_metrics": {
+    "balanced_accuracy": 0.7494,
+    "f1": 0.5,
     "false_negative_windows": 1,
     "false_positive_rate": 0.0011,
     "false_positive_windows": 1,
+    "positive_prevalence": 0.0023,
     "precision": 0.5,
+    "precision_wilson_95": [
+      0.0945,
+      0.9055
+    ],
     "recall": 0.5,
+    "recall_wilson_95": [
+      0.0945,
+      0.9055
+    ],
+    "specificity": 0.9989,
+    "specificity_wilson_95": [
+      0.9936,
+      0.9998
+    ],
     "true_negative_windows": 877,
     "true_positive_windows": 1,
     "window_count": 880
@@ -88,7 +104,7 @@
       "source_url": "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/CTU-Honeypot-Capture-4-1/bro/conn.log.labeled"
     }
   ],
-  "generated_at": "2026-07-09T21:39:21.333994+00:00",
+  "generated_at": "2026-07-12T14:09:10.447514+00:00",
   "license": "CC-BY; source citation required.",
   "methodology": {
     "ground_truth_positive": "A window contains at least one `PartOfAHorizontalPortScan` flow.",

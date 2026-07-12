@@ -1,0 +1,22 @@
+{
+  "policy": {
+    "tuning_inputs": "Sanitized packages/test-scenarios fixtures and benign controls may guide rule development.",
+    "final_evaluation_inputs": "Externally labeled captures measure generalization and must not be silently reused as tuning fixtures.",
+    "required_metadata": ["source_url", "license", "sha256", "behavior_family", "evaluation_unit"]
+  },
+  "evaluations": [
+    {
+      "name": "IoT-23 horizontal scan",
+      "role": "final_evaluation",
+      "behavior_family": "network_scan",
+      "evaluation_unit": "fixed_120_second_window",
+      "license": "CC-BY; source citation required",
+      "captures": [
+        "iot23-34-1-conn.log.labeled",
+        "iot23-benign-4-1-conn.log.labeled"
+      ],
+      "report": "docs/proof-pack/current-iot23-evaluation.json"
+    }
+  ],
+  "residual_gap": "A second externally labeled behavior family has not yet been added. No result is fabricated in its place."
+}

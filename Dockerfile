@@ -21,6 +21,8 @@ ENV TRACEHAWK_OLLAMA_MODEL=gpt-oss:20b
 WORKDIR /app
 COPY apps/api/pyproject.toml ./apps/api/pyproject.toml
 COPY apps/api/requirements.lock ./apps/api/requirements.lock
+COPY apps/api/alembic.ini ./apps/api/alembic.ini
+COPY apps/api/migrations ./apps/api/migrations
 COPY apps/api/tracehawk_api ./apps/api/tracehawk_api
 COPY packages/rules ./packages/rules
 COPY packages/sample-data ./packages/sample-data

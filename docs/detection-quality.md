@@ -26,6 +26,13 @@ current rule library produces exactly the declared matches on committed labeled 
 metrics are reported separately because their labels, traffic prevalence, capture age, fixed window
 boundaries, and supported TraceHawk rule families differ from the contract suite.
 
+The external report retains TP/FP/FN/TN counts and also shows F1, specificity, balanced accuracy,
+positive prevalence, per-capture results, per-rule detected windows, and Wilson 95% intervals. With
+only two ground-truth-positive and two predicted-positive windows, the precision and recall point
+estimates have wide intervals and must not be generalized to the complete rule library. Dataset
+roles and required metadata are recorded in `docs/evaluation-manifest.json` so tuning inputs are not
+silently presented as final evaluation evidence.
+
 Rule tuning must record:
 
 - the observed false positive or false negative;

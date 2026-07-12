@@ -2,14 +2,28 @@
 from __future__ import annotations
 
 import base64
+import tempfile
 from io import BytesIO
+from pathlib import Path
 
 from fastapi.testclient import TestClient
 from pypdf import PdfReader
+from tracehawk_api.config import settings
+from tracehawk_api.database import configure_database
 from tracehawk_api.main import app
 
 
 def main() -> int:
+    original_path = settings.db_path
+    with tempfile.TemporaryDirectory() as tmpdir:
+        configure_database(str(Path(tmpdir) / "tracehawk-smoke.db"))
+        try:
+            return _run_smoke()
+        finally:
+            configure_database(original_path)
+
+
+def _run_smoke() -> int:
     client = TestClient(app)
     with open("packages/test-scenarios/auth-ssh-compromise/input.log", "rb") as handle:
         response = client.post(

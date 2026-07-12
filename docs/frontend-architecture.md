@@ -206,19 +206,19 @@ make smoke-ui
 
 ## Current Testing Gap
 
-The reported frontend coverage is intentionally scoped to files imported by the existing tests and
-is dominated by the selector layer. It must not be described as whole-application 97% coverage.
-There are currently few component tests and no broad browser E2E suite committed as the primary UI
-gate.
+Frontend coverage now includes all maintained files under `src`, with an honest initial whole-source
+floor instead of a selector-only percentage. Component tests cover demo success/failure, the hosted
+login boundary, incident selection, analyst-note creation, evidence linking, report generation,
+redaction, and accessibility checks on primary rendered evidence views. The percentage remains low
+because assistant, knowledge, live-monitor, and deep case interactions are not comprehensively
+covered; it must not be described as near-complete UI coverage.
 
 Priority additions are:
 
-1. component tests for incident selection, evidence linking, notes, rule filters, reports, and error
-   states;
-2. mocked contract tests for API failures and stale selections;
-3. keyboard and axe coverage across every primary workspace view;
-4. Playwright-style browser flows for demo, real-lab case, report export, and auth boundaries;
-5. coverage configuration that includes all maintained frontend source files.
+1. component tests for assistant, live-monitor, knowledge panels, case filtering, and stale selections;
+2. keyboard and axe coverage across every primary workspace view;
+3. Playwright-style browser flows for demo, real-lab case, report export, and auth boundaries;
+4. progressive increases to the whole-source coverage floor when meaningful interactions are added.
 
 ## Limitations
 

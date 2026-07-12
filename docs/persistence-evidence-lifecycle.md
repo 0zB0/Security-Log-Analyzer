@@ -73,8 +73,28 @@ general analytics warehouse.
 | `AppSettingRecord` | Retention and assistant configuration |
 | `AuditEventRecord` | Actor, role, path, action, outcome, and request ID without request body |
 
-The SQLAlchemy schema is defined in `apps/api/tracehawk_api/database.py`. Conversion between domain
-models and database records is in `services/persistence.py`.
+The SQLAlchemy schema is defined in `apps/api/tracehawk_api/database.py`. Alembic revisions under
+`apps/api/migrations/` initialize and evolve that schema. A pre-Alembic database that already has
+the complete v0.7.1 schema is adopted at the baseline revision without recreating tables or deleting
+records. Conversion between domain models and database records is in `services/persistence.py`.
+
+## Schema Migration Lifecycle
+
+Application startup upgrades the configured database to Alembic `head`. The migration call is
+serialized in-process and cached for the active engine, so normal request dependencies do not run a
+new migration after startup has completed.
+
+Before upgrading a retained database:
+
+1. stop concurrent writers and keep the single-replica boundary;
+2. create and verify an online SQLite backup;
+3. run the application upgrade or `alembic -c apps/api/alembic.ini upgrade head`;
+4. verify readiness and reopen a saved investigation;
+5. retain the backup until the upgraded revision is accepted.
+
+The baseline downgrade is intentionally destructive because it removes the baseline schema. It is
+tested as a structural round trip, not advertised as a data-preserving production rollback. Restore
+the pre-upgrade backup when retained evidence must survive a rollback.
 
 ## Analysis Identity And Write Behavior
 
@@ -162,7 +182,7 @@ protection as the primary database.
 
 | Concern | Implementation | Verification |
 | --- | --- | --- |
-| Schema and sessions | `database.py` | health and API tests |
+| Schema, migrations, and sessions | `database.py`, `migrations/` | migration, health, and API tests |
 | Analysis persistence and reopen | `services/persistence.py` | `test_analyze_api.py` |
 | Entities | `services/entities.py`, `persistence.py` | `test_case_bundle_api.py` |
 | Notes | `services/notes.py`, `routers/notes.py` | `test_analyze_api.py`, `test_auth_gate.py` |
@@ -185,7 +205,7 @@ protection as the primary database.
 
 Before broader production use, the persistence layer needs at least:
 
-- explicit schema migrations and upgrade/rollback tests;
+- multiple real schema revisions beyond the v0.7.1 baseline and field-level data transforms;
 - a documented immutable-history policy;
 - encryption and key-management decisions for stored evidence and backups;
 - centralized audit and rate-limit state for multiple replicas;
