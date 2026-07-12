@@ -15,6 +15,7 @@ from tracehawk_api.services.live import (
     LiveInterfacePacketStreamer,
     LiveTailControl,
 )
+from tracehawk_api.services.live_attestation import attest_live_snapshot
 
 
 router = APIRouter(prefix="/api/live", tags=["live"])
@@ -48,12 +49,12 @@ async def live_file(websocket: WebSocket) -> None:
     async def send_snapshot(status: str | None = None) -> None:
         snapshot_status = status or ("paused" if control.paused else "active")
         async with send_lock:
-            await websocket.send_json(tailer.snapshot(status=snapshot_status).model_dump(mode="json"))
+            await websocket.send_json(_attested_snapshot_payload(tailer.snapshot(status=snapshot_status)))
 
     async def produce_snapshots() -> None:
         async for snapshot in tailer.snapshots(control):
             async with send_lock:
-                await websocket.send_json(snapshot.model_dump(mode="json"))
+                await websocket.send_json(_attested_snapshot_payload(snapshot))
 
     async def receive_commands() -> None:
         while True:
@@ -162,12 +163,12 @@ async def _stream_live_snapshots(websocket: WebSocket, source) -> None:
     async def send_snapshot(status: str | None = None) -> None:
         snapshot_status = status or ("paused" if control.paused else "active")
         async with send_lock:
-            await websocket.send_json(source.snapshot(status=snapshot_status).model_dump(mode="json"))
+            await websocket.send_json(_attested_snapshot_payload(source.snapshot(status=snapshot_status)))
 
     async def produce_snapshots() -> None:
         async for snapshot in source.snapshots(control):
             async with send_lock:
-                await websocket.send_json(snapshot.model_dump(mode="json"))
+                await websocket.send_json(_attested_snapshot_payload(snapshot))
 
     async def receive_commands() -> None:
         while True:
@@ -202,6 +203,13 @@ async def _stream_live_snapshots(websocket: WebSocket, source) -> None:
 
 def _project_root() -> Path:
     return Path(__file__).resolve().parents[4]
+
+
+def _attested_snapshot_payload(snapshot) -> dict:
+    attestation = attest_live_snapshot(snapshot)
+    return snapshot.model_copy(
+        update={"live_snapshot_attestation": attestation}
+    ).model_dump(mode="json")
 
 
 def _valid_interface(interface: str) -> bool:

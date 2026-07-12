@@ -227,7 +227,12 @@ export function LiveMonitor({
       </section>
       <section className="live-snapshot-strip">
         <span>{latestSnapshot ? latestSnapshot.parser ?? "detecting" : "no snapshot"}</span>
-        <span>{latestSnapshot?.raw_line_count ?? 0} lines</span>
+        <span>
+          {latestSnapshot?.live_retention.retained_raw_lines ?? 0}/
+          {latestSnapshot?.live_retention.total_raw_lines ?? 0} retained lines
+        </span>
+        <span>{latestSnapshot?.live_retention.dropped_raw_lines ?? 0} dropped lines</span>
+        <span>{latestSnapshot?.live_retention.dropped_parsed_events ?? 0} dropped events</span>
         <span>{latestSnapshot?.finding_count ?? 0} findings</span>
         <span>{latestSnapshot?.incident_count ?? 0} incidents</span>
         <span>{latestSnapshot?.evidence.length ? "snapshot ready" : "no evidence"}</span>
@@ -253,5 +258,8 @@ export function snapshotToAnalysisResult(snapshot: LiveSnapshot): AnalysisResult
     sources: [],
     cross_source_links: [],
     case_quality: null,
+    evidence_integrity: null,
+    live_retention: snapshot.live_retention,
+    live_snapshot_attestation: snapshot.live_snapshot_attestation,
   };
 }

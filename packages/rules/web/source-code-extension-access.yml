@@ -9,6 +9,12 @@ mitre:
   tactic: Discovery
   technique_id: T1083
   technique_name: File and Directory Discovery
+correlation:
+  family: sensitive_http
+  incident_title: Web probing against sensitive files
+  behaviors: [sensitive_http]
+  entity_fields: [source_ip]
+  max_gap_minutes: 15
 conditions:
   event_type: http_request
   path_contains_any:
@@ -27,4 +33,3 @@ false_positives:
 recommendations:
   - Remove exposed backup/source files from web roots.
   - Review deployment artifacts.
-

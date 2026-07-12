@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Activity,
@@ -51,6 +51,7 @@ export function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const isAdmin = authStatus?.role === "admin" || authStatus?.local_admin === true;
 
   const selectedFinding = useMemo(() => {
@@ -120,6 +121,29 @@ export function App() {
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  useEffect(() => {
+    function handleWorkspaceShortcut(event: KeyboardEvent) {
+      const target = event.target;
+      const isEditable =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        (target instanceof HTMLElement && target.isContentEditable);
+
+      if (event.key === "/" && !isEditable) {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      if (event.key === "Escape" && document.activeElement === searchInputRef.current) {
+        setSearchQuery("");
+        searchInputRef.current?.blur();
+      }
+    }
+
+    window.addEventListener("keydown", handleWorkspaceShortcut);
+    return () => window.removeEventListener("keydown", handleWorkspaceShortcut);
   }, []);
 
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -234,7 +258,7 @@ export function App() {
           <strong>{viewTitle(activeView)}</strong>
           <span className="version-pill">
             <span className="status-dot" />
-            TraceHawk v0.8.0
+            TraceHawk v0.9.0
           </span>
         </div>
         <div className="topbar-actions">
@@ -262,6 +286,8 @@ export function App() {
         <label className="search-box">
           <Search size={16} />
           <input
+            ref={searchInputRef}
+            aria-label="Global investigation search"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search findings, IPs, users, rules"
@@ -462,6 +488,7 @@ export function App() {
             selectedIncident={selectedIncident}
             selectedFinding={selectedFinding}
             evidenceForFinding={evidenceForFinding}
+            searchQuery={searchQuery}
             assistantResponse={assistantResponse}
             assistantStatus={assistantStatus}
             reportFormat={reportFormat}

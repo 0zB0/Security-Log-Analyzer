@@ -1,0 +1,21 @@
+{
+  "parser": "zeek_tsv",
+  "raw_line_count": 13,
+  "parsed_event_count": 6,
+  "finding_count": 1,
+  "incident_count": 1,
+  "expected_findings": [
+    "zeek-stable-endpoint-retry-001"
+  ],
+  "expected_mitre": [
+    "T1071"
+  ],
+  "expected_evidence_lines": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+  ]
+}

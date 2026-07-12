@@ -9,6 +9,11 @@ mitre:
   tactic: Initial Access
   technique_id: T1190
   technique_name: Exploit Public-Facing Application
+correlation:
+  family: high_severity_alert
+  behaviors: [c2_or_high_alert, high_severity_alert]
+  entity_fields: [source_ip, destination_ip]
+  max_gap_minutes: 15
 conditions:
   event_type: suricata_alert
   field_equals:

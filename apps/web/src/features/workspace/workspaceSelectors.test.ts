@@ -8,6 +8,7 @@ import {
   buildMitreGroups,
   formatScoreComponent,
   formatTime,
+  filterFindingsByQuery,
   groupCrossSourceLinks,
   linkGroupLabel,
   shortId,
@@ -112,6 +113,29 @@ const analysis = (overrides: Partial<AnalysisResult> = {}): AnalysisResult => ({
 });
 
 describe("workspace selectors", () => {
+  it("filters findings across analyst-visible rule, rationale, severity, and MITRE text", () => {
+    const findings = [
+      finding(),
+      finding({
+        id: "finding-2",
+        rule_id: "ssh-bruteforce-001",
+        title: "SSH brute force",
+        severity: "high",
+        mitre: {
+          tactic: "Credential Access",
+          technique_id: "T1110.001",
+          technique_name: "Password Guessing",
+          note: null,
+        },
+      }),
+    ];
+
+    expect(filterFindingsByQuery(findings, "  t1110  ")).toEqual([findings[1]]);
+    expect(filterFindingsByQuery(findings, "MEDIUM")).toEqual([findings[0]]);
+    expect(filterFindingsByQuery(findings, "no match")).toEqual([]);
+    expect(filterFindingsByQuery(findings, " ")).toBe(findings);
+  });
+
   it("groups MITRE findings and retains strongest severity and unique evidence", () => {
     const groups = buildMitreGroups([
       finding(),

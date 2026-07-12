@@ -3,7 +3,16 @@ from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 from typing import Any
 
-from tracehawk_api.models.domain import Finding, Incident, ParsedEvent, Severity
+from tracehawk_api.models.domain import (
+    CorrelationEntityField,
+    DetectionRule,
+    Finding,
+    Incident,
+    ParsedEvent,
+    RuleCorrelationMetadata,
+    Severity,
+)
+from tracehawk_api.services.correlation_patterns import CorrelationPattern
 
 
 SEVERITY_SCORE: dict[Severity, int] = {
@@ -13,6 +22,7 @@ SEVERITY_SCORE: dict[Severity, int] = {
     "high": 75,
     "critical": 95,
 }
+DEFAULT_CORRELATION_POLICY = RuleCorrelationMetadata()
 
 
 @dataclass(frozen=True)
@@ -20,74 +30,102 @@ class ScoreDetails:
     total: int
     breakdown: dict[str, int]
     rationale: list[str]
+    pattern_titles: list[str]
+    pattern_summaries: list[str]
 
 
 def correlate_incidents(
     findings: list[Finding],
     events: list[ParsedEvent],
     cross_source_links: list[Any] | None = None,
+    *,
+    rules: list[DetectionRule] | None = None,
+    patterns: list[CorrelationPattern] | None = None,
 ) -> list[Incident]:
     event_by_line_id = {event.raw_line_id: event for event in events}
-    grouped = _connected_finding_groups(findings, event_by_line_id)
+    policies = {rule.id: rule.correlation for rule in rules or []}
+    grouped = _bounded_finding_groups(findings, event_by_line_id, policies)
     incidents = [
-        _build_incident(grouped_findings, event_by_line_id, cross_source_links or [])
+        _build_incident(
+            grouped_findings,
+            event_by_line_id,
+            cross_source_links or [],
+            policies,
+            patterns or [],
+        )
         for grouped_findings in grouped
     ]
     return sorted(incidents, key=lambda incident: (incident.score, incident.last_seen), reverse=True)
 
 
-def _connected_finding_groups(
-    findings: list[Finding], event_by_line_id: dict[str, ParsedEvent]
+@dataclass
+class _FindingGroup:
+    findings: list[Finding]
+    common_entities: set[str]
+    first_seen: datetime
+    last_seen: datetime
+    max_gap_minutes: int
+
+
+def _bounded_finding_groups(
+    findings: list[Finding],
+    event_by_line_id: dict[str, ParsedEvent],
+    policies: dict[str, RuleCorrelationMetadata],
 ) -> list[list[Finding]]:
     if not findings:
         return []
 
-    entities_by_finding = {
-        finding.id: _correlation_entities(_events_for_finding(finding, event_by_line_id))
-        for finding in findings
-    }
-    adjacency: dict[str, set[str]] = {finding.id: set() for finding in findings}
+    groups: list[_FindingGroup] = []
+    ordered = sorted(findings, key=lambda finding: (finding.first_seen, finding.id))
+    for finding in ordered:
+        policy = _policy_for(finding, policies)
+        entities = _correlation_entities(
+            _events_for_finding(finding, event_by_line_id),
+            policy.entity_fields,
+        )
+        candidates: list[tuple[int, int, _FindingGroup]] = []
+        for group in groups:
+            shared = group.common_entities & entities
+            first_seen = min(group.first_seen, finding.first_seen)
+            last_seen = max(group.last_seen, finding.last_seen)
+            allowed_gap = min(group.max_gap_minutes, policy.max_gap_minutes)
+            if shared and last_seen - first_seen <= timedelta(minutes=allowed_gap):
+                candidates.append((len(shared), len(group.findings), group))
 
-    for index, left in enumerate(findings):
-        left_entities = entities_by_finding[left.id]
-        for right in findings[index + 1 :]:
-            if left_entities & entities_by_finding[right.id]:
-                adjacency[left.id].add(right.id)
-                adjacency[right.id].add(left.id)
-
-    finding_by_id = {finding.id: finding for finding in findings}
-    seen: set[str] = set()
-    groups: list[list[Finding]] = []
-    for finding in findings:
-        if finding.id in seen:
+        if not candidates:
+            groups.append(
+                _FindingGroup(
+                    findings=[finding],
+                    common_entities=entities,
+                    first_seen=finding.first_seen,
+                    last_seen=finding.last_seen,
+                    max_gap_minutes=policy.max_gap_minutes,
+                )
+            )
             continue
 
-        stack = [finding.id]
-        component_ids: list[str] = []
-        seen.add(finding.id)
-        while stack:
-            current = stack.pop()
-            component_ids.append(current)
-            for linked in sorted(adjacency[current]):
-                if linked not in seen:
-                    seen.add(linked)
-                    stack.append(linked)
+        _, _, selected = max(candidates, key=lambda item: (item[0], item[1]))
+        selected.findings.append(finding)
+        selected.common_entities &= entities
+        selected.first_seen = min(selected.first_seen, finding.first_seen)
+        selected.last_seen = max(selected.last_seen, finding.last_seen)
+        selected.max_gap_minutes = min(selected.max_gap_minutes, policy.max_gap_minutes)
 
-        groups.append([finding_by_id[finding_id] for finding_id in component_ids])
-
-    return groups
+    return [group.findings for group in groups]
 
 
 def _build_incident(
     findings: list[Finding],
     event_by_line_id: dict[str, ParsedEvent],
     cross_source_links: list[Any],
+    policies: dict[str, RuleCorrelationMetadata],
+    patterns: list[CorrelationPattern],
 ) -> Incident:
     events = _events_for_findings(findings, event_by_line_id)
     first_seen = min((finding.first_seen for finding in findings), default=datetime.min)
     last_seen = max((finding.last_seen for finding in findings), default=first_seen)
     severity = _max_severity([finding.severity for finding in findings])
-    score = _incident_score(severity, findings, cross_source_links)
+    score = _incident_score(severity, findings, cross_source_links, policies, patterns)
     entities = _entities(events)
     mitre_techniques = sorted(
         {
@@ -96,8 +134,10 @@ def _build_incident(
             if finding.mitre.technique_id is not None
         }
     )
-    title = _incident_title(findings)
-    entity_key = ",".join(_correlation_entities(events)) or "no-entity"
+    title = _incident_title(findings, score, policies)
+    entity_key = ",".join(
+        _correlation_entities(events, ["source_ip", "destination_ip", "username", "host"])
+    ) or "no-entity"
     finding_key = ",".join(sorted(finding.id for finding in findings))
     digest = sha256(f"{entity_key}:{first_seen.isoformat()}:{finding_key}".encode()).hexdigest()[:12]
 
@@ -105,7 +145,13 @@ def _build_incident(
         id=f"incident:{digest}",
         title=title,
         severity=severity,
-        summary=_incident_summary(title, findings, entities, cross_source_links),
+        summary=_incident_summary(
+            title,
+            findings,
+            entities,
+            cross_source_links,
+            score.pattern_summaries,
+        ),
         first_seen=first_seen,
         last_seen=last_seen,
         score=score.total,
@@ -122,13 +168,17 @@ def _incident_score(
     severity: Severity,
     findings: list[Finding],
     cross_source_links: list[Any],
+    policies: dict[str, RuleCorrelationMetadata],
+    patterns: list[CorrelationPattern],
 ) -> ScoreDetails:
     base_score = SEVERITY_SCORE[severity]
     finding_score = min(20, max(0, len(findings) - 1) * 4)
-    sequence_score, sequence_rationale = _sequence_score(findings)
+    sequence_score, sequence_rationale, pattern_titles, pattern_summaries = _sequence_score(
+        findings, policies, patterns
+    )
     time_window_score, time_window_rationale = _time_window_score(findings)
     cross_source_score, cross_source_rationale = _cross_source_score(findings, cross_source_links)
-    diversity_score, diversity_rationale = _rule_family_diversity_score(findings)
+    diversity_score, diversity_rationale = _rule_family_diversity_score(findings, policies)
     breakdown = {
         "base_severity": base_score,
         "finding_volume": finding_score,
@@ -146,113 +196,98 @@ def _incident_score(
     rationale.extend(cross_source_rationale)
     rationale.extend(diversity_rationale)
     total = min(100, sum(breakdown.values()))
-    return ScoreDetails(total=total, breakdown=breakdown, rationale=rationale)
+    return ScoreDetails(
+        total=total,
+        breakdown=breakdown,
+        rationale=rationale,
+        pattern_titles=pattern_titles,
+        pattern_summaries=pattern_summaries,
+    )
 
 
-def _sequence_score(findings: list[Finding]) -> tuple[int, list[str]]:
-    rule_ids = {finding.rule_id for finding in findings}
-    rationale: list[str] = []
-    score = 0
-    if "ssh-compromise-sequence-001" in rule_ids:
-        score += 5
-        rationale.append(
-            "Sequence quality: a three-step SSH failure, success, and privileged action chain matched."
-        )
-    if {"ssh-bruteforce-001", "ssh-success-after-failures-001"} <= rule_ids and _rules_ordered_within(
-        findings, {"ssh-bruteforce-001"}, {"ssh-success-after-failures-001"}, minutes=15
-    ):
-        score += 15
-        rationale.append("Sequence quality: SSH failures are followed by a successful login.")
-    if (
-        "ssh-success-after-failures-001" in rule_ids
-        and any(rule_id.startswith("sudo-") for rule_id in rule_ids)
-        and _rules_ordered_within(findings, {"ssh-success-after-failures-001"}, _sudo_rule_ids(rule_ids), minutes=30)
-    ):
-        score += 5
-        rationale.append("Sequence quality: successful SSH login is followed by sudo activity.")
-    if _has_scan(rule_ids) and _has_sensitive_http(rule_ids) and _rules_ordered_within(
-        findings, _scan_rule_ids(rule_ids), _sensitive_http_rule_ids(rule_ids), minutes=15
-    ):
-        score += 10
-        rationale.append("Sequence quality: scan activity is followed by sensitive HTTP access.")
-    if _has_dns_burst(rule_ids) and _has_c2_or_high_alert(rule_ids) and _rules_ordered_within(
-        findings, _dns_burst_rule_ids(rule_ids), _c2_or_high_alert_rule_ids(rule_ids), minutes=15
-    ):
-        score += 10
-        rationale.append("Sequence quality: DNS burst is followed by alert or C2 activity.")
-    if {
-        "suricata-alert-burst-001",
-        "suricata-high-severity-alert-001",
-    } <= rule_ids:
-        score += 10
-        rationale.append("Sequence quality: alert burst includes high severity Suricata evidence.")
-    return min(score, 25), rationale
-
-
-def _rules_ordered_within(
+def _sequence_score(
     findings: list[Finding],
-    first_rule_ids: set[str],
-    second_rule_ids: set[str],
-    *,
-    minutes: int,
+    policies: dict[str, RuleCorrelationMetadata],
+    patterns: list[CorrelationPattern],
+) -> tuple[int, list[str], list[str], list[str]]:
+    rationale: list[str] = []
+    pattern_titles: list[str] = []
+    pattern_summaries: list[str] = []
+    score = 0
+    for finding in findings:
+        policy = _policy_for(finding, policies)
+        if policy.intrinsic_sequence_score:
+            score += policy.intrinsic_sequence_score
+            rationale.append(
+                "Sequence quality: declared intrinsic sequence: "
+                f"{policy.intrinsic_sequence_rationale or finding.title}"
+            )
+            if policy.intrinsic_sequence_summary:
+                pattern_summaries.append(policy.intrinsic_sequence_summary)
+
+    for pattern in patterns:
+        if not _pattern_matches(pattern, findings, policies):
+            continue
+        score += pattern.score
+        rationale.append(f"Sequence quality: pattern {pattern.id}: {pattern.rationale}")
+        pattern_titles.append(pattern.title)
+        pattern_summaries.append(pattern.summary)
+
+    return min(score, 25), rationale, pattern_titles, pattern_summaries
+
+
+def _pattern_matches(
+    pattern: CorrelationPattern,
+    findings: list[Finding],
+    policies: dict[str, RuleCorrelationMetadata],
 ) -> bool:
-    first_findings = [finding for finding in findings if finding.rule_id in first_rule_ids]
-    second_findings = [finding for finding in findings if finding.rule_id in second_rule_ids]
-    if not first_findings or not second_findings:
-        return False
-    window = timedelta(minutes=minutes)
-    return any(
-        first.first_seen <= second.last_seen and second.last_seen - first.first_seen <= window
-        for first in first_findings
-        for second in second_findings
+    ordered = sorted(findings, key=lambda finding: (finding.last_seen, finding.id))
+    return _match_pattern_stage(
+        pattern,
+        ordered,
+        policies,
+        stage_index=0,
+        used_finding_ids=set(),
+        first_time=None,
+        previous_time=None,
     )
 
 
-def _scan_rule_ids(rule_ids: set[str]) -> set[str]:
-    return {rule_id for rule_id in rule_ids if _is_scan_rule(rule_id)}
+def _match_pattern_stage(
+    pattern: CorrelationPattern,
+    ordered: list[Finding],
+    policies: dict[str, RuleCorrelationMetadata],
+    *,
+    stage_index: int,
+    used_finding_ids: set[str],
+    first_time: datetime | None,
+    previous_time: datetime | None,
+) -> bool:
+    if stage_index == len(pattern.stages):
+        return True
 
-
-def _sensitive_http_rule_ids(rule_ids: set[str]) -> set[str]:
-    return {rule_id for rule_id in rule_ids if _is_sensitive_http_rule(rule_id)}
-
-
-def _dns_burst_rule_ids(rule_ids: set[str]) -> set[str]:
-    return {rule_id for rule_id in rule_ids if "dns-burst" in rule_id}
-
-
-def _c2_or_high_alert_rule_ids(rule_ids: set[str]) -> set[str]:
-    return {rule_id for rule_id in rule_ids if "c2" in rule_id or "high-severity-alert" in rule_id}
-
-
-def _sudo_rule_ids(rule_ids: set[str]) -> set[str]:
-    return {rule_id for rule_id in rule_ids if rule_id.startswith("sudo-")}
-
-
-def _has_scan(rule_ids: set[str]) -> bool:
-    return any(_is_scan_rule(rule_id) for rule_id in rule_ids)
-
-
-def _is_scan_rule(rule_id: str) -> bool:
-    return "scan" in rule_id or "reconnaissance" in rule_id
-
-
-def _has_sensitive_http(rule_ids: set[str]) -> bool:
-    return any(_is_sensitive_http_rule(rule_id) for rule_id in rule_ids)
-
-
-def _is_sensitive_http_rule(rule_id: str) -> bool:
-    return any(
-        marker in rule_id
-        for marker in ("sensitive-path", "sensitive-file", "source-code-extension")
-    )
-
-
-def _has_dns_burst(rule_ids: set[str]) -> bool:
-    return any("dns-burst" in rule_id for rule_id in rule_ids)
-
-
-def _has_c2_or_high_alert(rule_ids: set[str]) -> bool:
-    return any("c2" in rule_id or "high-severity-alert" in rule_id for rule_id in rule_ids)
+    stage_behaviors = set(pattern.stages[stage_index].any_behaviors)
+    for candidate in ordered:
+        if candidate.id in used_finding_ids:
+            continue
+        if previous_time is not None and candidate.last_seen < previous_time:
+            continue
+        if not set(_policy_for(candidate, policies).behaviors) & stage_behaviors:
+            continue
+        sequence_start = first_time or candidate.last_seen
+        if candidate.last_seen - sequence_start > timedelta(minutes=pattern.max_gap_minutes):
+            continue
+        if _match_pattern_stage(
+            pattern,
+            ordered,
+            policies,
+            stage_index=stage_index + 1,
+            used_finding_ids=used_finding_ids | {candidate.id},
+            first_time=sequence_start,
+            previous_time=candidate.last_seen,
+        ):
+            return True
+    return False
 
 
 def _time_window_score(findings: list[Finding]) -> tuple[int, list[str]]:
@@ -303,8 +338,11 @@ def _related_cross_source_links(findings: list[Finding], cross_source_links: lis
     ]
 
 
-def _rule_family_diversity_score(findings: list[Finding]) -> tuple[int, list[str]]:
-    families = {_rule_family(finding.rule_id) for finding in findings}
+def _rule_family_diversity_score(
+    findings: list[Finding],
+    policies: dict[str, RuleCorrelationMetadata],
+) -> tuple[int, list[str]]:
+    families = {_family_for(finding, policies) for finding in findings}
     if len(families) < 2:
         return 0, []
     score = min(10, (len(families) - 1) * 2)
@@ -313,22 +351,22 @@ def _rule_family_diversity_score(findings: list[Finding]) -> tuple[int, list[str
     ]
 
 
-def _rule_family(rule_id: str) -> str:
-    if "dns" in rule_id:
-        return "dns"
-    if "http" in rule_id or "web" in rule_id:
-        return "http"
-    if "ssh" in rule_id:
-        return "ssh"
-    if "sudo" in rule_id:
-        return "sudo"
-    if "scan" in rule_id or "reconnaissance" in rule_id:
-        return "scan"
-    if "c2" in rule_id:
-        return "c2"
-    if "alert" in rule_id:
-        return "alert"
-    return rule_id.split("-", maxsplit=1)[0]
+def _family_for(
+    finding: Finding,
+    policies: dict[str, RuleCorrelationMetadata],
+) -> str:
+    policy = _policy_for(finding, policies)
+    if policy.family:
+        return policy.family
+    tactic = finding.mitre.tactic or "unclassified"
+    return tactic.strip().lower().replace(" ", "_")
+
+
+def _policy_for(
+    finding: Finding,
+    policies: dict[str, RuleCorrelationMetadata],
+) -> RuleCorrelationMetadata:
+    return policies.get(finding.rule_id, DEFAULT_CORRELATION_POLICY)
 
 
 def _events_for_findings(
@@ -379,19 +417,24 @@ def _entities(events: list[ParsedEvent]) -> list[str]:
     return sorted(values)
 
 
-def _correlation_entities(events: list[ParsedEvent]) -> set[str]:
+def _correlation_entities(
+    events: list[ParsedEvent],
+    fields: list[CorrelationEntityField],
+) -> set[str]:
     values: set[str] = set()
+    enabled = set(fields)
     for event in events:
-        if event.source_ip:
+        if "source_ip" in enabled and event.source_ip:
             values.add(f"ip:{event.source_ip}")
-        if destination_ip := event.normalized_fields.get("destination_ip"):
+        if (
+            "destination_ip" in enabled
+            and (destination_ip := event.normalized_fields.get("destination_ip"))
+        ):
             values.add(f"dst:{destination_ip}")
-        if event.username:
+        if "username" in enabled and event.username:
             values.add(f"user:{event.username}")
-
-    if values:
+    if values or "host" not in enabled:
         return values
-
     return {f"host:{event.host}" for event in events if event.host}
 
 
@@ -408,19 +451,36 @@ def _max_severity(severities: list[Severity]) -> Severity:
     return max(severities, key=lambda severity: SEVERITY_SCORE[severity], default="info")
 
 
-def _incident_title(findings: list[Finding]) -> str:
-    rule_ids = {finding.rule_id for finding in findings}
-    if "ssh-success-after-failures-001" in rule_ids:
-        return "Possible SSH credential compromise"
-    if "ssh-bruteforce-001" in rule_ids:
-        return "SSH brute force activity"
-    if any(rule_id.startswith("sudo-") for rule_id in rule_ids):
-        return "Privileged sudo activity"
-    if "web-sensitive-file-access-001" in rule_ids:
-        return "Web probing against sensitive files"
+def _incident_title(
+    findings: list[Finding],
+    score: ScoreDetails,
+    policies: dict[str, RuleCorrelationMetadata],
+) -> str:
+    if score.pattern_titles:
+        return score.pattern_titles[0]
     if len(findings) == 1:
         return findings[0].title
-    return "Correlated security activity"
+    declared = [
+        (finding, policy.incident_title)
+        for finding in findings
+        if (policy := _policy_for(finding, policies)).incident_title
+    ]
+    if declared:
+        _, title = max(
+            declared,
+            key=lambda item: (
+                SEVERITY_SCORE[item[0].severity],
+                item[0].event_count,
+                item[0].id,
+            ),
+        )
+        assert title is not None
+        return title
+    dominant = max(
+        findings,
+        key=lambda finding: (SEVERITY_SCORE[finding.severity], finding.event_count, finding.id),
+    )
+    return f"{dominant.title} and related activity"
 
 
 def _incident_summary(
@@ -428,29 +488,15 @@ def _incident_summary(
     findings: list[Finding],
     entities: list[str],
     cross_source_links: list[Any],
+    pattern_summaries: list[str],
 ) -> str:
     entity_text = ", ".join(entities[:5]) if entities else "unknown entities"
     parts = [f"{title} grouped {len(findings)} finding(s) involving {entity_text}."]
-    parts.extend(_sequence_summary_parts({finding.rule_id for finding in findings}))
+    parts.extend(dict.fromkeys(pattern_summaries))
     corroborated_count = _cross_source_corroboration_count(findings, cross_source_links)
     if corroborated_count:
         parts.append(f"Cross-source corroboration links {corroborated_count} related evidence pair(s).")
     return " ".join(parts)
-
-
-def _sequence_summary_parts(rule_ids: set[str]) -> list[str]:
-    parts: list[str] = []
-    if {"ssh-bruteforce-001", "ssh-success-after-failures-001"} <= rule_ids:
-        parts.append("Sequence: SSH failures followed by a successful login.")
-    if "ssh-success-after-failures-001" in rule_ids and any(rule_id.startswith("sudo-") for rule_id in rule_ids):
-        parts.append("Sequence: successful SSH login followed by sudo activity.")
-    if _has_scan(rule_ids) and _has_sensitive_http(rule_ids):
-        parts.append("Sequence: scan activity followed by sensitive HTTP access.")
-    if _has_dns_burst(rule_ids) and _has_c2_or_high_alert(rule_ids):
-        parts.append("Sequence: DNS burst followed by alert or C2 activity.")
-    if "suricata-alert-burst-001" in rule_ids and "suricata-high-severity-alert-001" in rule_ids:
-        parts.append("Sequence: alert burst includes high severity Suricata evidence.")
-    return parts
 
 
 def _cross_source_corroboration_count(findings: list[Finding], cross_source_links: list[Any]) -> int:

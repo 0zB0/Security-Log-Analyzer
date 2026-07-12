@@ -9,6 +9,12 @@ mitre:
   tactic: Persistence
   technique_id: T1136.001
   technique_name: Local Account
+correlation:
+  family: account_management
+  incident_title: Privileged sudo activity
+  behaviors: [privileged_action]
+  entity_fields: [username, host]
+  max_gap_minutes: 30
 conditions:
   event_type: sudo_command
   field_contains_any:
@@ -28,4 +34,3 @@ recommendations:
   - Confirm the change ticket or administrator intent.
   - Review authentication events immediately before and after the command.
   - Inspect the created or modified account for persistence risk.
-

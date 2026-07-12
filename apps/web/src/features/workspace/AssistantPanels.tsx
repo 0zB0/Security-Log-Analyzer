@@ -99,7 +99,11 @@ export function SettingsPanel({
   if (!settings) {
     return (
       <section className="surface settings-panel">
-        <div className="empty-state">Loading settings.</div>
+        {error ? (
+          <div className="error-banner compact-error">{error}</div>
+        ) : (
+          <div className="empty-state">Loading settings.</div>
+        )}
       </section>
     );
   }

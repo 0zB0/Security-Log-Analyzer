@@ -9,6 +9,11 @@ mitre:
   tactic: Discovery
   technique_id: T1595.002
   technique_name: Vulnerability Scanning
+correlation:
+  family: alert
+  behaviors: [alert_burst]
+  entity_fields: [source_ip, destination_ip]
+  max_gap_minutes: 15
 conditions:
   event_type: suricata_alert
   group_by:

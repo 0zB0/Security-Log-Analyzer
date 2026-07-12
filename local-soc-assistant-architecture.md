@@ -1,5 +1,9 @@
 # Local-Only Live SOC Assistant - 10/10 Portfolio Architecture
 
+> Status: original product blueprint and design rationale. Current implemented behavior is
+> canonical in `docs/architecture.md`, `docs/product-spec.md`, `docs/limitations.md`, and
+> `docs/proof-pack.md`; historical scope statements below are not release claims.
+
 ## 1. Namen Projekta
 
 Projekt ni "še en log analyzer". Cilj je zgraditi srednje velik, profesionalen portfolio produkt:
@@ -1604,4 +1608,3 @@ Zakaj je to prava smer:
 Če morava sprejeti odločitev, uporabiva to pravilo:
 
 > Vsaka funkcija mora pomagati analitiku hitreje razumeti, kaj se je zgodilo, s katerimi dokazi, kakšno je tveganje in kaj narediti naprej - lokalno, transparentno in brez clouda.
-

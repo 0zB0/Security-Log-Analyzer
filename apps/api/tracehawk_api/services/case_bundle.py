@@ -16,7 +16,12 @@ from tracehawk_api.services.analysis import (
     analyze_text,
 )
 from tracehawk_api.services.correlation import correlate_incidents
+from tracehawk_api.services.correlation_patterns import (
+    default_correlation_pattern_path,
+    load_correlation_patterns,
+)
 from tracehawk_api.services.ingest import build_raw_lines_from_text
+from tracehawk_api.services.rules import load_rules
 
 
 @dataclass(frozen=True)
@@ -42,6 +47,8 @@ def analyze_case_bundle(
 
     source_results: list[AnalysisResult] = []
     raw_lines: list[RawLogLine] = []
+    rules = load_rules(rules_root)
+    patterns = load_correlation_patterns(default_correlation_pattern_path(rules_root), rules)
     for item in inputs:
         if not item.text.strip():
             raise ValueError(f"{item.filename} is empty.")
@@ -49,6 +56,8 @@ def analyze_case_bundle(
             text=item.text,
             filename=item.filename,
             rules_root=rules_root,
+            rule_library=rules,
+            correlation_patterns=patterns,
         )
         source_results.append(source_result)
         raw_lines.extend(build_raw_lines_from_text(item.text, source_result.source_id))
@@ -75,7 +84,13 @@ def analyze_case_bundle(
         for item, result in zip(inputs, source_results, strict=True)
     ]
     cross_source_links = _cross_source_links(events, sources)
-    incidents = correlate_incidents(findings, events, cross_source_links=cross_source_links)
+    incidents = correlate_incidents(
+        findings,
+        events,
+        cross_source_links=cross_source_links,
+        rules=rules,
+        patterns=patterns,
+    )
     evidence = _case_evidence(findings, raw_lines, cross_source_links)
     case_quality = _case_quality_summary(incidents, cross_source_links)
 

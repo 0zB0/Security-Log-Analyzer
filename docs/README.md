@@ -32,10 +32,12 @@ product, tests, sanitized fixtures, public evidence, and public-safe technical d
 - [CloudTrail](cloudtrail-ingest.md)
 - [Kubernetes audit events](kubernetes-audit-ingest.md)
 - [WireGuard/interface metadata](wireguard-packet-capture.md)
+- [Bounded TCP/UDP syslog collector](syslog-collector.md)
 
 ## Build, Test, And Operate
 
 - [API reference](api.md)
+- [Generated browser API contract](api-contract.md)
 - [Testing strategy](testing-strategy.md)
 - [Performance method](performance.md)
 - [Self-hosted deployment](deployment-selfhost.md)
@@ -53,7 +55,9 @@ product, tests, sanitized fixtures, public evidence, and public-safe technical d
 - [Current IoT-23 evaluation](proof-pack/current-iot23-evaluation.md)
 - [Current performance result](proof-pack/current-performance.md)
 - [Current scale result](proof-pack/current-scale-performance.md)
-- [Current v0.8.0 release notes](releases/v0.8.0.md)
+- [Current API/frontend verification](proof-pack/current-api-frontend-verification.md)
+- [Current v0.9.0 release notes](releases/v0.9.0.md)
+- [Historical v0.8.0 release notes](releases/v0.8.0.md)
 - [Historical v0.7.1 release notes](releases/v0.7.1.md)
 
 ## Architecture Decisions

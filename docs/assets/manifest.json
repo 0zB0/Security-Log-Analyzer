@@ -1,32 +1,32 @@
 {
   "artifacts": {
     "docs/assets/demo/01-upload-analysis.png": {
-      "bytes": 138318,
-      "sha256": "7f7713a661da5ff8be2e13ea991bc80d1efbb09dfc7c0751adceb18ebdc6a090"
+      "bytes": 138961,
+      "sha256": "c66e915b530631503ff13f9b11eac8c2cf2758c2e8f204ba433355d907ae49d6"
     },
     "docs/assets/demo/02-incident-correlation.png": {
-      "bytes": 144113,
-      "sha256": "a60f7d6b6fd6b55e2829fccb8cda5d77d72d82ad1de420373af25fc195854def"
+      "bytes": 144987,
+      "sha256": "ea54bacb58c8f3d1e43a23514d23c2e2017a61b0c1a4f0a92a0424825d66e5d4"
     },
     "docs/assets/demo/03-report-export.png": {
-      "bytes": 139403,
-      "sha256": "acbfb391e8b0ca98effea4f3160f85a625b41efea8dc64f106357e642f6a8164"
+      "bytes": 140085,
+      "sha256": "1fbf12ba147b31ea15d98cf9d457605498d82722cc3a134af827217abaac0027"
     },
     "docs/assets/demo/04-case-correlation.png": {
-      "bytes": 110682,
-      "sha256": "98507cfb9476900fd24df296bf6f2e10334a13edcf5fcddacdbf8b7a9604431e"
+      "bytes": 110800,
+      "sha256": "9b12a9e9e64beb142fdbe0643f5073768b841a2244d25d6ddc64c203938bc579"
     },
     "docs/assets/demo/tracehawk-demo.gif": {
-      "bytes": 1535237,
-      "sha256": "5237e66609eb6019052ec541e6e01566400148791953054b5369c6e16c660511"
+      "bytes": 1538381,
+      "sha256": "b80eeb59a1a26bf260599d77f53dd4940750e8c44b0815ad9493d5dbac0b447c"
     },
     "docs/assets/reports/tracehawk-sample-incident.html": {
-      "bytes": 46783,
-      "sha256": "845dd638f166140637165bd36c467dd39f79e2b6b6d3efda20684c1b85053146"
+      "bytes": 47019,
+      "sha256": "294065c4dfa7bcbee23f8969f08f00139a3651c9a73f551a6af021bad112a12a"
     },
     "docs/assets/reports/tracehawk-sample-incident.pdf": {
-      "bytes": 23124,
-      "sha256": "e961515fc8d5b77952a45576945eba615f6102f50e8438358e22c123bde47ac7"
+      "bytes": 23278,
+      "sha256": "c7f0d138631fe5875dbf20c9a01f6e2f79c4cd9b80fb7b4859f387ac2c2e3fb4"
     }
   }
 }

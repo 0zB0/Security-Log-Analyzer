@@ -14,7 +14,16 @@ from tracehawk_api.models.domain import (
     RawLogLine,
 )
 from tracehawk_api.services.correlation import correlate_incidents
+from tracehawk_api.services.correlation_patterns import (
+    CorrelationPattern,
+    default_correlation_pattern_path,
+    load_correlation_patterns,
+)
 from tracehawk_api.services.detection import run_detection
+from tracehawk_api.services.evidence_integrity import (
+    EvidenceIntegritySummary,
+    LiveRetentionSummary,
+)
 from tracehawk_api.services.ingest import build_raw_lines_from_text
 from tracehawk_api.services.parser_registry import default_parsers
 from tracehawk_api.services.parsers import LogParser
@@ -85,6 +94,9 @@ class AnalysisResult(BaseModel):
     sources: list[SourceSummary] = Field(default_factory=list)
     cross_source_links: list[CrossSourceLink] = Field(default_factory=list)
     case_quality: CaseQualitySummary | None = None
+    evidence_integrity: EvidenceIntegritySummary | None = None
+    live_retention: LiveRetentionSummary | None = None
+    live_snapshot_attestation: str | None = None
 
 
 @dataclass(frozen=True)
@@ -98,6 +110,9 @@ def analyze_text(
     filename: str,
     rules_root: Path,
     parsers: list[LogParser] | None = None,
+    *,
+    rule_library: list[DetectionRule] | None = None,
+    correlation_patterns: list[CorrelationPattern] | None = None,
 ) -> AnalysisResult:
     source_id = _source_id(filename, text)
     raw_lines = build_raw_lines_from_text(text, source_id)
@@ -106,9 +121,14 @@ def analyze_text(
         parsers or default_parsers(),
     )
     events = _parse_selected_lines(raw_lines, selection)
-    rules = load_rules(rules_root)
+    rules = rule_library if rule_library is not None else load_rules(rules_root)
+    patterns = (
+        correlation_patterns
+        if correlation_patterns is not None
+        else load_correlation_patterns(default_correlation_pattern_path(rules_root), rules)
+    )
     findings = _run_parser_scoped_detection(rules, events, selection)
-    incidents = correlate_incidents(findings, events)
+    incidents = correlate_incidents(findings, events, rules=rules, patterns=patterns)
 
     evidence_by_id = {line.id: line for line in raw_lines}
     evidence_ids = {

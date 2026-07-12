@@ -16,6 +16,7 @@ Current scenarios cover:
 - 100 KB and 1 MB mixed auth/web parser routing;
 - an eight-source case bundle;
 - HTTP upload, SQLite persistence, and PDF report generation.
+- 2,000 incremental live lines with a 200-line raw window and 150-event window.
 
 The opt-in scale profile runs direct, offline engine analysis at 10 MB, 50 MB, and 100 MB. Those
 cases measure algorithmic growth outside the HTTP upload path. They do not change or bypass the
@@ -23,6 +24,11 @@ configured upload and case-bundle security limits, and they are not run on every
 
 Robustness tests additionally cover concurrent independent analyses, very long lines, control
 characters, malformed JSON lines, newline-heavy input, and recovery after a rejected upload.
+
+The live-retention smoke scenario proves bounded state, not indefinite soak reliability. Its worker
+must finish under 10 seconds and 256 MB peak RSS while reporting exactly 200 retained raw lines, 150
+retained events, 1,800 dropped raw lines, and 1,850 dropped events. Syslog socket tests separately
+cover the queue, line-size, connection, idle, and batch limits.
 
 The configured limits remain the security boundary. Benchmark success does not authorize files
 larger than `MAX_UPLOAD_BYTES`, more files than `MAX_CASE_FILES`, or bundles larger than

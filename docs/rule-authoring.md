@@ -13,6 +13,7 @@ Each production rule should include:
 - `confidence`;
 - supported `log_types`;
 - MITRE mapping where justified;
+- explicit correlation metadata when the rule participates in incident patterns;
 - deterministic `conditions`;
 - evidence policy;
 - false-positive notes;
@@ -32,6 +33,14 @@ mitre:
   tactic: Credential Access
   technique_id: T1110.001
   technique_name: Password Guessing
+correlation:
+  family: credential_access
+  behaviors:
+    - ssh_failures
+  entity_fields:
+    - source_ip
+    - username
+  max_gap_minutes: 15
 conditions:
   event_type: ssh_failed_login
   group_by:
@@ -95,6 +104,32 @@ conditions:
 Rules with fewer than two or more than eight steps, unknown step keys, missing event types, or
 invalid counts fail validation when the rule library loads. They are never silently skipped.
 
+## Correlation Metadata
+
+Correlation metadata is behavior-oriented and independent of a rule's ID or title:
+
+- `family`: lowercase semantic family used for diversity scoring;
+- `incident_title`: optional shared title for an unmatched multi-finding incident;
+- `behaviors`: unique lowercase tags consumed by `packages/correlation/patterns.yml`;
+- `entity_fields`: one or more stable grouping keys from `source_ip`, `destination_ip`, `username`,
+  and `host`;
+- `max_gap_minutes`: strict maximum total span for an incident containing this rule;
+- `intrinsic_sequence_score`: optional `0..25` score for an ordered sequence already proven by the
+  rule itself;
+- `intrinsic_sequence_rationale`: required when the intrinsic score is positive;
+- `intrinsic_sequence_summary`: optional analyst-facing sentence.
+
+Use a behavior for what the evidence means, not where the YAML file lives. For example,
+`network_scan` can be emitted by Zeek, Suricata, or packet-metadata rules. Do not encode behavior in
+an ID with the expectation that Python will inspect the name.
+
+Choose entity fields narrowly. A credential rule normally uses source IP and username. A network
+flow rule normally uses source and destination IP. Host is a fallback when no enabled stronger
+entity exists; it should not be used to collapse unrelated users or remote endpoints on one host.
+
+Multi-rule behavior belongs in the versioned pattern library, not in Python conditionals. Every
+pattern tag must be declared by at least one rule or readiness fails.
+
 For JSON logs, nested fields are flattened with dot notation. Example:
 
 ```json
@@ -116,6 +151,7 @@ Auth rules:
 
 - `sudo-authorized-keys-001`
 - `ssh-bruteforce-001`
+- `ssh-compromise-sequence-001`
 - `ssh-success-after-failures-001`
 - `sudo-burst-001`
 - `sudo-cron-persistence-001`
@@ -151,6 +187,30 @@ CSV rules:
 - `csv-admin-login-success-001`
 - `csv-auth-failure-burst-001`
 
+CloudTrail rules:
+
+- `cloudtrail-access-key-created-001`
+- `cloudtrail-console-login-failure-burst-001`
+- `cloudtrail-iam-policy-attachment-001`
+- `cloudtrail-logging-disabled-001`
+- `cloudtrail-root-account-usage-001`
+
+Kubernetes audit rules:
+
+- `kubernetes-clusterrolebinding-create-001`
+- `kubernetes-forbidden-burst-001`
+- `kubernetes-pod-exec-001`
+- `kubernetes-privileged-pod-create-001`
+- `kubernetes-secret-read-001`
+
+Windows Security rules:
+
+- `windows-account-created-001`
+- `windows-admin-group-member-added-001`
+- `windows-audit-log-cleared-001`
+- `windows-failed-logon-burst-001`
+- `windows-success-after-failures-001`
+
 Syslog rules:
 
 - `syslog-error-burst-001`
@@ -183,4 +243,5 @@ Zeek rules:
 - `zeek-dns-burst-001`
 - `zeek-http-sensitive-path-001`
 - `zeek-notice-event-001`
+- `zeek-stable-endpoint-retry-001`
 - `zeek-tls-suspicious-name-001`

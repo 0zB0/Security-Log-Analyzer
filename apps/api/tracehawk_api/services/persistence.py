@@ -30,6 +30,11 @@ from tracehawk_api.services.analysis import (
     SourceSummary,
 )
 from tracehawk_api.services.entities import build_entities
+from tracehawk_api.services.evidence_integrity import (
+    EvidenceIntegritySummary,
+    EvidenceOrigin,
+    verify_analysis_integrity,
+)
 
 
 class AnalysisRunSummary(BaseModel):
@@ -52,9 +57,19 @@ def persist_analysis(
     *,
     source_type: str = "upload",
     analysis_id: str | None = None,
+    evidence_origin: EvidenceOrigin | None = None,
+    attested_live_snapshot: bool = False,
 ) -> AnalysisResult:
     analysis_id = analysis_id or _analysis_id(filename, result.source_id)
     now = datetime.now(UTC)
+
+    integrity = verify_analysis_integrity(
+        result,
+        raw_lines,
+        origin=evidence_origin or ("case_bundle" if result.parser == "case_bundle" else "upload"),
+        attested_live_snapshot=attested_live_snapshot,
+    )
+    result.evidence_integrity = integrity
 
     _delete_previous_analysis_children(session, analysis_id)
 
@@ -73,6 +88,7 @@ def persist_analysis(
             case_quality=(
                 result.case_quality.model_dump(mode="json") if result.case_quality else None
             ),
+            evidence_integrity=integrity.model_dump(mode="json"),
             created_at=now,
         )
     )
@@ -188,6 +204,15 @@ def get_analysis_result(session: Session, analysis_id: str) -> AnalysisResult | 
         )
     ]
 
+    integrity = (
+        EvidenceIntegritySummary.model_validate(run.evidence_integrity)
+        if run.evidence_integrity
+        else EvidenceIntegritySummary(
+            status="legacy_unverified",
+            origin="legacy",
+            verified_line_count=0,
+        )
+    )
     return AnalysisResult(
         analysis_id=analysis_id,
         source_id=run.source_id,
@@ -208,6 +233,8 @@ def get_analysis_result(session: Session, analysis_id: str) -> AnalysisResult | 
         case_quality=(
             CaseQualitySummary.model_validate(run.case_quality) if run.case_quality else None
         ),
+        evidence_integrity=integrity,
+        live_retention=integrity.live_retention,
     )
 
 

@@ -1,0 +1,62 @@
+schema_version: 1
+patterns:
+  - id: ssh-failures-to-success
+    title: Possible SSH credential compromise
+    stages:
+      - any_behaviors:
+          - ssh_failures
+      - any_behaviors:
+          - ssh_success
+    max_gap_minutes: 15
+    score: 15
+    rationale: SSH failures are followed by a successful login.
+    summary: SSH failures were followed by a successful login.
+
+  - id: ssh-success-to-privileged-action
+    title: SSH access followed by privileged activity
+    stages:
+      - any_behaviors:
+          - ssh_success
+      - any_behaviors:
+          - privileged_action
+    max_gap_minutes: 30
+    score: 5
+    rationale: Successful SSH login is followed by privileged activity.
+    summary: A successful SSH login was followed by privileged activity.
+
+  - id: scan-to-sensitive-http
+    title: Reconnaissance followed by sensitive HTTP access
+    stages:
+      - any_behaviors:
+          - network_scan
+      - any_behaviors:
+          - sensitive_http
+    max_gap_minutes: 15
+    score: 10
+    rationale: Scan activity is followed by sensitive HTTP access.
+    summary: Scan activity was followed by sensitive HTTP access.
+
+  - id: dns-burst-to-c2-alert
+    title: DNS activity followed by C2 or high-severity alert
+    stages:
+      - any_behaviors:
+          - dns_burst
+      - any_behaviors:
+          - c2_or_high_alert
+          - stable_endpoint_retry
+    max_gap_minutes: 15
+    score: 10
+    rationale: DNS burst is followed by a C2 indicator or high-severity alert.
+    summary: A DNS burst was followed by a C2 indicator or high-severity alert.
+
+  - id: alert-burst-to-high-severity
+    title: Alert burst with high-severity evidence
+    stages:
+      - any_behaviors:
+          - alert_burst
+      - any_behaviors:
+          - high_severity_alert
+    max_gap_minutes: 15
+    score: 10
+    rationale: Alert burst includes high-severity Suricata evidence.
+    summary: An alert burst included high-severity Suricata evidence.

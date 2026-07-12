@@ -18,6 +18,10 @@ from starlette.routing import Match
 from tracehawk_api.auth import request_id_from_headers
 from tracehawk_api.config import settings
 from tracehawk_api.database import SessionLocal, init_db
+from tracehawk_api.services.correlation_patterns import (
+    default_correlation_pattern_path,
+    load_correlation_patterns,
+)
 from tracehawk_api.services.rules import load_rules
 
 
@@ -189,14 +193,26 @@ def readiness_report() -> tuple[bool, dict[str, Any]]:
         checks["database"] = f"error:{type(exc).__name__}"
 
     try:
-        rules = load_rules(_project_root() / "packages/rules")
+        rules_root = _project_root() / "packages/rules"
+        rules = load_rules(rules_root)
+        patterns = load_correlation_patterns(
+            default_correlation_pattern_path(rules_root), rules
+        )
         checks["rules"] = "ok" if rules else "error:no_rules"
         checks["rule_count"] = len(rules)
+        checks["correlation_patterns"] = "ok" if patterns else "error:no_patterns"
+        checks["correlation_pattern_count"] = len(patterns)
     except Exception as exc:
         checks["rules"] = f"error:{type(exc).__name__}"
         checks["rule_count"] = 0
+        checks["correlation_patterns"] = f"error:{type(exc).__name__}"
+        checks["correlation_pattern_count"] = 0
 
-    ready = checks.get("database") == "ok" and checks.get("rules") == "ok"
+    ready = (
+        checks.get("database") == "ok"
+        and checks.get("rules") == "ok"
+        and checks.get("correlation_patterns") == "ok"
+    )
     return ready, {
         "status": "ready" if ready else "not_ready",
         "checks": checks,

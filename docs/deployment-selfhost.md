@@ -27,8 +27,20 @@ MAX_CASE_TOTAL_BYTES=8000000
 ALLOWED_UPLOAD_EXTENSIONS=.log,.txt,.csv,.json,.jsonl,.xml
 RATE_LIMIT_PER_MINUTE=120
 ALLOWED_AUTH_EMAILS=
+TRACEHAWK_LIVE_MAX_RAW_LINES=5000
+TRACEHAWK_LIVE_MAX_EVENTS=5000
 ```
 
 For a private self-hosted instance, put the app behind Cloudflare Access, Authelia, Authentik,
 Traefik ForwardAuth, or another identity-aware proxy. Keep the application port loopback-bound or
 reachable only from that trusted proxy.
+
+## Optional Local Syslog Collector
+
+```bash
+docker compose --profile production --profile collectors up --build
+```
+
+The `collectors` profile publishes `5514/tcp` and `5514/udp` on `127.0.0.1` only. It is disabled
+unless that profile is selected. Configuration, loss semantics, counters, and test commands are in
+the [bounded syslog collector guide](syslog-collector.md).

@@ -9,6 +9,11 @@ mitre:
   tactic: Defense Evasion
   technique_id: T1078
   technique_name: Valid Accounts
+correlation:
+  family: valid_accounts
+  behaviors: [ssh_success]
+  entity_fields: [source_ip, username]
+  max_gap_minutes: 30
 conditions:
   sequence:
     - event_type: ssh_failed_login
@@ -28,4 +33,3 @@ recommendations:
   - Validate whether the successful login was expected.
   - Review commands executed after the login.
   - Rotate credentials if the login is suspicious.
-

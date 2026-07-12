@@ -1,12 +1,12 @@
 {
   "artifacts": {
     "docs/assets/reports/tracehawk-sample-incident.html": {
-      "bytes": 46783,
-      "sha256": "845dd638f166140637165bd36c467dd39f79e2b6b6d3efda20684c1b85053146"
+      "bytes": 47019,
+      "sha256": "294065c4dfa7bcbee23f8969f08f00139a3651c9a73f551a6af021bad112a12a"
     },
     "docs/assets/reports/tracehawk-sample-incident.pdf": {
-      "bytes": 23124,
-      "sha256": "e961515fc8d5b77952a45576945eba615f6102f50e8438358e22c123bde47ac7"
+      "bytes": 23278,
+      "sha256": "c7f0d138631fe5875dbf20c9a01f6e2f79c4cd9b80fb7b4859f387ac2c2e3fb4"
     }
   },
   "case": {
@@ -21,6 +21,6 @@
     "finding_count": 12,
     "score": 100,
     "severity": "critical",
-    "title": "Correlated security activity"
+    "title": "Reconnaissance followed by sensitive HTTP access"
   }
 }

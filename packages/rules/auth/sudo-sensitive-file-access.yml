@@ -9,6 +9,12 @@ mitre:
   tactic: Credential Access
   technique_id: T1003.008
   technique_name: /etc/passwd and /etc/shadow
+correlation:
+  family: credential_access
+  incident_title: Privileged sudo activity
+  behaviors: [privileged_action]
+  entity_fields: [username, host]
+  max_gap_minutes: 30
 conditions:
   event_type: sudo_command
   field_contains_any:
@@ -28,4 +34,3 @@ recommendations:
   - Confirm whether the command was expected.
   - Review shell history and process activity for the user.
   - Rotate credentials if private key or shadow access is suspicious.
-

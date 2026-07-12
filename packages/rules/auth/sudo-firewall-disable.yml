@@ -9,6 +9,12 @@ mitre:
   tactic: Defense Evasion
   technique_id: T1562.004
   technique_name: Disable or Modify System Firewall
+correlation:
+  family: defense_evasion
+  incident_title: Privileged sudo activity
+  behaviors: [privileged_action]
+  entity_fields: [username, host]
+  max_gap_minutes: 30
 conditions:
   event_type: sudo_command
   field_contains_any:
@@ -27,4 +33,3 @@ false_positives:
 recommendations:
   - Confirm the maintenance window and restore expected firewall rules.
   - Review adjacent login and privilege escalation activity.
-

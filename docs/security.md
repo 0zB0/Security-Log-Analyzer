@@ -11,6 +11,8 @@ internal topology.
 - upload extensions, request bytes, file bytes, line count, case file count, and total case bytes
   are bounded independently;
 - uploaded file objects are not retained, while bounded analysis evidence is stored in SQLite;
+- unpurged evidence hashes, counters, ownership, and graph references are verified before write;
+- browser-returned live snapshots require a current-process HMAC before persistence;
 - only UTF-8 text is accepted; compressed archives and binary captures are rejected;
 - the Docker image uses digest-pinned bases, installs the API wheel as a non-root user, and has a
   healthcheck;
@@ -19,11 +21,14 @@ internal topology.
 - committed local Docker profiles publish ports on loopback only because local mode has no external
   authentication;
 - deployed-auth mode fails closed and enforces viewer/analyst/admin RBAC;
+- live sources use fixed raw/event windows with retained/dropped counters; the optional TCP/UDP
+  syslog collector is loopback-default and queue/line/connection/batch bounded;
 - report rendering escapes interpolated values and supports evidence redaction;
 - CI runs Gitleaks, Semgrep, Python and npm audits, component and Playwright tests, a Docker build,
   and a Trivy HIGH/CRITICAL image gate;
 - GitHub Actions are SHA-pinned, scheduled weekly, and covered by Dependabot together with Python,
   npm, and Docker dependencies.
+- FastAPI/TypeScript contract artifacts are deterministic and drift-checked in CI.
 
 ## Remaining Boundaries
 

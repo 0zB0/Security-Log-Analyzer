@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from tracehawk_api.config import settings
 from tracehawk_api.main import app
 from tracehawk_api.observability import JsonLogFormatter
+from tracehawk_api.version import API_VERSION, RELEASE
 
 
 def test_health() -> None:
@@ -130,8 +131,8 @@ def test_version_exposes_public_build_metadata(monkeypatch) -> None:
     assert response.status_code == 200
     assert response.json() == {
         "app": "tracehawk",
-        "api_version": "0.8.0",
-        "release": "v0.8.0",
+        "api_version": API_VERSION,
+        "release": RELEASE,
         "build_commit": "abc1234",
         "runtime_mode": "azure-container-apps",
         "llm_provider": "mock",

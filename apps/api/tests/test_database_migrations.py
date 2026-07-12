@@ -23,7 +23,7 @@ def test_blank_database_upgrades_to_alembic_head(tmp_path: Path) -> None:
     with database.engine.connect() as connection:
         assert (
             connection.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one()
-            == "0002_case_integrity"
+            == "0003_evidence_integrity"
         )
 
 
@@ -74,6 +74,27 @@ def test_partial_unversioned_database_is_rejected_instead_of_stamped(tmp_path: P
         database.init_db()
 
     assert "alembic_version" not in inspect(database.engine).get_table_names()
+
+
+def test_existing_v080_database_is_adopted_at_integrity_migration(tmp_path: Path) -> None:
+    path = tmp_path / "v080.db"
+    database.configure_database(str(path))
+    database.migrate_database("0002_case_integrity")
+    with database.engine.begin() as connection:
+        connection.exec_driver_sql("DROP TABLE alembic_version")
+
+    database.init_db()
+
+    schema = inspect(database.engine)
+    analysis_columns = {
+        column["name"] for column in schema.get_columns("analysis_runs")
+    }
+    assert "evidence_integrity" in analysis_columns
+    with database.engine.connect() as connection:
+        assert (
+            connection.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one()
+            == "0003_evidence_integrity"
+        )
 
 
 def test_baseline_downgrade_and_reupgrade_are_explicitly_supported(tmp_path: Path) -> None:

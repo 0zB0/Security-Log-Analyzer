@@ -124,6 +124,20 @@ def apply_retention(session: Session, settings: RetentionSettings | None = None)
             .where(RawLogLineRecord.raw_text != PURGED_RAW_TEXT)
             .values(raw_text=PURGED_RAW_TEXT)
         )
+        for run in session.scalars(select(AnalysisRunRecord)).all():
+            integrity = dict(run.evidence_integrity or {})
+            integrity.update(
+                {
+                    "status": "raw_purged",
+                    "algorithm": "sha256",
+                    "origin": integrity.get("origin", "legacy"),
+                    "verified_line_count": integrity.get("verified_line_count", 0),
+                    "attested_live_snapshot": integrity.get(
+                        "attested_live_snapshot", False
+                    ),
+                }
+            )
+            run.evidence_integrity = integrity
         session.commit()
         return RetentionApplyResult(preview=preview, applied_at=datetime.now(UTC))
 

@@ -46,6 +46,30 @@ CSV:
 - `csv-admin-login-success-001`
 - `csv-auth-failure-burst-001`
 
+CloudTrail:
+
+- `cloudtrail-access-key-created-001`
+- `cloudtrail-console-login-failure-burst-001`
+- `cloudtrail-iam-policy-attachment-001`
+- `cloudtrail-logging-disabled-001`
+- `cloudtrail-root-account-usage-001`
+
+Kubernetes audit:
+
+- `kubernetes-clusterrolebinding-create-001`
+- `kubernetes-forbidden-burst-001`
+- `kubernetes-pod-exec-001`
+- `kubernetes-privileged-pod-create-001`
+- `kubernetes-secret-read-001`
+
+Windows Security:
+
+- `windows-account-created-001`
+- `windows-admin-group-member-added-001`
+- `windows-audit-log-cleared-001`
+- `windows-failed-logon-burst-001`
+- `windows-success-after-failures-001`
+
 Syslog:
 
 - `syslog-error-burst-001`
@@ -78,6 +102,7 @@ Zeek:
 - `zeek-dns-burst-001`
 - `zeek-http-sensitive-path-001`
 - `zeek-notice-event-001`
+- `zeek-stable-endpoint-retry-001`
 - `zeek-tls-suspicious-name-001`
 
 ## Rule Semantics

@@ -25,12 +25,12 @@ grounded in selected evidence and cannot create or alter findings.
 
 | Capability | Public evidence |
 | --- | --- |
-| Ingest | Linux auth, web, syslog, JSON, CSV, CloudTrail, Kubernetes audit, Windows Security, Zeek, Suricata, Docker, and approved interface metadata |
+| Ingest | Linux auth, web, syslog, JSON, CSV, CloudTrail, Kubernetes audit, Windows Security, Zeek, Suricata, Docker, approved interface metadata, and opt-in bounded TCP/UDP syslog |
 | Parser routing | Stratified confidence ranking plus per-line mixed-log routing with parser provenance |
-| Detection | 65 YAML rules, 2–8 step typed sequences, MITRE mapping, evidence hashes, and benign controls |
-| Correlation | Entity, timing, sequence, rule-family, and independent-source scoring with visible rationale |
-| Validation | Sanitized scenarios plus IoT-23 precision, recall, false-positive, and false-negative notes |
-| Resource safety | Bounded request, file, line, file-count, total-bundle, rate, and performance budgets |
+| Detection | 66 YAML rules, 2–8 step typed sequences, MITRE mapping, evidence hashes, and benign controls |
+| Correlation | Declarative behavior patterns, strict common-entity/time bounds, and independent-source scoring with visible rationale |
+| Validation | Role-separated IoT-23 scan and C2-indicator metrics with per-capture errors and uncertainty |
+| Resource safety | Bounded request, upload, live rolling window, collector line/queue/connection/batch, rate, and performance budgets |
 | Access control | Explicit local/deployed trust modes, viewer/analyst/admin RBAC, WebSocket gate, and audit trail |
 | Reports | Markdown, HTML, and PDF with scoring rationale, evidence, hashes, optional redaction, and no cloud dependency |
 
@@ -78,9 +78,9 @@ docker compose --profile production down
 
 ```mermaid
 flowchart LR
-    S["Uploads, samples, files, Docker, Zeek, Suricata"] --> B["Request and resource boundaries"]
+    S["Uploads, samples, live sources, local syslog"] --> B["Request and resource boundaries"]
     B --> P["Confidence-ranked parser registry"]
-    P --> D["65 deterministic YAML rules"]
+    P --> D["66 deterministic YAML rules"]
     D --> C["N-step and cross-source correlation"]
     C --> I["Scored incidents and entities"]
     I --> DB["SQLite evidence and audit state"]
@@ -94,6 +94,7 @@ Active stack:
 - `apps/api`: FastAPI, SQLAlchemy, deterministic parsing, detection, correlation, and reports;
 - `apps/web`: React, TypeScript, and Vite investigation workspace;
 - `packages/rules`: versioned YAML detection content;
+- `packages/correlation`: versioned multi-rule behavior patterns;
 - `packages/sample-data` and `packages/test-scenarios`: sanitized reproducible evidence;
 - `tools`: public quality, performance, smoke, and recovery gates.
 
@@ -112,10 +113,11 @@ npm --prefix apps/web ci
 make verify-all
 ```
 
-The public gate covers backend tests, end-to-end rule scenarios, all 65 rule contracts,
-performance budgets, web build, Docker Compose validation, live analysis, local AI fallback,
-report generation, component tests, and Playwright browser E2E. GitHub Actions additionally runs
-Gitleaks, Semgrep, dependency audits, a pinned-action build, and a Trivy container scan.
+The public gate covers more than 200 backend tests, end-to-end rule scenarios, all 66 rule
+contracts, deterministic API-contract drift, performance budgets, whole-source frontend coverage,
+Docker Compose validation, live analysis, local AI fallback, report generation, component/axe
+tests, and five Playwright browser workflows. GitHub Actions additionally runs Gitleaks, Semgrep,
+dependency audits, a pinned-action build, and a Trivy container scan.
 
 Useful commands:
 
@@ -126,6 +128,9 @@ make benchmark
 make detection-quality-check
 make security-scan
 ```
+
+Contract generation and drift rules are documented in the
+[generated API contract guide](docs/api-contract.md).
 
 ## Security And Scope
 

@@ -2,7 +2,7 @@
 
 > Audience: backend engineers, security reviewers, privacy reviewers, and operators
 > Canonical for: stored investigation state, evidence provenance, retention, and recovery
-> Verified against: TraceHawk v0.8.0
+> Verified against: TraceHawk v0.9.0
 
 TraceHawk uses SQLite to reopen bounded local investigations without retaining the original uploaded
 file as a file. It does persist selected investigation state, including raw evidence text required
@@ -13,8 +13,10 @@ stateless upload processing.
 
 ```mermaid
 flowchart LR
-    U["Uploaded text or live snapshot"] --> A["In-memory analysis"]
-    A --> T["SQLite transaction"]
+    U["Uploaded text"] --> A["In-memory analysis"]
+    L["Server-attested live snapshot"] --> V["Attestation, hash, and graph validation"]
+    A --> V
+    V --> T["SQLite transaction"]
     T --> S["Saved analysis, evidence, events, findings, incidents, entities"]
     S --> O["Reopen, annotate, report, or export"]
     S --> R["Retention preview"]
@@ -62,7 +64,7 @@ general analytics warehouse.
 
 | Record | Responsibility |
 | --- | --- |
-| `AnalysisRunRecord` | Analysis identity, parser, counts, filename, and creation time |
+| `AnalysisRunRecord` | Analysis identity, parser, counts, filename, creation time, and integrity summary |
 | `LogSourceRecord` | Source name, type, parser, and status |
 | `RawLogLineRecord` | Original evidence text, line number, hash, and source |
 | `ParsedEventRecord` | Normalized event fields and raw-line link |
@@ -76,7 +78,9 @@ general analytics warehouse.
 The SQLAlchemy schema is defined in `apps/api/tracehawk_api/database.py`. Alembic revisions under
 `apps/api/migrations/` initialize and evolve that schema. A pre-Alembic database that already has
 the complete v0.7.1 schema is recognized column by column, adopted at the baseline revision, and
-upgraded to v0.8.0 without deleting records. Partial or unknown unversioned schemas are rejected.
+upgraded without deleting records. The `0003_evidence_integrity` revision adds the persisted
+integrity summary; recognized v0.8.0 schemas are adopted at `0002_case_integrity` before that
+revision is applied. Partial or unknown unversioned schemas are rejected.
 Conversion between domain models and database records is in `services/persistence.py`.
 
 ## Schema Migration Lifecycle
@@ -128,6 +132,17 @@ CrossSourceLink
 SHA-256 detects content changes when the same evidence is compared later. It does not establish who
 collected the source, whether the source host was trustworthy, or a legal chain of custody.
 
+Before persistence, `services/evidence_integrity.py` recomputes every unpurged raw-line digest and
+validates counters, unique IDs, source ownership, event-to-raw references, finding evidence,
+incident findings, and cross-source links. Validation runs before existing child records are
+deleted, so a rejected replacement leaves the last committed analysis intact.
+
+Live snapshots have an additional boundary. The backend signs the canonical snapshot projection
+with a process-local HMAC before sending it over the WebSocket. The save endpoint verifies that
+attestation before namespacing or writing the snapshot, then performs the same independent SHA-256
+and graph validation. The HMAC proves that the submitted snapshot matches one emitted by the
+current backend process. It does not prove sensor identity or survive a process restart.
+
 ## Read Paths
 
 The persistence service supports:
@@ -159,6 +174,10 @@ Before applying retention:
 Purging raw lines makes exact evidence unavailable even if findings remain. Reports generated after
 that operation cannot recreate deleted raw text.
 
+The purge operation retains the original SHA-256 value as a one-way commitment, replaces the text
+with `[PURGED_RAW_LOG]`, and changes the integrity status to `raw_purged`. After that deliberate
+transition, the retained hash describes the deleted original rather than the placeholder text.
+
 ## Backup And Restore
 
 `services/database_backup.py` and `tools/sqlite_backup.py` use SQLite's online backup mechanism and
@@ -178,6 +197,8 @@ protection as the primary database.
 - Retention changes require the configured privileged role.
 - Exports and backups are explicit operations and may outlive database retention.
 - Report redaction does not modify the underlying stored evidence.
+- Every unpurged persisted raw line is server-verified against its SHA-256 digest before commit.
+- Live saves require a valid process-local server attestation in addition to caller authorization.
 
 ## Implementation And Verification Map
 
@@ -185,6 +206,7 @@ protection as the primary database.
 | --- | --- | --- |
 | Schema, migrations, and sessions | `database.py`, `migrations/` | migration, health, and API tests |
 | Analysis persistence and reopen | `services/persistence.py` | `test_analyze_api.py` |
+| Hash, graph, and live attestation | `services/evidence_integrity.py`, `services/live_attestation.py` | `test_persistence_integrity.py`, live API/WebSocket tests |
 | Entities | `services/entities.py`, `persistence.py` | `test_case_bundle_api.py` |
 | Notes | `services/notes.py`, `routers/notes.py` | `test_analyze_api.py`, `test_auth_gate.py` |
 | Retention preview/apply/export | `services/retention.py` | retention cases in `test_analyze_api.py` |

@@ -6,6 +6,38 @@ All notable public TraceHawk releases are documented here.
 
 No unreleased changes.
 
+## [0.9.0] - 2026-07-12
+
+### Added
+
+- server-verified evidence hashes, graph validation, persisted provenance, and live snapshot
+  attestation;
+- declarative correlation behavior/pattern metadata and bounded common-entity grouping;
+- bounded live windows and an opt-in loopback TCP/UDP syslog collector;
+- frozen role-separated IoT-23 scan and C2-indicator evaluation;
+- deterministic OpenAPI-to-TypeScript generation with drift gates;
+- broader interaction, axe, recovery, and Chromium workflow verification.
+
+### Changed
+
+- correlation no longer depends on rule names or IDs for behavior semantics;
+- retained and dropped live counters are visible and persisted;
+- frontend coverage floors now enforce 70% lines/statements, 65% functions, and 50% branches;
+- CI retains coverage and browser evidence artifacts.
+
+### Security
+
+- modified or stale-process live snapshots fail before persistence;
+- collector resource limits and loopback defaults reduce accidental exposure;
+- known external-evaluation errors remain published.
+
+### Known Limitations
+
+- the frozen stable-endpoint C2-indicator slice records 0.0870 precision and is not a production
+  detector claim;
+- live HMAC attestation is not sensor identity or legal chain of custody;
+- syslog UDP and in-memory queues cannot guarantee delivery or replay.
+
 ## [0.8.0] - 2026-07-12
 
 ### Added
@@ -80,7 +112,8 @@ No unreleased changes.
 - no multi-tenant isolation or autonomous response;
 - the documented IoT-23 slice is deliberately small and not a production accuracy claim.
 
-[Unreleased]: https://github.com/0zB0/Security-Log-Analyzer/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/0zB0/Security-Log-Analyzer/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.9.0
 [0.8.0]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.8.0
 [0.7.1]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.7.1
 [0.7.0]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.7.0

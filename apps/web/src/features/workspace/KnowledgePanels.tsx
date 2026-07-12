@@ -198,8 +198,6 @@ export function DetectionLibrary({
   const selectedRule =
     filteredRules.find((rule) => rule.id === activeRuleId) ??
     filteredRules[0] ??
-    rules.find((rule) => rule.id === activeRuleId) ??
-    rules[0] ??
     null;
   const relatedFindings = useMemo(
     () => (selectedRule ? (result?.findings ?? []).filter((finding) => finding.rule_id === selectedRule.id) : []),
@@ -218,11 +216,16 @@ export function DetectionLibrary({
         </div>
         <div className="library-controls">
           <input
+            aria-label="Search detection rules"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search rule, MITRE, log type"
           />
-          <select value={category} onChange={(event) => setCategory(event.target.value)}>
+          <select
+            aria-label="Detection category"
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+          >
             {categories.map((item) => (
               <option key={item} value={item}>
                 {item === "all" ? "All categories" : item}
@@ -318,10 +321,19 @@ function RuleLibraryDetail({
           </strong>
           <span>Current case</span>
           <strong>{matched ? "Detected" : "Not detected"}</strong>
+          <span>Correlation family</span>
+          <strong>{rule.correlation.family ?? "Unclassified"}</strong>
+          <span>Incident title</span>
+          <strong>{rule.correlation.incident_title ?? "Derived from findings"}</strong>
+          <span>Correlation keys</span>
+          <strong>{rule.correlation.entity_fields.join(", ") || "None"}</strong>
+          <span>Max correlation gap</span>
+          <strong>{rule.correlation.max_gap_minutes} minutes</strong>
         </div>
       </div>
       <RuleLearningSection title="Why it matters" items={[rule.description, rule.danger_summary]} />
       <RuleLearningSection title="What TraceHawk looks for" items={rule.look_for} />
+      <RuleLearningSection title="Correlation behaviors" items={rule.correlation.behaviors} />
       <RuleLearningSection
         title="Current findings"
         items={relatedFindings.map(

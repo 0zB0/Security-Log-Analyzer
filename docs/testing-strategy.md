@@ -2,7 +2,7 @@
 
 > Audience: engineers, security reviewers, and academic evaluators
 > Canonical for: verification layers and the claims each layer can support
-> Verified against: TraceHawk v0.8.0
+> Verified against: TraceHawk v0.9.0
 
 TraceHawk uses multiple verification layers because no single test type proves parser correctness,
 detection quality, UI behavior, operational safety, and production readiness at once.
@@ -65,16 +65,29 @@ two-to-eight-step sequences. They verify deterministic semantics independently f
 
 ### Correlation
 
-Correlation tests verify grouping, additive score components, rationale, guardrails, time
-proximity, sequences, source corroboration, and rule-family diversity.
+Correlation tests verify common-entity grouping, maximum temporal spans, additive score components,
+rationale, declarative pattern validation, ID-independent behavior tags, source corroboration, and
+rule-family diversity. A dedicated negative contract proves that A-user-B-IP-C cannot collapse into
+one incident through a transitive bridge.
+
+### Live Sources And Collectors
+
+Live tests enforce rolling raw/event capacities, reference-safe eviction, signed drop provenance,
+and one-time rule loading. Syslog collector tests use real loopback UDP and TCP sockets plus an
+isolated SQLite database. Negative cases cover remote bind, invalid encoding, empty/NUL input,
+oversized lines, queue saturation, TCP connection caps, idle timeout, failed-batch recovery, and
+graceful drain.
 
 ### Frontend
 
-Vitest and React Testing Library cover pure workspace selectors and selected rendered states.
-Accessibility assertions use axe where configured.
+Vitest and React Testing Library cover pure selectors and analyst interactions across intake,
+incident, evidence, case, report, assistant/settings, rule-library, and live-monitor states.
+Accessibility assertions use axe on primary rendered states. Coverage includes all maintained
+frontend source files and enforces 70% lines/statements, 65% functions, and 50% branches.
 
-The current coverage report is dominated by files imported by the existing tests, especially
-`workspaceSelectors.ts`. It is not whole-application coverage and must not be presented as such.
+Playwright runs five Chromium workflows against the production build: demo/report, admin
+navigation, real-lab case correlation, finding-to-evidence pivot, and rejected-action recovery.
+Coverage and browser evidence are retained by GitLab and GitHub CI.
 
 ## Detection Contracts
 
@@ -104,6 +117,7 @@ Integration tests use FastAPI's test client and isolated application state to co
 - assistant mock behavior and evidence references;
 - rule library exposure;
 - liveness/readiness and metrics dependencies.
+- server-side evidence hashes, graph references, live attestation, and migration round trips.
 
 These tests prove component cooperation in one process. They do not prove distributed behavior or a
 long-running production database lifecycle.
@@ -117,6 +131,10 @@ containers, or interfaces; tests prove both analyst denial and admin access to s
 
 Security tests must include both successful and denied behavior. A test that only proves an admin
 can perform an action does not prove a viewer cannot.
+
+Live persistence tests additionally modify the attested payload, hashes, counters, and graph
+references. Each mutation must fail before persistence, while a valid attested snapshot must reopen
+with a `verified` integrity summary.
 
 ## Robustness And Recovery
 
@@ -154,13 +172,16 @@ state. A measurement from a dirty tree remains evidence with a limitation, not a
 
 ## External Dataset Evaluation
 
-IoT-23 evaluation scores selected Zeek scan rules in fixed windows against an external label and a
-separate benign capture. It records hashes, method, false positives, false negatives, per-capture
-and per-rule prediction counts, F1, specificity, balanced accuracy, prevalence, and Wilson confidence
-intervals. Raw confusion-matrix counts remain authoritative when the sample is small.
+IoT-23 evaluation scores selected Zeek scan rules and one low-confidence stable-endpoint retry rule
+against separate external label objectives. It accepts both official label encodings, freezes
+development/validation/final/negative-control roles, and records hashes, false positives, false
+negatives, per-capture and per-rule counts, F1, specificity, balanced accuracy, prevalence, and
+Wilson confidence intervals. Raw confusion matrices and per-capture errors remain authoritative.
 
-The current evaluation is intentionally narrow. It cannot validate all parser families, rule
-families, modern enterprise traffic, or production prevalence.
+The C2-indicator holdout is deliberately unfavorable: precision is `0.0870` because capture `42-1`
+contains repeated stable-endpoint retries labeled benign. This is why the rule title remains
+behavioral, severity medium, and confidence low. The evaluation cannot validate all parser
+families, rule families, modern enterprise traffic, or production prevalence.
 
 ## Real-Engine Proof
 
@@ -202,10 +223,8 @@ make verify-all
 
 ## Known Gaps And Priorities
 
-1. Raise whole-source frontend coverage from its honest initial baseline with assistant, knowledge,
-   live, and case interaction tests.
-2. Add browser E2E coverage for demo, real-lab case, report export, and auth boundaries.
-3. Expand external datasets across rule families and current traffic shapes.
-4. Run longer-lived collector and persistence soak tests.
-5. Add a second schema revision and data-transform fixture before changing production fields.
-6. Add independent-user reproduction evidence rather than relying only on maintainer-generated proof.
+1. Add cross-browser and broader responsive/screen-reader frontend verification.
+2. Expand external datasets across rule families and current traffic shapes.
+3. Run longer-lived collector and persistence soak tests.
+4. Add a second schema revision and data-transform fixture before changing production fields.
+5. Add independent-user reproduction evidence rather than relying only on maintainer-generated proof.

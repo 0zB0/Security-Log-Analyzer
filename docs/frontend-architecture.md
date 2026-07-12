@@ -2,7 +2,7 @@
 
 > Audience: frontend engineers, full-stack reviewers, and accessibility reviewers
 > Canonical for: React workspace state, derived views, API integration, and UI verification
-> Verified against: TraceHawk v0.8.0
+> Verified against: TraceHawk v0.9.0
 
 TraceHawk's React application is an investigation workspace, not a generic metrics dashboard. It
 keeps the current analysis and analyst selection in one top-level workspace, then projects that
@@ -29,7 +29,8 @@ flowchart TD
 | `app/main.tsx` | Top-level state, auth/status loading, analysis actions, navigation, and layout |
 | `app/workspaceTypes.ts` | Workspace view and report-format types |
 | `app/workspaceOptions.ts` | Sample choices and approved capture presets |
-| `lib/api.ts` | API contracts, request helpers, and report/live types |
+| `generated/openapi.json`, `generated/api-schema.ts` | Backend-derived OpenAPI snapshot and TypeScript component declarations |
+| `lib/api.ts` | Generated contract aliases, request helpers, and explicit auth/live envelope types |
 | `features/workspace/WorkspaceBody.tsx` | Maps active view to the relevant panel composition |
 | `features/workspace/workspaceSelectors.ts` | Pure MITRE, case, timeline, formatting, and report helpers |
 | `features/workspace/IncidentPanels.tsx` | Incident list/detail, score rationale, notes, findings, timeline |
@@ -88,9 +89,11 @@ history would require explicit route design later.
 
 ## API Boundary
 
-`lib/api.ts` mirrors backend domain contracts and centralizes fetch behavior. Production mode uses a
-same-origin API unless `VITE_API_BASE_URL` is configured; development can call the local FastAPI
-port.
+FastAPI Pydantic models are exported to deterministic OpenAPI and TypeScript artifacts. `lib/api.ts`
+imports those generated component types, resolves server-filled defaults for browser use, and
+centralizes fetch behavior. Production mode uses a same-origin API unless `VITE_API_BASE_URL` is
+configured; development can call the local FastAPI port. The complete workflow is documented in
+the [generated API contract guide](api-contract.md).
 
 The client treats non-success responses as errors and does not infer findings locally. Security
 decisions, authorization, parsing, detections, persistence, and report content remain server-side.
@@ -104,8 +107,9 @@ Important contract families are:
 - reports and redaction options;
 - live WebSocket snapshots.
 
-TypeScript interfaces provide build-time checking but are not runtime validation of an untrusted
-server. The deployment assumes the bundled UI talks to its matching backend version.
+The drift check runs locally and in both CI systems. Generated TypeScript provides build-time
+checking but is not runtime validation of an untrusted server. The deployment assumes the bundled
+UI talks to its matching backend version.
 
 ## Analysis Interaction Flow
 
@@ -179,8 +183,9 @@ The workspace uses semantic controls, visible focus behavior, text labels, and s
 carry meaning without replacing text. Monospace typography is reserved for evidence and operational
 metadata; longer analyst content remains readable.
 
-Accessibility checks currently cover selected rendered component states. Full keyboard, responsive,
-screen-reader, and browser-level coverage remains a documented gap.
+Accessibility checks cover the main workspace plus incident, evidence, metrics, settings, live, and
+case states. `/` focuses global search and `Escape` clears and exits it. Exhaustive responsive,
+screen-reader, and cross-browser coverage remains a documented gap.
 
 ## Implementation And Verification Map
 
@@ -188,7 +193,7 @@ screen-reader, and browser-level coverage remains a documented gap.
 | --- | --- | --- |
 | View composition | `WorkspaceBody.tsx` | `WorkspaceBody.test.tsx` |
 | Pure derived state | `workspaceSelectors.ts` | `workspaceSelectors.test.ts` |
-| Type/API compatibility | `lib/api.ts` | TypeScript production build, component tests, API tests |
+| Type/API compatibility | generated contract plus `lib/api.ts` | deterministic drift test and TypeScript production build |
 | Analysis intake and navigation | `app/main.tsx` | Playwright browser E2E, component tests, backend API tests |
 | Incident and notes workflow | `IncidentPanels.tsx` | backend note/auth tests; manual/UI proof |
 | Case evidence links | `CasePanels.tsx` | selector tests, case API tests, UI proof |
@@ -206,25 +211,21 @@ make smoke-ui
 
 ## Current Testing Gap
 
-Frontend coverage now includes all maintained files under `src`, with an honest initial whole-source
-floor instead of a selector-only percentage. Component tests cover demo success/failure, the hosted
-login boundary, incident selection, analyst-note creation, evidence linking, report generation,
-redaction, and accessibility checks on primary rendered evidence views. The percentage remains low
-because assistant, knowledge, live-monitor, and deep case interactions are not comprehensively
-covered; it must not be described as near-complete UI coverage.
+Frontend coverage includes all maintained source files and enforces 70% lines/statements, 65%
+functions, and 50% branches. Thirty-one behavior tests cover the main intake, incidents, notes,
+evidence, case correlation, reports, assistant/settings, rule filters, live retention, rejected
+snapshot recovery, keyboard search, empty states, and selected axe states. Five Playwright Chromium
+tests exercise the built application across demo/report, real-lab case, evidence pivot, admin
+navigation, and a rejected action with retry.
 
-Priority additions are:
-
-1. component tests for assistant, live-monitor, knowledge panels, case filtering, and stale selections;
-2. keyboard and axe coverage across every primary workspace view;
-3. Playwright-style browser flows for demo, real-lab case, report export, and auth boundaries;
-4. progressive increases to the whole-source coverage floor when meaningful interactions are added.
+The remaining gaps are cross-browser coverage, every responsive state, exhaustive screen-reader
+behavior, URL-addressable workspace state, and broader tests for secondary error branches. The
+current percentages are meaningful enforced floors, not a claim of exhaustive UI correctness.
 
 ## Limitations
 
 - Top-level state is centralized in one component and will become harder to evolve as workflows grow.
 - View state is not represented by shareable URLs.
-- Type interfaces can drift from backend runtime contracts without generated schemas or contract
-  validation.
+- Generated types do not perform runtime validation of a compromised or mismatched backend response.
 - The current UI is optimized for one active investigation, not multi-case collaboration.
 - Accessibility and responsive behavior need broader automated verification.

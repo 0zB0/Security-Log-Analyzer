@@ -2,7 +2,7 @@
 
 > Audience: employers, engineering managers, technical interviewers, academic reviewers, and contributors
 > Canonical for: mapping TraceHawk capabilities to engineering disciplines and review evidence
-> Verified against: TraceHawk v0.8.0
+> Verified against: TraceHawk v0.9.0
 
 TraceHawk is best evaluated as a compact, full-stack security product rather than as a small script
 or an attempted enterprise SIEM. This guide maps each engineering area to its implementation,
@@ -92,8 +92,9 @@ matching, and multi-step sequences. The engine evaluates them without an LLM.
 Strong signal: every rule has a positive contract, while committed benign controls reject
 unexpected matches.
 
-Current limitation: contract precision/recall describes declared fixtures. The narrow IoT-23 scan
-evaluation reports real false positives and false negatives and is not production accuracy.
+Current limitation: contract precision/recall describes declared fixtures. The role-separated
+IoT-23 scan and stable-endpoint C2-indicator objectives report real false positives and false
+negatives, including poor C2-indicator precision, and are not production accuracy.
 
 Be prepared to explain threshold windows, grouping keys, sequence ordering, false-positive notes,
 and why lowering a threshold to fit one dataset can reduce generality.
@@ -131,7 +132,8 @@ correlation, persistence, reporting, and assistant concerns separate.
 Strong signal: the code distinguishes transport, domain, and persistence responsibilities without
 introducing unnecessary infrastructure.
 
-Current limitation: API versioning and generated frontend contracts are not yet present.
+Current limitation: API versioning and browser runtime schema validation are not present. The
+compile-time frontend contract is generated and drift-enforced.
 
 Be prepared to trace one upload from router through service calls to the returned `AnalysisResult`.
 
@@ -171,8 +173,8 @@ MITRE, library, live, assistant, and report projections.
 Strong signal: evidence is selected by backend evidence IDs rather than reconstructed with fuzzy
 text matching in the browser.
 
-Current limitation: component/E2E coverage is much thinner than backend coverage; the published
-selector coverage is not whole-application coverage.
+Current limitation: the enforced whole-source component and Chromium critical-path coverage does
+not yet provide a cross-browser, exhaustive responsive, or complete screen-reader matrix.
 
 Be prepared to explain top-level versus panel-local state and what should move into URL routing or a
 state reducer as workflows grow.
@@ -188,7 +190,7 @@ performance budgets, security scans, external evaluation, and deployment proof.
 | Contract | rule scenarios and benign controls | [Detection quality](detection-quality.md) |
 | Integration | API, persistence, reports, auth | [Testing strategy](testing-strategy.md) |
 | System | Docker, UI, live, Ollama, reports | Make targets and proof pack |
-| External | IoT-23 scan windows | current IoT-23 proof |
+| External | IoT-23 scan and stable-endpoint C2-indicator windows | current IoT-23 proof |
 
 Strong signal: external errors remain documented instead of being hidden behind fixture-perfect
 metrics.

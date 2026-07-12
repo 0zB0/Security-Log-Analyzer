@@ -2,7 +2,7 @@
 
 > Audience: backend engineers, detection engineers, and technical reviewers
 > Canonical for: the path from untrusted input to `AnalysisResult`
-> Verified against: TraceHawk v0.8.0
+> Verified against: TraceHawk v0.9.0
 
 This document explains how TraceHawk turns bounded input into deterministic findings, incidents,
 entities, and evidence. Source-specific field mappings belong in the ingest guides; YAML syntax and
@@ -20,6 +20,7 @@ sequenceDiagram
     participant Parser as Parser layer
     participant Rules as Detection engine
     participant Corr as Correlation
+    participant Integrity as Evidence integrity
     participant DB as Persistence
 
     Analyst->>API: upload, sample, case bundle, or live snapshot
@@ -33,6 +34,8 @@ sequenceDiagram
     Rules-->>Analysis: Findings with evidence IDs
     Analysis->>Corr: correlate findings and events
     Corr-->>Analysis: scored incidents with rationale
+    Analysis->>Integrity: verify hashes, counters, ownership, and graph
+    Integrity-->>Analysis: validated result or rejection
     Analysis->>DB: persist result and build entities
     DB-->>API: AnalysisResult with analysis_id
     API-->>Analyst: JSON investigation contract
@@ -44,8 +47,11 @@ HTTP uploads enter through `routers/analyze.py` and `services/uploads.py`. The b
 configured extension, byte count, UTF-8 decoding, line count, per-file limit, case file count, and
 total bundle size. Middleware and authorization apply rate and role boundaries.
 
-Live file, folder, Docker, and interface paths use WebSocket routers and the live service. They have
-source-specific validation and produce bounded snapshots rather than bypassing the analysis model.
+Live file, folder, Docker, and interface paths use WebSocket routers and the live service. Their
+rolling raw/event windows are capped by `TRACEHAWK_LIVE_MAX_RAW_LINES` and
+`TRACEHAWK_LIVE_MAX_EVENTS`; total, retained, and dropped counters remain explicit. The opt-in
+syslog process enforces line, queue, TCP connection, idle-timeout, and batch boundaries before
+feeding accepted batches into this same analysis and persistence model.
 
 Failure behavior:
 
@@ -111,8 +117,10 @@ parsed event counts therefore do not always match.
 ## Stage 5: Rule Loading And Scoping
 
 `services/rules.py` loads versioned YAML files from `packages/rules/` and validates them against
-Pydantic rule models. Detection is scoped by parser: only rules whose `log_types` include the event's
-parser family run against those events.
+Pydantic rule models. `services/correlation_patterns.py` also loads the versioned
+`packages/correlation/patterns.yml` document and rejects patterns whose behavior tags are not
+declared by any rule. Readiness requires both libraries to validate. Detection is scoped by parser:
+only rules whose `log_types` include the event's parser family run against those events.
 
 This prevents a similarly named field from an unrelated format from triggering a rule outside its
 declared context.
@@ -144,9 +152,11 @@ the source system itself was trustworthy.
 
 ## Stage 8: Correlation And Case Links
 
-`services/correlation.py` groups findings through shared entities, temporal context, sequences,
-rule-family diversity, and cross-source corroboration. It emits incidents with additive score
-components and human-readable rationale.
+`services/correlation.py` groups findings only while the whole group retains a common configured
+entity and stays inside the strictest rule's maximum gap. It then evaluates ordered behavior
+patterns, time proximity, declared rule-family diversity, and evidence-linked cross-source
+corroboration. No rule ID or title fragment controls behavior. The service emits incidents with
+additive score components, matched pattern IDs, and human-readable rationale.
 
 Case bundles additionally match compatible Zeek and Suricata observations by flow, DNS query, or
 HTTP path within bounded time windows. Each link retains both event IDs and both raw line IDs.
@@ -156,9 +166,15 @@ The [correlation document](correlation.md) owns scoring semantics. The
 
 ## Stage 9: Entity Construction And Persistence
 
-The persistence service stores the analysis, raw evidence, normalized events, findings, incidents,
-and derived entities in one transaction. Saved analyses receive an `analysis_id` and can be reopened
-through the API. Notes, settings, retention operations, and audit events use related tables.
+Before a transaction, the server recomputes every unpurged raw-line digest and validates counters,
+unique IDs, ownership, event/evidence/finding references, incidents, and cross-source links. A live
+snapshot also needs a valid current-process HMAC before this graph check. Validation finishes before
+an existing analysis is replaced.
+
+The persistence service then stores the analysis, raw evidence, normalized events, findings,
+incidents, and derived entities in one transaction. Saved analyses receive an `analysis_id` and can
+be reopened through the API. Notes, settings, retention operations, and audit events use related
+tables.
 
 ## Stage 10: Presentation, Reports, And Optional AI
 
@@ -200,6 +216,7 @@ population-level accuracy claim.
 | Rule loading | `services/rules.py`, `packages/rules/` | `test_detection_quality.py`, `test_scenarios.py` |
 | Detection | `services/detection.py` | `test_sequence_engine.py`, pipeline tests |
 | Correlation | `services/correlation.py`, `services/case_bundle.py` | `test_correlation_scoring.py`, `test_case_bundle_api.py` |
+| Evidence integrity | `services/evidence_integrity.py`, `services/live_attestation.py` | `test_persistence_integrity.py`, live API tests |
 | Persistence | `services/persistence.py`, `database.py` | `test_analyze_api.py` |
 | Reports | `services/reports/` | `test_reports_api.py`, `test_case_bundle_api.py` |
 | Optional assistant | `services/llm.py` | `test_assistant_api.py` |

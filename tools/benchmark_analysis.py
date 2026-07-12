@@ -33,12 +33,23 @@ SCENARIOS = {
     "core-mixed-1mb": {"kind": "mixed", "bytes": 1_000_000},
     "case-bundle-eight-sources": {"kind": "bundle", "bytes_per_source": 900_000},
     "api-upload-pdf-report": {"kind": "api-report"},
+    "live-retention-2k-lines": {
+        "kind": "live",
+        "line_count": 2000,
+        "raw_capacity": 200,
+        "event_capacity": 150,
+    },
     "offline-auth-10mb": {"kind": "core", "bytes": 10_000_000},
     "offline-auth-50mb": {"kind": "core", "bytes": 50_000_000},
     "offline-auth-100mb": {"kind": "core", "bytes": 100_000_000},
 }
 
-SMOKE_SCENARIOS = ["core-auth-100kb", "core-mixed-100kb", "api-upload-pdf-report"]
+SMOKE_SCENARIOS = [
+    "core-auth-100kb",
+    "core-mixed-100kb",
+    "api-upload-pdf-report",
+    "live-retention-2k-lines",
+]
 FULL_SCENARIOS = [
     "core-auth-100kb",
     "core-auth-1mb",
@@ -47,6 +58,7 @@ FULL_SCENARIOS = [
     "core-mixed-1mb",
     "case-bundle-eight-sources",
     "api-upload-pdf-report",
+    "live-retention-2k-lines",
 ]
 SCALE_SCENARIOS = ["offline-auth-10mb", "offline-auth-50mb", "offline-auth-100mb"]
 
@@ -58,6 +70,7 @@ BUDGETS = {
     "core-mixed-1mb": {"p95_seconds": 20.0, "max_rss_mb": 768.0},
     "case-bundle-eight-sources": {"p95_seconds": 30.0, "max_rss_mb": 1024.0},
     "api-upload-pdf-report": {"p95_seconds": 5.0, "max_rss_mb": 384.0},
+    "live-retention-2k-lines": {"p95_seconds": 10.0, "max_rss_mb": 256.0},
     "offline-auth-10mb": {"p95_seconds": 30.0, "max_rss_mb": 1536.0},
     "offline-auth-50mb": {"p95_seconds": 150.0, "max_rss_mb": 6144.0},
     "offline-auth-100mb": {"p95_seconds": 300.0, "max_rss_mb": 12288.0},
@@ -119,8 +132,7 @@ def run_benchmarks(scenario_names: list[str], repeats: int) -> dict[str, Any]:
         budget = BUDGETS[scenario_name]
         p95_seconds = _percentile(elapsed, 0.95)
         max_rss_mb = max(rss)
-        results.append(
-            {
+        result_summary = {
                 "scenario": scenario_name,
                 "description": SCENARIOS[scenario_name],
                 "repeats": repeats,
@@ -140,7 +152,9 @@ def run_benchmarks(scenario_names: list[str], repeats: int) -> dict[str, Any]:
                 ),
                 "samples": samples,
             }
-        )
+        if live_retention := samples[-1].get("live_retention"):
+            result_summary["live_retention"] = live_retention
+        results.append(result_summary)
     return {
         "generated_at": datetime.now(UTC).isoformat(),
         "base_commit": _git_commit(),
@@ -187,11 +201,17 @@ def run_worker(scenario_name: str) -> dict[str, Any]:
             result, payload_bytes, line_count = _run_core(int(scenario["bytes"]), mixed=True)
         elif scenario["kind"] == "bundle":
             result, payload_bytes, line_count = _run_bundle(int(scenario["bytes_per_source"]))
+        elif scenario["kind"] == "live":
+            result, payload_bytes, line_count = _run_live_retention(
+                int(scenario["line_count"]),
+                int(scenario["raw_capacity"]),
+                int(scenario["event_capacity"]),
+            )
         else:
             result, payload_bytes, line_count = _run_api_report()
         elapsed = perf_counter() - started
         rss_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
-        return {
+        worker_result = {
             "scenario": scenario_name,
             "elapsed_seconds": round(elapsed, 6),
             "max_rss_mb": round(rss_mb, 2),
@@ -202,6 +222,9 @@ def run_worker(scenario_name: str) -> dict[str, Any]:
             "incident_count": int(result["incident_count"]),
             "lines_per_second": round(line_count / elapsed if elapsed else 0.0, 2),
         }
+        if live_retention := result.get("live_retention"):
+            worker_result["live_retention"] = live_retention
+        return worker_result
 
 
 def _run_core(target_bytes: int, *, mixed: bool) -> tuple[dict[str, int], int, int]:
@@ -266,6 +289,36 @@ def _run_api_report() -> tuple[dict[str, int], int, int]:
         "finding_count": analysis["finding_count"],
         "incident_count": analysis["incident_count"],
     }, len(payload), len(payload.splitlines())
+
+
+def _run_live_retention(
+    line_count: int,
+    raw_capacity: int,
+    event_capacity: int,
+) -> tuple[dict[str, Any], int, int]:
+    from tracehawk_api.services.live import LiveFileTailer
+
+    line = "Jul 08 09:10:00 bench01 systemd[1]: started bounded benchmark service"
+    tailer = LiveFileTailer(
+        Path("benchmark-live.log"),
+        RULES_ROOT,
+        max_raw_lines=raw_capacity,
+        max_events=event_capacity,
+    )
+    snapshot = None
+    for line_number in range(1, line_count + 1):
+        snapshot = tailer._process_line(line_number, line)
+    if snapshot is None:
+        raise AssertionError("Live-retention benchmark produced no snapshot.")
+    if snapshot.live_retention.retained_raw_lines != raw_capacity:
+        raise AssertionError("Live raw-line capacity was not enforced.")
+    if snapshot.live_retention.retained_parsed_events != event_capacity:
+        raise AssertionError("Live event capacity was not enforced.")
+
+    result: dict[str, Any] = _result_counts(snapshot)
+    result["live_retention"] = snapshot.live_retention.model_dump(mode="json")
+    payload_bytes = len(line.encode()) * line_count
+    return result, payload_bytes, line_count
 
 
 def _repeat_complete_lines(unit: str, target_bytes: int) -> str:

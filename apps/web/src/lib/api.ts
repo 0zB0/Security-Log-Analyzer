@@ -1,132 +1,61 @@
+import type {
+  AnalysisResult as ApiAnalysisResult,
+  AnalystNote as ApiAnalystNote,
+  AssistantResponse as ApiAssistantResponse,
+  AssistantSettings as ApiAssistantSettings,
+  CaseQualitySummary as ApiCaseQualitySummary,
+  CrossSourceLink as ApiCrossSourceLink,
+  Entity as ApiEntity,
+  EvidenceIntegritySummary as ApiEvidenceIntegritySummary,
+  EvidenceLine as ApiEvidenceLine,
+  Finding as ApiFinding,
+  Incident as ApiIncident,
+  LiveRetentionSummary as ApiLiveRetentionSummary,
+  LocalLLMStatus as ApiLocalLLMStatus,
+  MitreMapping as ApiMitreMapping,
+  ParsedEvent as ApiParsedEvent,
+  PromptBuildResult as ApiPromptBuildResult,
+  ReportRedactionOptions as ApiReportRedactionOptions,
+  ReportResponse as ApiReportResponse,
+  RuleCorrelationMetadata as ApiRuleCorrelationMetadata,
+  RuleLibraryItem as ApiRuleLibraryItem,
+  RuleLibraryResponse as ApiRuleLibraryResponse,
+  SourceSummary as ApiSourceSummary,
+} from "../generated/api-schema";
+
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? "http://localhost:8000" : "");
 
-export type Severity = "info" | "low" | "medium" | "high" | "critical";
-export type Confidence = "low" | "medium" | "high";
+export type Severity = ApiFinding["severity"];
+export type Confidence = ApiFinding["confidence"];
+export type MitreMapping = Required<ApiMitreMapping>;
+export type Finding = Required<ApiFinding> & { mitre: MitreMapping };
+export type Incident = Required<ApiIncident>;
+export type Entity = Required<ApiEntity>;
+export type EvidenceLine = ApiEvidenceLine;
+export type SourceSummary = ApiSourceSummary;
+export type CrossSourceLink = Required<ApiCrossSourceLink>;
+export type CaseQualitySummary = Required<ApiCaseQualitySummary>;
+export type LiveRetentionSummary = ApiLiveRetentionSummary;
+export type EvidenceIntegritySummary = Required<ApiEvidenceIntegritySummary> & {
+  live_retention: LiveRetentionSummary | null;
+};
+export type ParsedEvent = Required<ApiParsedEvent>;
 
-export interface MitreMapping {
-  tactic: string | null;
-  technique_id: string | null;
-  technique_name: string | null;
-  note: string | null;
-}
-
-export interface Finding {
-  id: string;
-  rule_id: string;
-  title: string;
-  severity: Severity;
-  confidence: Confidence;
-  summary: string;
-  reason: string;
-  mitre: MitreMapping;
-  first_seen: string;
-  last_seen: string;
-  event_count: number;
-  evidence_line_ids: string[];
-}
-
-export interface Incident {
-  id: string;
-  title: string;
-  severity: Severity;
-  status: "active" | "investigating" | "closed" | "false_positive";
-  summary: string;
-  first_seen: string;
-  last_seen: string;
-  score: number;
-  score_breakdown: Record<string, number>;
-  score_rationale: string[];
-  finding_ids: string[];
-  entities: string[];
-  timeline: string[];
-  mitre_techniques: string[];
-}
-
-export interface Entity {
-  id: string;
-  analysis_id: string | null;
-  entity_type: "ip" | "user" | "host" | "service" | "path" | "domain" | "url" | "container";
-  value: string;
-  first_seen: string | null;
-  last_seen: string | null;
-  risk_score: number;
-  event_count: number;
-  source_ids: string[];
-  finding_ids: string[];
-  incident_ids: string[];
-}
-
-export interface EvidenceLine {
-  id: string;
-  line_number: number;
-  raw_text: string;
-  content_hash: string;
-}
-
-export interface SourceSummary {
-  filename: string;
-  source_id: string;
-  parser: string;
-  raw_line_count: number;
-  parsed_event_count: number;
-  finding_count: number;
-  incident_count: number;
-  content_sha256: string;
-}
-
-export interface CrossSourceLink {
-  id: string;
-  link_type: string;
-  source_event_id: string;
-  target_event_id: string;
-  source_raw_line_id: string;
-  target_raw_line_id: string;
-  source_label: string;
-  target_label: string;
-  source_event_type: string;
-  target_event_type: string;
-  event_time: string | null;
-  source_ip: string | null;
-  destination_ip: string | null;
-  destination_port: string | null;
-  match_value: string | null;
-  summary: string;
-  confidence: string;
-}
-
-export interface CaseQualitySummary {
-  strongest_incident_id: string | null;
-  strongest_incident_title: string | null;
-  strongest_incident_score: number;
-  sequence_backed_incident_count: number;
-  cross_source_corroborated_incident_count: number;
-  total_cross_source_links: number;
-  top_scoring_reason: string | null;
-}
-
-export interface ParsedEvent {
-  id: string;
-  source_id: string;
-  raw_line_id: string;
-  event_time: string | null;
-  event_type: string;
-  host: string | null;
-  service: string | null;
-  source_ip: string | null;
-  username: string | null;
-  message: string;
-  normalized_fields: Record<string, unknown>;
-}
-
-export interface AnalysisResult {
-  analysis_id: string | null;
-  source_id: string;
-  parser: string;
-  raw_line_count: number;
-  parsed_event_count: number;
-  finding_count: number;
-  incident_count: number;
+export type AnalysisResult = Omit<
+  Required<ApiAnalysisResult>,
+  | "events"
+  | "findings"
+  | "incidents"
+  | "entities"
+  | "evidence"
+  | "sources"
+  | "cross_source_links"
+  | "case_quality"
+  | "evidence_integrity"
+  | "live_retention"
+  | "live_snapshot_attestation"
+> & {
   events: ParsedEvent[];
   findings: Finding[];
   incidents: Incident[];
@@ -135,7 +64,10 @@ export interface AnalysisResult {
   sources: SourceSummary[];
   cross_source_links: CrossSourceLink[];
   case_quality: CaseQualitySummary | null;
-}
+  evidence_integrity?: EvidenceIntegritySummary | null;
+  live_retention?: LiveRetentionSummary | null;
+  live_snapshot_attestation?: string | null;
+};
 
 export interface LiveSnapshot {
   message_type: "snapshot";
@@ -153,43 +85,14 @@ export interface LiveSnapshot {
   evidence: EvidenceLine[];
   findings: Finding[];
   incidents: Incident[];
+  live_retention: LiveRetentionSummary;
+  live_snapshot_attestation: string | null;
 }
 
-export interface AssistantResponse {
-  provider: string;
-  model: string;
-  mode: string;
-  prompt: string;
-  summary: string;
-  key_points: string[];
-  recommended_next_steps: string[];
-  evidence_references: number[];
-  guardrails: string[];
-}
-
-export interface AssistantStatus {
-  enabled: boolean;
-  provider: string;
-  url: string;
-  model: string | null;
-  available: boolean;
-  installed_models: string[];
-  error: string | null;
-}
-
-export interface AssistantSettings {
-  ai_enabled: boolean;
-  default_model: string;
-  show_prompt_preview: boolean;
-  max_evidence_lines: number;
-  max_evidence_chars: number;
-}
-
-export interface PromptBuildResult {
-  prompt: string;
-  evidence_line_count: number;
-  truncated: boolean;
-}
+export type AssistantResponse = Required<ApiAssistantResponse>;
+export type AssistantStatus = Required<ApiLocalLLMStatus>;
+export type AssistantSettings = Required<ApiAssistantSettings>;
+export type PromptBuildResult = Required<ApiPromptBuildResult>;
 
 export interface AuthStatus {
   authenticated: boolean;
@@ -201,53 +104,20 @@ export interface AuthStatus {
   local_admin: boolean;
 }
 
-export interface AnalystNote {
-  id: string;
-  analysis_id: string;
-  incident_id: string;
-  body: string;
-  note_type: "observation" | "decision" | "follow_up" | "false_positive";
-  author: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ReportResponse {
+export type AnalystNote = Required<ApiAnalystNote>;
+export type ReportResponse = Required<ApiReportResponse> & {
   format: "markdown" | "html" | "pdf";
-  filename: string;
-  content: string;
-  created_at: string;
-}
-
-export interface RuleLibraryItem {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  danger_summary: string;
-  severity: Severity;
-  confidence: Confidence;
-  log_types: string[];
-  mitre_tactic: string | null;
-  mitre_technique_id: string | null;
-  mitre_technique_name: string | null;
-  look_for: string[];
-  false_positives: string[];
-  recommendations: string[];
-}
-
-export interface RuleLibraryResponse {
-  rule_count: number;
-  categories: string[];
+};
+export type RuleCorrelationMetadata = Required<ApiRuleCorrelationMetadata>;
+export type RuleLibraryItem = Required<Omit<ApiRuleLibraryItem, "correlation">> & {
+  correlation: RuleCorrelationMetadata;
+};
+export type RuleLibraryResponse = Omit<ApiRuleLibraryResponse, "rules"> & {
   rules: RuleLibraryItem[];
-}
-
-export interface ReportRedactionOptions {
+};
+export type ReportRedactionOptions = Omit<ApiReportRedactionOptions, "enabled"> & {
   enabled: boolean;
-  mask_ips?: boolean;
-  mask_users?: boolean;
-  mask_hosts?: boolean;
-}
+};
 
 export async function getAuthStatus(): Promise<AuthStatus> {
   const response = await fetch(`${API_BASE_URL}/auth/status`);
@@ -485,6 +355,9 @@ function snapshotToAnalysisResult(snapshot: LiveSnapshot): AnalysisResult {
     sources: [],
     cross_source_links: [],
     case_quality: null,
+    evidence_integrity: null,
+    live_retention: snapshot.live_retention,
+    live_snapshot_attestation: snapshot.live_snapshot_attestation,
   };
 }
 

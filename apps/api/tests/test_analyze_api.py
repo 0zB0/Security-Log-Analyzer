@@ -7,9 +7,16 @@ from sqlalchemy import update
 
 from tracehawk_api.database import AnalysisRunRecord, SessionLocal
 from tracehawk_api.main import app
+from tracehawk_api.services.analysis import AnalysisResult
 from tracehawk_api.services.correlation import correlate_incidents
+from tracehawk_api.services.correlation_patterns import (
+    default_correlation_pattern_path,
+    load_correlation_patterns,
+)
 from tracehawk_api.services.detection import run_detection
+from tracehawk_api.services.evidence_integrity import LiveRetentionSummary
 from tracehawk_api.services.live import parse_tshark_fields_line
+from tracehawk_api.services.live_attestation import attest_live_snapshot
 from tracehawk_api.services.rules import load_rules
 
 
@@ -221,6 +228,7 @@ def test_retention_exports_previews_and_purges_raw_logs() -> None:
     assert detail["incident_count"] == 1
     assert all(line["raw_text"] == "[PURGED_RAW_LOG]" for line in detail["evidence"])
     assert all(line["content_hash"] for line in detail["evidence"])
+    assert detail["evidence_integrity"]["status"] == "raw_purged"
 
 
 def test_retention_deletes_runs_older_than_policy_window() -> None:
@@ -281,24 +289,45 @@ def test_live_snapshot_can_be_persisted_as_analysis_run() -> None:
             }
         )
 
-    findings = run_detection(load_rules(ROOT / "packages/rules/network"), events)
-    incidents = correlate_incidents(findings, events)
-    response = client.post(
-        "/api/analyze/live-snapshot",
-        json={
-            "analysis_id": None,
-            "source_id": "interface:wg0",
-            "parser": "network_packet",
-            "raw_line_count": len(evidence),
-            "parsed_event_count": len(events),
-            "finding_count": len(findings),
-            "incident_count": len(incidents),
-            "events": [event.model_dump(mode="json") for event in events],
-            "findings": [finding.model_dump(mode="json") for finding in findings],
-            "incidents": [incident.model_dump(mode="json") for incident in incidents],
-            "evidence": evidence,
-        },
+    rules = load_rules(ROOT / "packages/rules")
+    findings = run_detection(
+        [rule for rule in rules if "network_packet" in rule.log_types], events
     )
+    patterns = load_correlation_patterns(
+        default_correlation_pattern_path(ROOT / "packages/rules"), rules
+    )
+    incidents = correlate_incidents(findings, events, rules=rules, patterns=patterns)
+    snapshot = AnalysisResult(
+        source_id="interface:wg0",
+        parser="network_packet",
+        raw_line_count=len(evidence),
+        parsed_event_count=len(events),
+        finding_count=len(findings),
+        incident_count=len(incidents),
+        events=events,
+        findings=findings,
+        incidents=incidents,
+        evidence=evidence,
+        live_retention=LiveRetentionSummary(
+            raw_line_capacity=100,
+            event_capacity=100,
+            total_raw_lines=10,
+            total_parsed_events=10,
+            retained_raw_lines=10,
+            retained_parsed_events=10,
+            dropped_raw_lines=0,
+            dropped_parsed_events=0,
+        ),
+    )
+    snapshot.live_snapshot_attestation = attest_live_snapshot(snapshot)
+    payload = snapshot.model_dump(mode="json")
+
+    missing_attestation = {**payload, "live_snapshot_attestation": None}
+    missing_response = client.post("/api/analyze/live-snapshot", json=missing_attestation)
+    assert missing_response.status_code == 422
+    assert "missing its server attestation" in missing_response.json()["detail"]
+
+    response = client.post("/api/analyze/live-snapshot", json=payload)
 
     assert response.status_code == 200
     body = response.json()
@@ -310,18 +339,53 @@ def test_live_snapshot_can_be_persisted_as_analysis_run() -> None:
     assert body["incidents"]
     assert body["source_id"].startswith("interface:wg0:saved:")
     assert all(line["id"].startswith("analysis-") for line in body["evidence"])
+    assert body["live_retention"]["retained_raw_lines"] == 10
+    assert body["evidence_integrity"] == {
+        "status": "verified",
+        "algorithm": "sha256",
+        "origin": "live_snapshot",
+        "verified_line_count": 10,
+        "attested_live_snapshot": True,
+        "live_retention": {
+            "raw_line_capacity": 100,
+            "event_capacity": 100,
+            "total_raw_lines": 10,
+            "total_parsed_events": 10,
+            "retained_raw_lines": 10,
+            "retained_parsed_events": 10,
+            "dropped_raw_lines": 0,
+            "dropped_parsed_events": 0,
+        },
+    }
 
     detail_response = client.get(f"/api/analyze/runs/{body['analysis_id']}")
     assert detail_response.status_code == 200
     detail = detail_response.json()
     assert detail["parser"] == "network_packet"
+    assert detail["live_retention"] == body["live_retention"]
     assert any(
         finding["rule_id"] == "network-wireguard-port-scan-001"
         for finding in detail["findings"]
     )
     assert detail["evidence"][0]["id"] in detail["findings"][0]["evidence_line_ids"]
 
+    tampered_retention = {
+        **payload,
+        "live_retention": {
+            **payload["live_retention"],
+            "raw_line_capacity": 101,
+        },
+    }
+    retention_response = client.post(
+        "/api/analyze/live-snapshot", json=tampered_retention
+    )
+    assert retention_response.status_code == 422
+    assert "attestation is invalid" in retention_response.json()["detail"]
 
+    payload["evidence"][0]["raw_text"] = "tampered after server attestation"
+    tampered_response = client.post("/api/analyze/live-snapshot", json=payload)
+    assert tampered_response.status_code == 422
+    assert "attestation is invalid" in tampered_response.json()["detail"]
 def test_analyze_upload_rejects_unsupported_log() -> None:
     client = TestClient(app)
 

@@ -10,6 +10,14 @@ mitre:
   technique_id: T1136.001
   technique_name: Local Account
   note: The ordered sequence combines credential access evidence with a privileged persistence action.
+correlation:
+  family: persistence
+  behaviors: [ssh_compromise_sequence]
+  entity_fields: [username, source_ip]
+  max_gap_minutes: 30
+  intrinsic_sequence_score: 5
+  intrinsic_sequence_rationale: A declared three-step SSH compromise sequence matched.
+  intrinsic_sequence_summary: Repeated failures, a successful login, and privileged persistence occurred in order.
 conditions:
   sequence:
     - event_type: ssh_failed_login

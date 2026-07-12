@@ -1,6 +1,6 @@
 import os
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 
@@ -31,6 +31,63 @@ class Settings(BaseModel):
     allowed_upload_extensions: str = os.getenv(
         "ALLOWED_UPLOAD_EXTENSIONS",
         ".log,.txt,.csv,.json,.jsonl,.xml",
+    )
+    live_max_raw_lines: int = Field(
+        default=int(os.getenv("TRACEHAWK_LIVE_MAX_RAW_LINES", "5000")),
+        ge=1,
+    )
+    live_max_events: int = Field(
+        default=int(os.getenv("TRACEHAWK_LIVE_MAX_EVENTS", "5000")),
+        ge=1,
+    )
+    syslog_bind_host: str = os.getenv("TRACEHAWK_SYSLOG_BIND_HOST", "127.0.0.1")
+    syslog_udp_port: int = Field(
+        default=int(os.getenv("TRACEHAWK_SYSLOG_UDP_PORT", "5514")),
+        ge=0,
+        le=65535,
+    )
+    syslog_tcp_port: int = Field(
+        default=int(os.getenv("TRACEHAWK_SYSLOG_TCP_PORT", "5514")),
+        ge=0,
+        le=65535,
+    )
+    syslog_max_line_bytes: int = Field(
+        default=int(os.getenv("TRACEHAWK_SYSLOG_MAX_LINE_BYTES", "8192")),
+        ge=128,
+        le=1_000_000,
+    )
+    syslog_queue_size: int = Field(
+        default=int(os.getenv("TRACEHAWK_SYSLOG_QUEUE_SIZE", "1000")),
+        ge=1,
+        le=1_000_000,
+    )
+    syslog_max_connections: int = Field(
+        default=int(os.getenv("TRACEHAWK_SYSLOG_MAX_CONNECTIONS", "32")),
+        ge=1,
+        le=10_000,
+    )
+    syslog_idle_timeout_seconds: float = Field(
+        default=float(os.getenv("TRACEHAWK_SYSLOG_IDLE_TIMEOUT_SECONDS", "30")),
+        gt=0,
+        le=3600,
+    )
+    syslog_batch_size: int = Field(
+        default=int(os.getenv("TRACEHAWK_SYSLOG_BATCH_SIZE", "100")),
+        ge=1,
+        le=100_000,
+    )
+    syslog_flush_interval_seconds: float = Field(
+        default=float(os.getenv("TRACEHAWK_SYSLOG_FLUSH_INTERVAL_SECONDS", "1")),
+        gt=0,
+        le=300,
+    )
+    syslog_allow_remote_bind: bool = os.getenv(
+        "TRACEHAWK_SYSLOG_ALLOW_REMOTE_BIND", "false"
+    ).lower() in {"1", "true", "yes"}
+    syslog_stats_interval_seconds: float = Field(
+        default=float(os.getenv("TRACEHAWK_SYSLOG_STATS_INTERVAL_SECONDS", "30")),
+        gt=0,
+        le=3600,
     )
 
 

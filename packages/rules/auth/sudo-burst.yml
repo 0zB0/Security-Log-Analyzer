@@ -9,6 +9,12 @@ mitre:
   tactic: Execution
   technique_id: T1059
   technique_name: Command and Scripting Interpreter
+correlation:
+  family: privileged_activity
+  incident_title: Privileged sudo activity
+  behaviors: [privileged_action]
+  entity_fields: [username, host]
+  max_gap_minutes: 30
 conditions:
   event_type: sudo_command
   group_by:
@@ -23,4 +29,3 @@ false_positives:
 recommendations:
   - Review command sequence for unusual account, credential, or persistence actions.
   - Confirm whether the user had an approved maintenance window.
-

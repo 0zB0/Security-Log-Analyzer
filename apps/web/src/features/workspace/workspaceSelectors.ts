@@ -22,6 +22,28 @@ export interface CaseTimelineItem {
   detail: string;
 }
 
+export function filterFindingsByQuery(findings: Finding[], query: string): Finding[] {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) {
+    return findings;
+  }
+  return findings.filter((finding) =>
+    [
+      finding.title,
+      finding.rule_id,
+      finding.summary,
+      finding.reason,
+      finding.severity,
+      finding.confidence,
+      finding.mitre.tactic,
+      finding.mitre.technique_id,
+      finding.mitre.technique_name,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(normalizedQuery)),
+  );
+}
+
 export function buildMitreGroups(findings: Finding[]): MitreGroup[] {
   const tacticMap = new Map<
     string,

@@ -9,6 +9,11 @@ mitre:
   tactic: Command and Control
   technique_id: T1071.004
   technique_name: DNS
+correlation:
+  family: dns
+  behaviors: [dns_burst]
+  entity_fields: [source_ip]
+  max_gap_minutes: 15
 conditions:
   event_type: network_packet
   field_equals:

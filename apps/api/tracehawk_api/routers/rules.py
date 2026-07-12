@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from tracehawk_api.models.domain import Confidence, Severity
+from tracehawk_api.models.domain import Confidence, RuleCorrelationMetadata, Severity
 from tracehawk_api.services.rules import load_rules
 
 
@@ -25,6 +25,7 @@ class RuleLibraryItem(BaseModel):
     look_for: list[str]
     false_positives: list[str]
     recommendations: list[str]
+    correlation: RuleCorrelationMetadata
 
 
 class RuleLibraryResponse(BaseModel):
@@ -52,6 +53,7 @@ def rule_library() -> RuleLibraryResponse:
             look_for=_look_for(rule.conditions.model_dump(exclude_none=True)),
             false_positives=rule.false_positives,
             recommendations=rule.recommendations,
+            correlation=rule.correlation,
         )
         for rule in rules
     ]

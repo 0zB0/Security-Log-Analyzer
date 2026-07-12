@@ -39,6 +39,7 @@ class AnalysisRunRecord(Base):
     sources: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     cross_source_links: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     case_quality: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    evidence_integrity: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC), index=True
     )
@@ -250,11 +251,16 @@ def migrate_database(revision: str = "head") -> None:
         application_tables = set(Base.metadata.tables)
         existing_application_tables = tables & application_tables
         if existing_application_tables and "alembic_version" not in tables:
-            if _schema_matches_metadata(schema, omitted_columns=_CASE_INTEGRITY_COLUMNS):
+            if _schema_matches_metadata(schema, omitted_columns=_V071_OMITTED_COLUMNS):
                 command.stamp(migration_config, "0001_current_schema")
                 command.upgrade(migration_config, revision)
-            elif _schema_matches_metadata(schema):
+            elif _schema_matches_metadata(
+                schema, omitted_columns=_EVIDENCE_INTEGRITY_COLUMNS
+            ):
                 command.stamp(migration_config, "0002_case_integrity")
+                command.upgrade(migration_config, revision)
+            elif _schema_matches_metadata(schema):
+                command.stamp(migration_config, "0003_evidence_integrity")
                 command.upgrade(migration_config, revision)
             else:
                 raise RuntimeError(
@@ -270,6 +276,14 @@ _CASE_INTEGRITY_COLUMNS = {
     "analysis_runs": {"sources", "cross_source_links", "case_quality"},
     "incidents": {"score_breakdown", "score_rationale"},
 }
+_EVIDENCE_INTEGRITY_COLUMNS = {"analysis_runs": {"evidence_integrity"}}
+_V071_OMITTED_COLUMNS = {
+    table: set(columns)
+    for table, columns in _CASE_INTEGRITY_COLUMNS.items()
+}
+_V071_OMITTED_COLUMNS["analysis_runs"].update(
+    _EVIDENCE_INTEGRITY_COLUMNS["analysis_runs"]
+)
 
 
 def _schema_matches_metadata(

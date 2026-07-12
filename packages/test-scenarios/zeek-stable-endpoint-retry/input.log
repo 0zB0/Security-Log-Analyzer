@@ -1,0 +1,13 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	conn
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state
+#types	time	string	addr	port	addr	port	enum	string	interval	count	count	string
+1783539601.000000	Cretry01	10.8.0.90	51001	198.51.100.90	443	tcp	-	-	0	0	S0
+1783539631.000000	Cretry02	10.8.0.90	51002	198.51.100.90	443	tcp	-	-	0	0	S0
+1783539661.000000	Cretry03	10.8.0.90	51003	198.51.100.90	443	tcp	-	-	0	0	S0
+1783539691.000000	Cretry04	10.8.0.90	51004	198.51.100.90	443	tcp	-	-	0	0	S0
+1783539721.000000	Cretry05	10.8.0.90	51005	198.51.100.90	443	tcp	-	-	0	0	S0
+1783539751.000000	Cretry06	10.8.0.90	51006	198.51.100.90	443	tcp	-	-	0	0	S0

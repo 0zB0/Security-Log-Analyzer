@@ -1,4 +1,4 @@
-# API Notes
+# TraceHawk API Reference
 
 ## Authentication And Roles
 
@@ -9,6 +9,13 @@ retention deletion, and audit access. See `docs/auth-rbac.md` for the exact matr
 
 Every protected HTTP response includes `X-Request-ID`. Clients may supply that header to correlate
 an operation with its audit event.
+
+## Generated Browser Contract
+
+FastAPI Pydantic component schemas are exported to committed OpenAPI and TypeScript artifacts.
+`make api-contract-check` fails when backend models and browser declarations drift. The generation
+workflow, frontend consumption rules, and runtime boundary are documented in the
+[generated API contract guide](api-contract.md).
 
 ## Health
 
@@ -24,7 +31,7 @@ GET /api/health/ready
 ```
 
 Liveness proves the process is serving. Readiness executes a SQLite query and validates the full
-YAML rule library; it returns `503` when either dependency fails.
+YAML rule library plus the correlation-pattern library; it returns `503` when a dependency fails.
 
 ## Metrics
 
@@ -182,10 +189,16 @@ Each message is a `snapshot` containing:
 
 - source ID and parser;
 - live source status: `active` or `paused`;
-- raw line, parsed event, finding, and incident counts;
+- retained raw line, parsed event, finding, and incident counts;
+- configured capacities plus total, retained, and dropped raw/event counters in `live_retention`;
 - latest parsed event;
 - current findings and incidents;
-- evidence lines accumulated so far.
+- evidence lines retained in the current rolling window.
+
+`TRACEHAWK_LIVE_MAX_RAW_LINES` and `TRACEHAWK_LIVE_MAX_EVENTS` default to `5000`. Findings and
+incidents are rebuilt only from retained events whose raw references remain in the window. The
+retention summary is covered by the live HMAC and persisted inside evidence-integrity provenance
+when a snapshot is saved.
 
 The client can send control messages over the same socket:
 
@@ -289,11 +302,14 @@ Content-Type: application/json
 ```
 
 Accepts the current live snapshot converted to an `AnalysisResult` shape and persists it as a
-normal local analysis run. This is intended for live interface or file-tail findings that need to be
-kept for later incident review and report export.
+normal local analysis run. The payload must retain the `live_snapshot_attestation` emitted by the
+WebSocket. Missing, expired-process, or modified snapshots return `422` before any write. This is
+intended for live interface or file-tail findings that need to be kept for later incident review
+and report export.
 
 The endpoint namespaces raw line, event, finding, and incident IDs under the generated
 `analysis_id`, so repeated saves from the same live source do not overwrite earlier evidence rows.
+The persistence boundary also recomputes SHA-256 values and validates counters and graph references.
 
 ## Assistant Status
 

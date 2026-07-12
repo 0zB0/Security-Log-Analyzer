@@ -10,6 +10,11 @@ mitre:
   tactic: Discovery
   technique_id: T1083
   technique_name: File and Directory Discovery
+correlation:
+  family: sensitive_http
+  behaviors: [sensitive_http]
+  entity_fields: [source_ip, destination_ip]
+  max_gap_minutes: 15
 conditions:
   event_type: zeek_http
   field_contains_any:

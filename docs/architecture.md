@@ -2,7 +2,7 @@
 
 > Audience: engineers, security reviewers, and operators
 > Canonical for: system components, boundaries, core objects, and architectural invariants
-> Verified against: TraceHawk v0.8.0
+> Verified against: TraceHawk v0.9.0
 
 TraceHawk is a single-replica, local-first investigation service. It accepts bounded logs or
 lightweight telemetry, produces deterministic findings, correlates them into explainable incidents,
@@ -20,6 +20,7 @@ flowchart LR
     W --> API["FastAPI application"]
     U["Uploads and case bundles"] --> API
     L["Approved live sources"] --> API
+    S["Opt-in bounded syslog collector"] --> E
     API --> E["Deterministic analysis engine"]
     E --> DB["SQLite investigation state"]
     E --> R["Markdown, HTML, and PDF reports"]
@@ -39,9 +40,10 @@ identity boundary and explicit application allowlists.
 | React workspace | Intake, navigation, investigation views, reports, and live status | `apps/web/src/` |
 | API and authorization | HTTP/WebSocket boundary, role enforcement, request lifecycle | `apps/api/tracehawk_api/main.py`, `routers/`, `auth.py` |
 | Upload boundary | Extension, size, line, encoding, bundle, and rate limits | `services/uploads.py`, `security.py` |
+| Collector boundary | Loopback-default TCP/UDP, line, queue, connection, idle, and batch limits | `collector.py`, `services/syslog_collector.py` |
 | Parser layer | Confidence-ranked parser selection and normalized events | `services/parser_registry.py`, parser modules |
 | Detection engine | Deterministic YAML rule evaluation and evidence-backed findings | `services/rules.py`, `services/detection.py`, `packages/rules/` |
-| Correlation layer | Incident grouping, sequence context, score, and rationale | `services/correlation.py`, `services/case_bundle.py` |
+| Correlation layer | Bounded common-entity grouping plus declarative pattern scoring | `services/correlation.py`, `services/correlation_patterns.py`, `packages/correlation/` |
 | Persistence layer | Saved analyses, events, findings, incidents, entities, notes, settings, audit | `database.py`, `services/persistence.py` |
 | Report layer | Markdown, HTML, PDF, and optional redaction | `services/reports/` |
 | Assistant layer | Evidence-bounded prompt construction and local explanation | `services/llm.py`, `routers/assistant.py` |
@@ -57,7 +59,9 @@ flowchart TD
     PS --> PE["Normalized ParsedEvent"]
     PE --> DR["Applicable deterministic rules"]
     DR --> F["Finding plus evidence IDs"]
-    F --> C["Incident correlation and scoring"]
+    F --> CP["Validated behavior patterns"]
+    CP --> C["Bounded common-entity correlation and scoring"]
+    PE --> C
     PE --> EN["Entity extraction"]
     C --> P["Persist investigation state"]
     EN --> P
@@ -87,21 +91,29 @@ AnalysisResult
 ├── Entity[]
 ├── EvidenceLine[]
 ├── CrossSourceLink[]
+├── LiveRetentionSummary
+├── EvidenceIntegritySummary
 └── CaseQualitySummary
 ```
 
 Pydantic models in `apps/api/tracehawk_api/models/domain.py` define the shared backend contract.
-Matching TypeScript interfaces in `apps/web/src/lib/api.ts` define the current frontend boundary.
+The deterministic [generated API contract](api-contract.md) exports their OpenAPI component schemas
+to TypeScript; `apps/web/src/lib/api.ts` consumes those generated core response types.
 
 ## Trust Boundaries
 
 ```mermaid
 flowchart LR
-    X["Untrusted upload or live source"] --> B1["Validation boundary"]
-    B1 --> A["Application process"]
+    X["Untrusted upload"] --> B1["Request and source limits"]
+    C["TCP/UDP syslog"] --> B4["Listener, line, queue, connection, and batch limits"]
+    B1 --> A["Deterministic analysis"]
+    B4 --> A
+    A --> B5["SHA-256, counters, ownership, and graph validation"]
+    WS["Browser-returned live snapshot"] --> B6["Current-process HMAC verification"]
+    B6 --> B5
     ID["Trusted proxy identity headers"] --> B2["Configured auth-mode boundary"]
     B2 --> A
-    A --> D["Local SQLite data"]
+    B5 --> D["Local SQLite data"]
     A --> B3["LLM prompt boundary"]
     B3 --> O["Configured local Ollama endpoint"]
     A --> OUT["Reports and exports"]
@@ -111,6 +123,8 @@ The [threat model](threat-model.md) owns abuse cases and security invariants. Im
 boundaries are:
 
 - input is untrusted until validated and parsed;
+- a live snapshot is untrusted when it returns from the browser until its process-local HMAC,
+  hashes, counters, and graph references are verified;
 - proxy identity headers are ignored in local mode and trusted only in explicit proxy-auth mode;
 - uploaded original files are not retained as files;
 - persisted raw evidence text is sensitive local data;
@@ -129,6 +143,15 @@ boundaries are:
 7. Public-demo inputs and committed fixtures remain sanitized.
 8. Current deployment remains single-replica until state, rate limiting, audit, and migrations are
    designed for horizontal operation.
+9. Every unpurged stored raw line passes server-side SHA-256 verification before commit.
+10. Live snapshot attestation proves current-process snapshot integrity, not source-host identity.
+11. Incident groups retain one stable entity common to every finding and never expand through a
+    transitive entity bridge.
+12. Correlation behavior comes from validated rule metadata and versioned patterns, never from
+    concrete rule IDs or title fragments.
+13. Live source state cannot exceed configured raw-line and parsed-event capacities; drop counters
+    are signed and saved with bounded-window provenance.
+14. Syslog listeners are opt-in, loopback-default, queue-bounded, and absent from Azure.
 
 ## Deployment Shapes
 
@@ -166,7 +189,7 @@ The supported public deployment path is documented in
 | --- | --- | --- |
 | Specific parsers outrank generic fallbacks | `services/analysis.py`, `parser_registry.py` | `test_parser_selection.py` |
 | Findings retain raw evidence | `services/detection.py`, `analysis.py` | parser pipeline and scenario tests |
-| Correlation is explainable | `services/correlation.py` | `test_correlation_scoring.py` |
+| Correlation is declarative and bounded | `services/correlation.py`, `services/correlation_patterns.py` | `test_correlation_patterns.py`, `test_correlation_scoring.py` |
 | Saved runs can be reopened | `database.py`, `persistence.py` | `test_analyze_api.py` |
 | AI is evidence-bounded | `services/llm.py` | `test_assistant_api.py` |
 | Authorization gates HTTP and WebSocket paths | `auth.py`, routers | `test_auth_gate.py` |

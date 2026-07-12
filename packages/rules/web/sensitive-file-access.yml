@@ -9,6 +9,12 @@ mitre:
   tactic: Discovery
   technique_id: T1083
   technique_name: File and Directory Discovery
+correlation:
+  family: sensitive_http
+  incident_title: Web probing against sensitive files
+  behaviors: [sensitive_http]
+  entity_fields: [source_ip]
+  max_gap_minutes: 15
 conditions:
   event_type: http_request
   path_contains_any:
@@ -26,4 +32,3 @@ recommendations:
   - Confirm the requested file was not served.
   - Review adjacent requests from the same IP.
   - Add detection or blocking rules for repeated probing.
-

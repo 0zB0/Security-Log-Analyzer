@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-09T21:39:53.740722+00:00",
+  "generated_at": "2026-07-12T21:02:18.750749+00:00",
   "methodology": {
     "precision_note": "Precision is TP / (TP + unexpected rule matches).",
     "recall_note": "Recall is TP / (TP + missing expected rule matches).",
@@ -538,6 +538,30 @@
     {
       "benign": false,
       "expected": [
+        "zeek-stable-endpoint-retry-001"
+      ],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [
+        "zeek-stable-endpoint-retry-001"
+      ],
+      "scenario": "zeek-stable-endpoint-retry",
+      "true_positives": [
+        "zeek-stable-endpoint-retry-001"
+      ]
+    },
+    {
+      "benign": true,
+      "expected": [],
+      "false_negatives": [],
+      "false_positives": [],
+      "observed": [],
+      "scenario": "zeek-stable-endpoint-retry-benign",
+      "true_positives": []
+    },
+    {
+      "benign": false,
+      "expected": [
         "network-wireguard-admin-service-access-001",
         "network-wireguard-dns-burst-001",
         "network-wireguard-host-sweep-001",
@@ -571,33 +595,36 @@
     {
       "benign": false,
       "expected": [
-        "zeek-conn-attempt-burst-001"
+        "zeek-conn-attempt-burst-001",
+        "zeek-stable-endpoint-retry-001"
       ],
       "false_negatives": [],
       "false_positives": [],
       "observed": [
-        "zeek-conn-attempt-burst-001"
+        "zeek-conn-attempt-burst-001",
+        "zeek-stable-endpoint-retry-001"
       ],
       "scenario": "zeek-connection-attempt-burst",
       "true_positives": [
-        "zeek-conn-attempt-burst-001"
+        "zeek-conn-attempt-burst-001",
+        "zeek-stable-endpoint-retry-001"
       ]
     }
   ],
   "summary": {
-    "benign_scenario_count": 11,
+    "benign_scenario_count": 12,
     "benign_scenarios_with_findings": 0,
     "false_negative_count": 0,
     "false_positive_count": 0,
     "missing_positive_rule_ids": [],
-    "positive_rule_coverage": 65,
+    "positive_rule_coverage": 66,
     "precision": 1.0,
     "recall": 1.0,
-    "rule_count": 65,
-    "rules_with_false_positive_notes": 65,
-    "rules_with_mitre_technique": 65,
-    "rules_with_recommendations": 65,
-    "scenario_count": 33,
-    "true_positive_count": 71
+    "rule_count": 66,
+    "rules_with_false_positive_notes": 66,
+    "rules_with_mitre_technique": 66,
+    "rules_with_recommendations": 66,
+    "scenario_count": 35,
+    "true_positive_count": 73
   }
 }

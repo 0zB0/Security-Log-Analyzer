@@ -2,12 +2,20 @@ from pathlib import Path
 
 from tracehawk_api.services.detection import run_detection
 from tracehawk_api.services.correlation import correlate_incidents
+from tracehawk_api.services.correlation_patterns import (
+    default_correlation_pattern_path,
+    load_correlation_patterns,
+)
 from tracehawk_api.services.ingest import build_raw_lines
 from tracehawk_api.services.linux_auth_parser import LinuxAuthParser
 from tracehawk_api.services.rules import load_rules
 
 
 ROOT = Path(__file__).resolve().parents[3]
+ALL_RULES = load_rules(ROOT / "packages/rules")
+PATTERNS = load_correlation_patterns(
+    default_correlation_pattern_path(ROOT / "packages/rules"), ALL_RULES
+)
 
 
 def test_linux_auth_parser_extracts_ssh_events() -> None:
@@ -105,7 +113,9 @@ def test_auth_findings_correlate_into_compromise_incident() -> None:
     rules = load_rules(ROOT / "packages/rules/auth")
     findings = run_detection(rules, events)
 
-    incidents = correlate_incidents(findings, events)
+    incidents = correlate_incidents(
+        findings, events, rules=ALL_RULES, patterns=PATTERNS
+    )
 
     assert len(incidents) == 1
     incident = incidents[0]
@@ -117,8 +127,8 @@ def test_auth_findings_correlate_into_compromise_incident() -> None:
     assert "user:admin" in incident.entities
     assert incident.mitre_techniques == ["T1078", "T1110.001", "T1136.001"]
     assert len(incident.timeline) == 12
-    assert "SSH failures followed by a successful login" in incident.summary
-    assert "successful SSH login followed by sudo activity" in incident.summary
+    assert "SSH failures were followed by a successful login" in incident.summary
+    assert "successful SSH login was followed by privileged activity" in incident.summary
     assert any("three-step SSH" in reason for reason in incident.score_rationale)
 
 
@@ -133,7 +143,9 @@ def test_sudo_findings_correlate_by_user() -> None:
     rules = load_rules(ROOT / "packages/rules/auth")
     findings = run_detection(rules, events)
 
-    incidents = correlate_incidents(findings, events)
+    incidents = correlate_incidents(
+        findings, events, rules=ALL_RULES, patterns=PATTERNS
+    )
 
     assert len(incidents) == 1
     incident = incidents[0]

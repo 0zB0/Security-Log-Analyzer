@@ -9,6 +9,11 @@ mitre:
   tactic: Credential Access
   technique_id: T1110.001
   technique_name: Password Guessing
+correlation:
+  family: credential_access
+  behaviors: [ssh_failures]
+  entity_fields: [source_ip, username]
+  max_gap_minutes: 15
 conditions:
   event_type: ssh_failed_login
   group_by:
@@ -27,4 +32,3 @@ recommendations:
   - Block or investigate the source IP if confirmed malicious.
   - Disable password authentication where possible.
   - Enforce MFA for remote access.
-

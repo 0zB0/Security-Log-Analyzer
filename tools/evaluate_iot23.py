@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections import Counter, defaultdict
 from datetime import UTC, datetime
@@ -17,40 +18,105 @@ TOOLS_ROOT = ROOT / "tools"
 RULES_ROOT = ROOT / "packages/rules"
 DEFAULT_JSON = ROOT / "docs/proof-pack/current-iot23-evaluation.json"
 DEFAULT_MARKDOWN = ROOT / "docs/proof-pack/current-iot23-evaluation.md"
-MALICIOUS_URL = (
-    "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/"
-    "CTU-IoT-Malware-Capture-34-1/bro/conn.log.labeled"
-)
-BENIGN_URL = (
-    "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/"
-    "CTU-Honeypot-Capture-4-1/bro/conn.log.labeled"
-)
+EVALUATION_MANIFEST = ROOT / "docs/evaluation-manifest.json"
+
 SCAN_LABEL = "PartOfAHorizontalPortScan"
-SCAN_RULE_IDS = {
-    "zeek-conn-attempt-burst-001",
-    "zeek-conn-host-sweep-001",
-    "zeek-conn-port-scan-001",
+C2_LABEL_DESCRIPTION = "C&C or a detailed label beginning with C&C-"
+OBJECTIVES: dict[str, dict[str, Any]] = {
+    "network_scan": {
+        "title": "Horizontal network-scan windows",
+        "window_seconds": 120,
+        "rule_ids": {
+            "zeek-conn-attempt-burst-001",
+            "zeek-conn-host-sweep-001",
+            "zeek-conn-port-scan-001",
+        },
+        "ground_truth": f"A window contains at least one `{SCAN_LABEL}` flow.",
+        "prediction": (
+            "A window produces a Zeek connection-attempt burst, host-sweep, or port-scan finding."
+        ),
+    },
+    "command_and_control": {
+        "title": "Stable-endpoint C2-indicator windows",
+        "window_seconds": 300,
+        "rule_ids": {"zeek-stable-endpoint-retry-001"},
+        "ground_truth": f"A window contains at least one label in the {C2_LABEL_DESCRIPTION} family.",
+        "prediction": (
+            "A window produces the low-confidence repeated failed stable-endpoint finding."
+        ),
+    },
+}
+
+CAPTURE_CATALOG: dict[str, dict[str, Any]] = {
+    "34-1": {
+        "scenario": "CTU-IoT-Malware-Capture-34-1",
+        "role": "final_evaluation",
+        "objectives": ["network_scan"],
+    },
+    "20-1": {
+        "scenario": "CTU-IoT-Malware-Capture-20-1",
+        "role": "development",
+        "objectives": ["command_and_control"],
+    },
+    "21-1": {
+        "scenario": "CTU-IoT-Malware-Capture-21-1",
+        "role": "validation",
+        "objectives": ["command_and_control"],
+    },
+    "8-1": {
+        "scenario": "CTU-IoT-Malware-Capture-8-1",
+        "role": "validation",
+        "objectives": ["command_and_control"],
+    },
+    "42-1": {
+        "scenario": "CTU-IoT-Malware-Capture-42-1",
+        "role": "final_evaluation",
+        "objectives": ["command_and_control"],
+    },
+    "44-1": {
+        "scenario": "CTU-IoT-Malware-Capture-44-1",
+        "role": "final_evaluation",
+        "objectives": ["command_and_control"],
+    },
+    "4-1": {
+        "scenario": "CTU-Honeypot-Capture-4-1",
+        "role": "negative_control",
+        "objectives": ["network_scan", "command_and_control"],
+    },
 }
 
 sys.path.insert(0, str(API_ROOT))
 sys.path.insert(0, str(TOOLS_ROOT))
 
+from evaluation_metrics import confusion_metrics  # noqa: E402
 from tracehawk_api.models.domain import ParsedEvent  # noqa: E402
 from tracehawk_api.services.detection import run_detection  # noqa: E402
 from tracehawk_api.services.rules import load_rules  # noqa: E402
 from tracehawk_api.services.zeek_tsv_parser import ZeekTsvParser  # noqa: E402
-from evaluation_metrics import confusion_metrics  # noqa: E402
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Evaluate TraceHawk on IoT-23 labeled Zeek logs.")
-    parser.add_argument("--input", required=True, action="append", type=Path, help="IoT-23 malicious conn.log.labeled; repeat for more captures")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Evaluate selected TraceHawk Zeek objectives on official IoT-23 labeled captures."
+        )
+    )
+    parser.add_argument(
+        "--input",
+        required=True,
+        action="append",
+        type=Path,
+        help=(
+            "IoT-23 malicious conn.log.labeled; repeat for development, validation, and final "
+            "captures. Known capture IDs receive frozen roles."
+        ),
+    )
     parser.add_argument(
         "--benign-input",
         required=True,
         action="append",
         type=Path,
-        help="IoT-23 benign-device conn.log.labeled; repeat for more captures",
+        help="IoT-23 benign conn.log.labeled negative control; repeat when needed.",
     )
     parser.add_argument("--json-output", type=Path, default=DEFAULT_JSON)
     parser.add_argument("--markdown-output", type=Path, default=DEFAULT_MARKDOWN)
@@ -60,37 +126,89 @@ def main() -> int:
     args.json_output.parent.mkdir(parents=True, exist_ok=True)
     args.json_output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
     args.markdown_output.write_text(render_markdown(report))
-    metrics = report["aggregate_scan_window_metrics"]
+    scan = report["objectives"]["network_scan"]["final_metrics"]
+    c2 = report["objectives"]["command_and_control"]["final_metrics"]
     print(
         "iot23_evaluation=ok "
         f"rows={sum(dataset['parsed_rows'] for dataset in report['datasets'])} "
-        f"tp={metrics['true_positive_windows']} fp={metrics['false_positive_windows']} "
-        f"fn={metrics['false_negative_windows']} tn={metrics['true_negative_windows']}"
+        f"scan_tp={scan['true_positive_windows']} scan_fp={scan['false_positive_windows']} "
+        f"scan_fn={scan['false_negative_windows']} "
+        f"c2_tp={c2['true_positive_windows']} c2_fp={c2['false_positive_windows']} "
+        f"c2_fn={c2['false_negative_windows']}"
     )
     return 0
 
 
 def evaluate_iot23(
-    malicious_paths: Path | list[Path], benign_paths: Path | list[Path]
+    malicious_paths: Path | list[Path],
+    benign_paths: Path | list[Path],
 ) -> dict[str, Any]:
-    malicious_paths = [malicious_paths] if isinstance(malicious_paths, Path) else malicious_paths
-    benign_paths = [benign_paths] if isinstance(benign_paths, Path) else benign_paths
-    rules = [rule for rule in load_rules(RULES_ROOT / "zeek") if rule.id in SCAN_RULE_IDS]
-    datasets: list[dict[str, Any]] = []
-    capture_metrics: list[dict[str, Any]] = []
-    for path, force_benign in [
-        *((path, False) for path in malicious_paths),
-        *((path, True) for path in benign_paths),
-    ]:
-        events, labels = _parse_labeled_zeek(path, force_benign=force_benign)
-        metrics = _evaluate_windows(events, labels, rules)
-        capture_metrics.append(metrics)
-        datasets.append(
-            _dataset_metadata(path, _source_url(path, force_benign), events, labels, metrics)
-        )
-    aggregate = _combine_metrics(*capture_metrics)
+    malicious = [malicious_paths] if isinstance(malicious_paths, Path) else malicious_paths
+    benign = [benign_paths] if isinstance(benign_paths, Path) else benign_paths
+    paths = [*malicious, *benign]
+    if len(paths) != len({path.resolve() for path in paths}):
+        raise ValueError("Each IoT-23 capture path must be unique.")
 
+    relevant_rule_ids = {
+        rule_id
+        for objective in OBJECTIVES.values()
+        for rule_id in objective["rule_ids"]
+    }
+    rules_by_id = {
+        rule.id: rule
+        for rule in load_rules(RULES_ROOT / "zeek")
+        if rule.id in relevant_rule_ids
+    }
+    if set(rules_by_id) != relevant_rule_ids:
+        missing = ", ".join(sorted(relevant_rule_ids - set(rules_by_id)))
+        raise ValueError(f"IoT-23 evaluation rules are missing: {missing}")
+
+    datasets: list[dict[str, Any]] = []
+    for path, force_benign in [
+        *((path, False) for path in malicious),
+        *((path, True) for path in benign),
+    ]:
+        definition = _capture_definition(path, force_benign=force_benign)
+        events, labels, label_formats = _parse_labeled_zeek(
+            path,
+            force_benign=force_benign,
+        )
+        objective_metrics: dict[str, dict[str, Any]] = {}
+        for objective_id in definition["objectives"]:
+            objective = OBJECTIVES[objective_id]
+            objective_rules = [
+                rules_by_id[rule_id] for rule_id in sorted(objective["rule_ids"])
+            ]
+            objective_metrics[objective_id] = _evaluate_windows(
+                events,
+                labels,
+                objective_rules,
+                objective_id=objective_id,
+                window_seconds=int(objective["window_seconds"]),
+            )
+        datasets.append(
+            _dataset_metadata(
+                path,
+                definition,
+                events,
+                labels,
+                label_formats,
+                objective_metrics,
+            )
+        )
+
+    objective_reports = {
+        objective_id: _objective_report(objective_id, datasets)
+        for objective_id in OBJECTIVES
+    }
+    evaluation_manifest = json.loads(EVALUATION_MANIFEST.read_text(encoding="utf-8"))
+    c2_manifest = next(
+        item
+        for item in evaluation_manifest["evaluations"]
+        if item["behavior_family"] == "command_and_control"
+    )
     return {
+        "schema_version": 2,
         "generated_at": datetime.now(UTC).isoformat(),
         "dataset": "IoT-23",
         "citation": (
@@ -99,24 +217,30 @@ def evaluate_iot23(
         ),
         "license": "CC-BY; source citation required.",
         "methodology": {
-            "objective": (
-                "Evaluate deterministic Zeek connection-attempt, host-sweep, and port-scan "
-                "findings against the IoT-23 PartOfAHorizontalPortScan label."
-            ),
-            "window_seconds": 120,
-            "ground_truth_positive": f"A window contains at least one `{SCAN_LABEL}` flow.",
-            "prediction_positive": (
-                "A window produces a Zeek connection-attempt burst, host-sweep, or port-scan finding."
-            ),
+            "rule_freeze_commit": c2_manifest["rule_freeze_commit"],
+            "frozen_rule": c2_manifest["frozen_rule"],
+            "role_policy": {
+                "development": "May guide the rule shape and threshold.",
+                "validation": "May expose instability but is not counted as final holdout evidence.",
+                "final_evaluation": "Scored only after the rule and threshold are frozen.",
+                "negative_control": "Contributes final negative windows to each assigned objective.",
+                "supplemental": "Reported but excluded from final metrics until explicitly classified.",
+            },
+            "label_formats": [
+                "separate label and detailed-label TSV columns",
+                "legacy combined tunnel_parents/label/detailed-label column",
+            ],
             "limitations": [
                 "Fixed windows can split activity across a boundary.",
-                "Only scan rules are scored; C&C and DDoS labels are outside this evaluation.",
-                "IoT-23 is a controlled research dataset and is not current production traffic.",
-                "Metrics are window-level, not packet-level or host-level prevalence estimates.",
+                "The C2 objective measures one low-confidence retry indicator, not all C2 behavior.",
+                "IoT-23 is a controlled, historical research dataset, not current production traffic.",
+                "Metrics are window-level and do not estimate packet-, flow-, host-, or tenant prevalence.",
+                "Capture heterogeneity makes per-capture errors more informative than one pooled score.",
             ],
         },
         "datasets": datasets,
-        "aggregate_scan_window_metrics": aggregate,
+        "objectives": objective_reports,
+        "aggregate_scan_window_metrics": objective_reports["network_scan"]["final_metrics"],
     }
 
 
@@ -124,49 +248,90 @@ def _parse_labeled_zeek(
     path: Path,
     *,
     force_benign: bool = False,
-) -> tuple[list[ParsedEvent], dict[str, str]]:
+) -> tuple[list[ParsedEvent], dict[str, str], Counter[str]]:
     parser = ZeekTsvParser()
     events: list[ParsedEvent] = []
     labels: dict[str, str] = {}
+    label_formats: Counter[str] = Counter()
     source_id = f"iot23:{path.stem}"
     for line_number, raw_line in enumerate(path.read_text().splitlines(), start=1):
         raw_line_id = f"{source_id}:line:{line_number}"
         event = parser.parse_line(raw_line_id, source_id, raw_line)
         if event is None:
             continue
-        parts = raw_line.split("\t")
-        label = "Benign" if force_benign else _detailed_label(parts)
+        parsed_label, label_format = _extract_detailed_label(raw_line.split("\t"))
+        label = "Benign" if force_benign else parsed_label
         events.append(event)
         labels[event.id] = label
+        label_formats[label_format] += 1
     if not events:
         raise ValueError(f"No Zeek events were parsed from {path}.")
-    return events, labels
+    if not force_benign and set(labels.values()) == {"Unknown"}:
+        raise ValueError(f"No supported IoT-23 labels were parsed from {path}.")
+    return events, labels, label_formats
 
 
 def _detailed_label(parts: list[str]) -> str:
-    if len(parts) < 23:
-        return "Unknown"
-    broad_label, detailed_label = parts[-2], parts[-1]
-    return detailed_label if detailed_label not in {"", "-"} else broad_label
+    return _extract_detailed_label(parts)[0]
+
+
+def _extract_detailed_label(parts: list[str]) -> tuple[str, str]:
+    if len(parts) >= 23:
+        broad_label = parts[-2].strip()
+        detailed_label = parts[-1].strip()
+        return (
+            detailed_label if detailed_label not in {"", "-"} else broad_label,
+            "separate_columns",
+        )
+
+    if not parts:
+        return "Unknown", "unknown"
+    combined = parts[-1].strip()
+    tokens = re.split(r"\s{2,}", combined)
+    if len(tokens) >= 3 and tokens[-2].lower() in {"benign", "malicious"}:
+        broad_label, detailed_label = tokens[-2].title(), tokens[-1]
+        return (
+            detailed_label if detailed_label not in {"", "-"} else broad_label,
+            "combined_column",
+        )
+    match = re.match(
+        r"^.*?\s+(Benign|Malicious)\s+(\S+)$",
+        combined,
+        flags=re.IGNORECASE,
+    )
+    if match:
+        broad_label, detailed_label = match.groups()
+        broad_label = broad_label.title()
+        return (
+            detailed_label if detailed_label not in {"", "-"} else broad_label,
+            "combined_column",
+        )
+    return "Unknown", "unknown"
 
 
 def _evaluate_windows(
     events: list[ParsedEvent],
     labels: dict[str, str],
-    rules: list,
+    rules: list[Any],
+    *,
+    objective_id: str,
+    window_seconds: int,
 ) -> dict[str, Any]:
     windows: dict[int, list[ParsedEvent]] = defaultdict(list)
     for event in events:
         if event.event_time is None:
             continue
-        windows[int(event.event_time.timestamp() // 120)].append(event)
+        windows[int(event.event_time.timestamp() // window_seconds)].append(event)
 
     tp = fp = fn = tn = 0
     detected_rules: Counter[str] = Counter()
     false_positive_examples: list[dict[str, Any]] = []
     false_negative_examples: list[dict[str, Any]] = []
-    for window_key, window_events in windows.items():
-        ground_positive = any(labels.get(event.id) == SCAN_LABEL for event in window_events)
+    for window_key, window_events in sorted(windows.items()):
+        ground_positive = any(
+            _is_positive_label(objective_id, labels.get(event.id, "Unknown"))
+            for event in window_events
+        )
         findings = run_detection(rules, window_events)
         observed_ids = {finding.rule_id for finding in findings}
         predicted_positive = bool(observed_ids)
@@ -177,13 +342,25 @@ def _evaluate_windows(
             fp += 1
             if len(false_positive_examples) < 5:
                 false_positive_examples.append(
-                    _window_example(window_key, window_events, labels, observed_ids)
+                    _window_example(
+                        window_key,
+                        window_seconds,
+                        window_events,
+                        labels,
+                        observed_ids,
+                    )
                 )
         elif ground_positive:
             fn += 1
             if len(false_negative_examples) < 5:
                 false_negative_examples.append(
-                    _window_example(window_key, window_events, labels, observed_ids)
+                    _window_example(
+                        window_key,
+                        window_seconds,
+                        window_events,
+                        labels,
+                        observed_ids,
+                    )
                 )
         else:
             tn += 1
@@ -200,8 +377,17 @@ def _evaluate_windows(
     }
 
 
+def _is_positive_label(objective_id: str, label: str) -> bool:
+    if objective_id == "network_scan":
+        return label == SCAN_LABEL
+    if objective_id == "command_and_control":
+        return label == "C&C" or label.startswith("C&C-")
+    raise ValueError(f"Unknown evaluation objective: {objective_id}")
+
+
 def _window_example(
     window_key: int,
+    window_seconds: int,
     events: list[ParsedEvent],
     labels: dict[str, str],
     observed_rule_ids: set[str],
@@ -217,9 +403,13 @@ def _window_example(
         }
     )
     return {
-        "window_start": datetime.fromtimestamp(window_key * 120, tz=UTC).isoformat(),
+        "window_start": datetime.fromtimestamp(
+            window_key * window_seconds, tz=UTC
+        ).isoformat(),
         "event_count": len(events),
-        "label_counts": dict(sorted(Counter(labels.get(event.id, "Unknown") for event in events).items())),
+        "label_counts": dict(
+            sorted(Counter(labels.get(event.id, "Unknown") for event in events).items())
+        ),
         "observed_rule_ids": sorted(observed_rule_ids),
         "sample_endpoints": [" -> ".join(endpoint) for endpoint in endpoints[:5]],
     }
@@ -236,159 +426,273 @@ def _combine_metrics(*metrics: dict[str, Any]) -> dict[str, Any]:
             "true_negative_windows",
         )
     }
-    tp = combined["true_positive_windows"]
-    fp = combined["false_positive_windows"]
-    fn = combined["false_negative_windows"]
-    tn = combined["true_negative_windows"]
-    derived = confusion_metrics(tp, fp, fn, tn)
-    combined.update({key: value for key, value in derived.items() if key not in {
-        "true_positive", "false_positive", "false_negative", "true_negative", "sample_count"
-    }})
+    detected_rules: Counter[str] = Counter()
+    for metric in metrics:
+        detected_rules.update(metric.get("detected_rule_windows", {}))
+    combined["detected_rule_windows"] = dict(sorted(detected_rules.items()))
+    combined["false_positive_examples"] = [
+        example
+        for metric in metrics
+        for example in metric.get("false_positive_examples", [])
+    ][:5]
+    combined["false_negative_examples"] = [
+        example
+        for metric in metrics
+        for example in metric.get("false_negative_examples", [])
+    ][:5]
+    derived = confusion_metrics(
+        combined["true_positive_windows"],
+        combined["false_positive_windows"],
+        combined["false_negative_windows"],
+        combined["true_negative_windows"],
+    )
+    combined.update(
+        {
+            key: value
+            for key, value in derived.items()
+            if key
+            not in {
+                "true_positive",
+                "false_positive",
+                "false_negative",
+                "true_negative",
+                "sample_count",
+            }
+        }
+    )
     return combined
 
 
-def _source_url(path: Path, force_benign: bool) -> str:
-    if "34-1" in path.name:
-        return MALICIOUS_URL
-    if "benign-4-1" in path.name.lower() or "honeypot-4-1" in path.name.lower():
-        return BENIGN_URL
-    capture_kind = "benign" if force_benign else "malicious"
-    return f"IoT-23 local {capture_kind} capture; source URL must be recorded in the evaluation manifest"
+def _objective_report(
+    objective_id: str,
+    datasets: list[dict[str, Any]],
+) -> dict[str, Any]:
+    objective = OBJECTIVES[objective_id]
+    applicable = [
+        dataset
+        for dataset in datasets
+        if objective_id in dataset["objective_metrics"]
+    ]
+    metrics_by_role = {
+        role: _combine_metrics(
+            *[
+                dataset["objective_metrics"][objective_id]
+                for dataset in applicable
+                if dataset["role"] == role
+            ]
+        )
+        for role in (
+            "development",
+            "validation",
+            "final_evaluation",
+            "negative_control",
+            "supplemental",
+        )
+    }
+    final_metrics = _combine_metrics(
+        *[
+            dataset["objective_metrics"][objective_id]
+            for dataset in applicable
+            if dataset["role"] in {"final_evaluation", "negative_control"}
+        ]
+    )
+    return {
+        "title": objective["title"],
+        "window_seconds": objective["window_seconds"],
+        "rule_ids": sorted(objective["rule_ids"]),
+        "ground_truth_positive": objective["ground_truth"],
+        "prediction_positive": objective["prediction"],
+        "final_capture_ids": [
+            dataset["capture_id"]
+            for dataset in applicable
+            if dataset["role"] == "final_evaluation"
+        ],
+        "negative_control_capture_ids": [
+            dataset["capture_id"]
+            for dataset in applicable
+            if dataset["role"] == "negative_control"
+        ],
+        "metrics_by_role": metrics_by_role,
+        "final_metrics": final_metrics,
+    }
+
+
+def _capture_definition(path: Path, *, force_benign: bool) -> dict[str, Any]:
+    capture_id = _capture_id(path)
+    catalog = CAPTURE_CATALOG.get(capture_id)
+    if catalog is None:
+        return {
+            "capture_id": capture_id,
+            "role": "negative_control" if force_benign else "supplemental",
+            "objectives": list(OBJECTIVES),
+            "source_url": "IoT-23 local capture; record the official URL before final use",
+        }
+    scenario = str(catalog["scenario"])
+    return {
+        "capture_id": capture_id,
+        "role": "negative_control" if force_benign else catalog["role"],
+        "objectives": list(catalog["objectives"]),
+        "source_url": (
+            "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/"
+            f"IndividualScenarios/{scenario}/bro/conn.log.labeled"
+        ),
+    }
+
+
+def _capture_id(path: Path) -> str:
+    lowered = path.name.lower()
+    match = re.search(r"(?:iot23-(?:benign-)?|capture-)(\d+-\d+)", lowered)
+    return match.group(1) if match else f"unknown:{path.stem}"
 
 
 def _dataset_metadata(
     path: Path,
-    source_url: str,
+    definition: dict[str, Any],
     events: list[ParsedEvent],
     labels: dict[str, str],
-    metrics: dict[str, Any],
+    label_formats: Counter[str],
+    objective_metrics: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     content = path.read_bytes()
     return {
+        "capture_id": definition["capture_id"],
         "filename": path.name,
-        "source_url": source_url,
+        "source_url": definition["source_url"],
+        "license": "CC-BY; source citation required.",
         "sha256": sha256(content).hexdigest(),
         "bytes": len(content),
         "parsed_rows": len(events),
+        "role": definition["role"],
+        "objectives": definition["objectives"],
+        "label_format_counts": dict(sorted(label_formats.items())),
         "label_counts": dict(sorted(Counter(labels.values()).items())),
-        "scan_window_metrics": metrics,
+        "objective_metrics": objective_metrics,
     }
 
 
 def render_markdown(report: dict[str, Any]) -> str:
-    metrics = report["aggregate_scan_window_metrics"]
     rows = [
         "# Current IoT-23 Detection Evaluation",
         "",
         f"Generated: `{report['generated_at']}`",
         "",
-        "## Dataset And Scope",
+        "## Dataset And Role Separation",
         "",
         report["citation"],
         "",
-        report["methodology"]["objective"],
+        "Development and validation captures are reported but excluded from final metrics. Final",
+        "metrics combine only frozen holdout captures and the assigned benign negative control.",
+        f"C2-indicator rule freeze commit: `{report['methodology']['rule_freeze_commit']}`.",
         "",
-        "| Capture | Parsed rows | SHA-256 |",
-        "| --- | ---: | --- |",
+        "| Capture | Role | Objectives | Rows | Label format | SHA-256 |",
+        "| --- | --- | --- | ---: | --- | --- |",
     ]
     for dataset in report["datasets"]:
+        formats = ", ".join(dataset["label_format_counts"]) or "unknown"
         rows.append(
-            f"| [{dataset['filename']}]({dataset['source_url']}) | "
-            f"{dataset['parsed_rows']} | `{dataset['sha256']}` |"
+            f"| [{dataset['capture_id']}]({dataset['source_url']}) | {dataset['role']} | "
+            f"{', '.join(dataset['objectives'])} | {dataset['parsed_rows']} | {formats} | "
+            f"`{dataset['sha256']}` |"
         )
-    rows.extend(
-        [
-            "",
-            "## Scan Window Metrics",
-            "",
-            "| Measure | Result |",
-            "| --- | ---: |",
-            f"| Two-minute windows | {metrics['window_count']} |",
-            f"| True-positive windows | {metrics['true_positive_windows']} |",
-            f"| False-positive windows | {metrics['false_positive_windows']} |",
-            f"| False-negative windows | {metrics['false_negative_windows']} |",
-            f"| True-negative windows | {metrics['true_negative_windows']} |",
-            f"| Precision | {metrics['precision']:.4f} |",
-            f"| Precision 95% Wilson interval | {metrics['precision_wilson_95'][0]:.4f}–{metrics['precision_wilson_95'][1]:.4f} |",
-            f"| Recall | {metrics['recall']:.4f} |",
-            f"| Recall 95% Wilson interval | {metrics['recall_wilson_95'][0]:.4f}–{metrics['recall_wilson_95'][1]:.4f} |",
-            f"| F1 | {metrics['f1']:.4f} |",
-            f"| Specificity | {metrics['specificity']:.4f} |",
-            f"| Balanced accuracy | {metrics['balanced_accuracy']:.4f} |",
-            f"| Positive prevalence | {metrics['positive_prevalence']:.4f} |",
-            f"| False-positive rate | {metrics['false_positive_rate']:.4f} |",
-            "",
-            "The wide precision and recall intervals are material: only two predicted-positive and",
-            "two ground-truth-positive windows are present. Point estimates must not be presented as",
-            "stable detection-quality estimates for the complete product.",
-            "",
-            "## Per-Capture And Per-Rule Results",
-            "",
-            "| Capture | Windows | TP | FP | FN | TN | Detected rule windows |",
-            "| --- | ---: | ---: | ---: | ---: | ---: | --- |",
-        ]
-    )
-    for dataset in report["datasets"]:
-        capture = dataset["scan_window_metrics"]
-        detected = ", ".join(
-            f"{rule_id}: {count}"
-            for rule_id, count in capture["detected_rule_windows"].items()
-        ) or "none"
-        rows.append(
-            f"| {dataset['filename']} | {capture['window_count']} | "
-            f"{capture['true_positive_windows']} | {capture['false_positive_windows']} | "
-            f"{capture['false_negative_windows']} | {capture['true_negative_windows']} | {detected} |"
+
+    for objective_id, objective in report["objectives"].items():
+        metrics = objective["final_metrics"]
+        rows.extend(
+            [
+                "",
+                f"## {objective['title']}",
+                "",
+                f"Objective ID: `{objective_id}`",
+                "",
+                f"- Window: {objective['window_seconds']} seconds",
+                f"- Rules: `{', '.join(objective['rule_ids'])}`",
+                f"- Ground truth: {objective['ground_truth_positive']}",
+                f"- Prediction: {objective['prediction_positive']}",
+                f"- Frozen final captures: `{', '.join(objective['final_capture_ids'])}`",
+                f"- Negative controls: `{', '.join(objective['negative_control_capture_ids'])}`",
+                "",
+                "### Final Metrics",
+                "",
+                "| Measure | Result |",
+                "| --- | ---: |",
+                f"| Windows | {metrics['window_count']} |",
+                f"| TP | {metrics['true_positive_windows']} |",
+                f"| FP | {metrics['false_positive_windows']} |",
+                f"| FN | {metrics['false_negative_windows']} |",
+                f"| TN | {metrics['true_negative_windows']} |",
+                f"| Precision | {metrics['precision']:.4f} |",
+                f"| Precision 95% Wilson interval | {_interval(metrics['precision_wilson_95'])} |",
+                f"| Recall | {metrics['recall']:.4f} |",
+                f"| Recall 95% Wilson interval | {_interval(metrics['recall_wilson_95'])} |",
+                f"| F1 | {metrics['f1']:.4f} |",
+                f"| Specificity | {metrics['specificity']:.4f} |",
+                f"| Balanced accuracy | {metrics['balanced_accuracy']:.4f} |",
+                f"| Positive prevalence | {metrics['positive_prevalence']:.4f} |",
+                "",
+                "### Per-Capture Results",
+                "",
+                "| Capture | Role | Windows | TP | FP | FN | TN | Detected rules |",
+                "| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |",
+            ]
         )
-    rows.extend(
-        [
-            "",
-            "## Limitations",
-            "",
-        ]
-    )
+        for dataset in report["datasets"]:
+            capture = dataset["objective_metrics"].get(objective_id)
+            if capture is None:
+                continue
+            detected = ", ".join(
+                f"{rule_id}: {count}"
+                for rule_id, count in capture["detected_rule_windows"].items()
+            ) or "none"
+            rows.append(
+                f"| {dataset['capture_id']} | {dataset['role']} | {capture['window_count']} | "
+                f"{capture['true_positive_windows']} | {capture['false_positive_windows']} | "
+                f"{capture['false_negative_windows']} | {capture['true_negative_windows']} | "
+                f"{detected} |"
+            )
+        rows.extend(_error_analysis_rows(objective_id, report["datasets"]))
+
+    rows.extend(["", "## Limitations", ""])
     rows.extend(f"- {item}" for item in report["methodology"]["limitations"])
-    false_positive_examples = [
-        example
-        for dataset in report["datasets"]
-        for example in dataset["scan_window_metrics"]["false_positive_examples"]
-    ]
-    false_negative_examples = [
-        example
-        for dataset in report["datasets"]
-        for example in dataset["scan_window_metrics"]["false_negative_examples"]
-    ]
-    rows.extend(["", "## Error Analysis", ""])
-    if false_positive_examples:
-        example = false_positive_examples[0]
-        rows.extend(
-            [
-                "The observed false-positive window is labeled as DDoS rather than horizontal scan,",
-                "but it contains the same repeated unsuccessful connection-attempt shape detected by",
-                f"`{', '.join(example['observed_rule_ids'])}`. Under this narrow label objective it is",
-                "counted as a false positive; operationally it remains suspicious behavior requiring",
-                "classification rather than suppression.",
-                "",
-                f"- Window: `{example['window_start']}`",
-                f"- Events: {example['event_count']}",
-                f"- Labels: `{json.dumps(example['label_counts'], sort_keys=True)}`",
-            ]
-        )
-    if false_negative_examples:
-        example = false_negative_examples[0]
-        rows.extend(
-            [
-                "",
-                "The false-negative window contains an isolated scan-labeled flow below the 100-event",
-                "burst threshold. Lowering the threshold solely to capture this point would weaken the",
-                "benign and DDoS separation and is not justified by this dataset alone.",
-                "",
-                f"- Window: `{example['window_start']}`",
-                f"- Events: {example['event_count']}",
-                f"- Labels: `{json.dumps(example['label_counts'], sort_keys=True)}`",
-            ]
-        )
     rows.append("")
     return "\n".join(rows)
+
+
+def _error_analysis_rows(
+    objective_id: str,
+    datasets: list[dict[str, Any]],
+) -> list[str]:
+    rows = ["", "### Final Error Analysis", ""]
+    examples: list[tuple[str, str, dict[str, Any]]] = []
+    for dataset in datasets:
+        if dataset["role"] not in {"final_evaluation", "negative_control"}:
+            continue
+        metrics = dataset["objective_metrics"].get(objective_id)
+        if metrics is None:
+            continue
+        examples.extend(
+            (dataset["capture_id"], "FP", example)
+            for example in metrics["false_positive_examples"]
+        )
+        examples.extend(
+            (dataset["capture_id"], "FN", example)
+            for example in metrics["false_negative_examples"]
+        )
+    if not examples:
+        return [*rows, "No final false-positive or false-negative example was observed."]
+    for capture_id, error_type, example in examples[:6]:
+        rows.extend(
+            [
+                f"- `{error_type}` capture `{capture_id}`, window `{example['window_start']}`: "
+                f"{example['event_count']} events, labels "
+                f"`{json.dumps(example['label_counts'], sort_keys=True)}`, rules "
+                f"`{', '.join(example['observed_rule_ids']) or 'none'}`.",
+            ]
+        )
+    return rows
+
+
+def _interval(values: list[float]) -> str:
+    return f"{values[0]:.4f}–{values[1]:.4f}"
 
 
 if __name__ == "__main__":

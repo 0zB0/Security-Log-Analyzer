@@ -1,4 +1,4 @@
-.PHONY: check-structure docs-check lock-check tree test test-scenarios detection-quality detection-quality-check iot23-evaluation benchmark-smoke benchmark benchmark-scale lint typecheck api-dev web-dev web-test web-build web-e2e compose-check smoke-live smoke-ollama smoke-reports smoke-ui smoke-azure-public real-lab-proof security-scan sbom release-assets verify-all
+.PHONY: check-structure docs-check docs-audit docs-audit-check lock-check api-contract api-contract-check tree test test-scenarios detection-quality detection-quality-check iot23-evaluation benchmark-smoke benchmark benchmark-scale lint typecheck api-dev web-dev web-test web-build web-e2e compose-check smoke-live smoke-ollama smoke-reports smoke-ui smoke-azure-public real-lab-proof security-scan sbom release-assets verify-all
 
 check-structure:
 	@test -f local-soc-assistant-architecture.md
@@ -13,6 +13,12 @@ docs-check:
 	@.venv/bin/python tools/check_markdown_links.py
 	@.venv/bin/python tools/check_docs_structure.py
 
+docs-audit:
+	@.venv/bin/python tools/audit_markdown.py
+
+docs-audit-check:
+	@.venv/bin/python tools/audit_markdown.py --check
+
 lock-check:
 	@.venv/bin/uv pip compile apps/api/pyproject.toml --extra dev --python-version 3.12 --universal --quiet -o /tmp/tracehawk-requirements.lock
 	@tail -n +3 apps/api/requirements.lock > /tmp/tracehawk-requirements.expected
@@ -20,6 +26,12 @@ lock-check:
 	@cmp -s /tmp/tracehawk-requirements.expected /tmp/tracehawk-requirements.actual
 	@npm --prefix apps/web ci --ignore-scripts --dry-run >/dev/null
 	@echo "Dependency locks OK"
+
+api-contract:
+	@.venv/bin/python tools/generate_api_contract.py
+
+api-contract-check:
+	@.venv/bin/python tools/generate_api_contract.py --check
 
 tree:
 	@find . -path ./.git -prune -o -maxdepth 4 -type f -print | sort
@@ -73,6 +85,7 @@ web-e2e:
 compose-check:
 	@test "$$(docker compose --profile production config --services)" = "tracehawk"
 	@test "$$(docker compose --profile app config --services | tr '\n' ' ')" = "api web "
+	@test "$$(docker compose --profile collectors config --services)" = "syslog-collector"
 	@echo "Docker Compose config OK"
 
 smoke-live:
@@ -107,5 +120,5 @@ release-assets:
 	@.venv/bin/python tools/generate_release_assets.py
 	@.venv/bin/python -m pytest apps/api/tests/test_proof_assets.py -q
 
-verify-all: check-structure docs-check lock-check test lint typecheck web-test web-build web-e2e compose-check test-scenarios detection-quality-check benchmark-smoke smoke-live smoke-ollama smoke-reports smoke-ui
+verify-all: check-structure docs-check lock-check api-contract-check test lint typecheck web-test web-build web-e2e compose-check test-scenarios detection-quality-check benchmark-smoke smoke-live smoke-ollama smoke-reports smoke-ui
 	@echo "TraceHawk local verification OK"

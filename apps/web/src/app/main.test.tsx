@@ -1,8 +1,13 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { axe } from "vitest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  analyzeCaseBundle,
   analyzeDemo,
+  analyzeRealLabCase,
+  analyzeSample,
+  analyzeUpload,
   getAssistantStatus,
   getAuthStatus,
   listIncidentNotes,
@@ -14,7 +19,11 @@ vi.mock("../lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../lib/api")>();
   return {
     ...actual,
+    analyzeCaseBundle: vi.fn(),
     analyzeDemo: vi.fn(),
+    analyzeRealLabCase: vi.fn(),
+    analyzeSample: vi.fn(),
+    analyzeUpload: vi.fn(),
     getAssistantStatus: vi.fn(),
     getAuthStatus: vi.fn(),
     listIncidentNotes: vi.fn(),
@@ -22,6 +31,10 @@ vi.mock("../lib/api", async (importOriginal) => {
 });
 
 const mockedAnalyzeDemo = vi.mocked(analyzeDemo);
+const mockedAnalyzeCaseBundle = vi.mocked(analyzeCaseBundle);
+const mockedAnalyzeRealLabCase = vi.mocked(analyzeRealLabCase);
+const mockedAnalyzeSample = vi.mocked(analyzeSample);
+const mockedAnalyzeUpload = vi.mocked(analyzeUpload);
 const mockedAssistantStatus = vi.mocked(getAssistantStatus);
 const mockedAuthStatus = vi.mocked(getAuthStatus);
 const mockedListNotes = vi.mocked(listIncidentNotes);
@@ -48,6 +61,10 @@ describe("application investigation workflow", () => {
       error: null,
     });
     mockedListNotes.mockResolvedValue([]);
+    mockedAnalyzeCaseBundle.mockResolvedValue(analysisFixture);
+    mockedAnalyzeRealLabCase.mockResolvedValue(analysisFixture);
+    mockedAnalyzeSample.mockResolvedValue(analysisFixture);
+    mockedAnalyzeUpload.mockResolvedValue(analysisFixture);
   });
 
   it("runs the demo and moves from empty intake to an evidence-backed incident", async () => {
@@ -104,5 +121,53 @@ describe("application investigation workflow", () => {
     expect(screen.getByRole("button", { name: /^run demo$/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Logout" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Login" })).not.toBeInTheDocument();
+  });
+
+  it("supports keyboard search focus and clears it with Escape", async () => {
+    const { container } = render(<App />);
+    await screen.findByText("Local admin mode");
+    const search = screen.getByRole("textbox", { name: "Global investigation search" });
+
+    fireEvent.keyDown(window, { key: "/" });
+    expect(search).toHaveFocus();
+    fireEvent.change(search, { target: { value: "198.51.100.10" } });
+    expect(search).toHaveValue("198.51.100.10");
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(search).toHaveValue("");
+    expect(search).not.toHaveFocus();
+    expect((await axe(container)).violations).toHaveLength(0);
+  });
+
+  it("recovers from a rejected analysis action without reloading the workspace", async () => {
+    mockedAnalyzeDemo
+      .mockRejectedValueOnce(new Error("Demo rejected by policy"))
+      .mockResolvedValueOnce(analysisFixture);
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /^run demo$/i }));
+    expect(await screen.findByText("Demo rejected by policy")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /^run demo$/i }));
+
+    expect(await screen.findByRole("heading", { name: "Incident desk" })).toBeInTheDocument();
+    expect(screen.queryByText("Demo rejected by policy")).not.toBeInTheDocument();
+  });
+
+  it("executes sample, real-lab, single-file, and case-bundle intake paths", async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /^run sample$/i }));
+    await waitFor(() => expect(mockedAnalyzeSample).toHaveBeenCalledOnce());
+
+    fireEvent.click(screen.getByRole("button", { name: /^real lab case$/i }));
+    await waitFor(() => expect(mockedAnalyzeRealLabCase).toHaveBeenCalledOnce());
+    expect(screen.getByRole("heading", { name: "Case investigation" })).toBeInTheDocument();
+
+    const file = new File(["event"], "event.log", { type: "text/plain" });
+    fireEvent.change(screen.getByLabelText("Browse..."), { target: { files: [file] } });
+    await waitFor(() => expect(mockedAnalyzeUpload).toHaveBeenCalledWith(file));
+
+    fireEvent.change(screen.getByLabelText("Case..."), { target: { files: [file, file] } });
+    await waitFor(() => expect(mockedAnalyzeCaseBundle).toHaveBeenCalled());
+    expect(screen.getByRole("heading", { name: "Case investigation" })).toBeInTheDocument();
   });
 });

@@ -1,0 +1,40 @@
+id: zeek-stable-endpoint-retry-001
+title: Repeated failed connections to a stable endpoint
+description: One source repeatedly attempted the same unavailable TCP endpoint, a non-specific pattern that can appear in resilient command-and-control retry loops.
+severity: medium
+confidence: low
+log_types:
+  - zeek_json
+  - zeek_tsv
+mitre:
+  tactic: Command and Control
+  technique_id: T1071
+  technique_name: Application Layer Protocol
+  note: Failed transport attempts are only a behavioral lead and do not prove an application protocol or command-and-control activity.
+correlation:
+  family: command_and_control_indicator
+  behaviors: [stable_endpoint_retry]
+  entity_fields: [source_ip, destination_ip]
+  max_gap_minutes: 15
+conditions:
+  event_type: zeek_conn
+  field_equals:
+    transport_protocol: tcp
+    conn_state: S0
+  group_by:
+    - source_ip
+    - destination_ip
+    - destination_port
+  window_minutes: 5
+  count_gte: 6
+evidence:
+  include_matching_lines: true
+  max_lines: 20
+false_positives:
+  - Health checks, service discovery, or an agent retrying an unavailable endpoint.
+  - Network outage, firewall drop, or misconfigured service causing repeated SYN attempts.
+  - Approved load testing or resilience testing against a stable destination.
+recommendations:
+  - Confirm whether the source application and destination endpoint are expected.
+  - Compare timing and destination reputation with DNS, process, endpoint, and firewall evidence.
+  - Treat the finding as a low-confidence lead until independent evidence supports command-and-control classification.

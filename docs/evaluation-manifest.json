@@ -1,22 +1,57 @@
 {
+  "schema_version": 2,
   "policy": {
-    "tuning_inputs": "Sanitized packages/test-scenarios fixtures and benign controls may guide rule development.",
-    "final_evaluation_inputs": "Externally labeled captures measure generalization and must not be silently reused as tuning fixtures.",
-    "required_metadata": ["source_url", "license", "sha256", "behavior_family", "evaluation_unit"]
+    "tuning_inputs": "Sanitized contract fixtures and captures declared development may guide rule shape and threshold.",
+    "validation_inputs": "Validation captures expose instability and are reported separately, never pooled into final metrics.",
+    "final_evaluation_inputs": "Final captures are scored only after the rule and threshold are frozen; results cannot trigger silent retuning.",
+    "required_metadata": [
+      "source_url",
+      "license",
+      "sha256",
+      "behavior_family",
+      "evaluation_unit",
+      "role"
+    ]
   },
   "evaluations": [
     {
       "name": "IoT-23 horizontal scan",
-      "role": "final_evaluation",
       "behavior_family": "network_scan",
       "evaluation_unit": "fixed_120_second_window",
       "license": "CC-BY; source citation required",
-      "captures": [
-        "iot23-34-1-conn.log.labeled",
+      "development_captures": [],
+      "validation_captures": [],
+      "final_evaluation_captures": [
+        "iot23-34-1-conn.log.labeled"
+      ],
+      "negative_control_captures": [
+        "iot23-benign-4-1-conn.log.labeled"
+      ],
+      "report": "docs/proof-pack/current-iot23-evaluation.json"
+    },
+    {
+      "name": "IoT-23 stable-endpoint C2 indicator",
+      "rule_freeze_commit": "df5811a6f98e48ea046247fcbb770fa9ecbd32ed",
+      "frozen_rule": "zeek-stable-endpoint-retry-001: six S0 attempts to one endpoint in five minutes",
+      "behavior_family": "command_and_control",
+      "evaluation_unit": "fixed_300_second_window",
+      "license": "CC-BY; source citation required",
+      "development_captures": [
+        "iot23-20-1-conn.log.labeled"
+      ],
+      "validation_captures": [
+        "iot23-21-1-conn.log.labeled",
+        "iot23-8-1-conn.log.labeled"
+      ],
+      "final_evaluation_captures": [
+        "iot23-42-1-conn.log.labeled",
+        "iot23-44-1-conn.log.labeled"
+      ],
+      "negative_control_captures": [
         "iot23-benign-4-1-conn.log.labeled"
       ],
       "report": "docs/proof-pack/current-iot23-evaluation.json"
     }
   ],
-  "residual_gap": "A second externally labeled behavior family has not yet been added. No result is fabricated in its place."
+  "residual_gap": "External results cover two behavior families in one historical research dataset. No product-wide accuracy claim is permitted."
 }

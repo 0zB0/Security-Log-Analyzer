@@ -1,11 +1,16 @@
 from datetime import UTC, datetime
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 Severity = Literal["info", "low", "medium", "high", "critical"]
 Confidence = Literal["low", "medium", "high"]
+CorrelationEntityField = Literal["source_ip", "destination_ip", "username", "host"]
+
+
+def _default_correlation_entity_fields() -> list[CorrelationEntityField]:
+    return ["source_ip", "destination_ip", "username", "host"]
 
 
 class LogSource(BaseModel):
@@ -80,6 +85,62 @@ class MitreMapping(BaseModel):
     note: str | None = None
 
 
+class RuleCorrelationMetadata(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    family: str | None = Field(default=None, pattern=r"^[a-z0-9][a-z0-9_-]*$")
+    incident_title: str | None = Field(default=None, min_length=1, max_length=160)
+    behaviors: list[str] = Field(default_factory=list)
+    entity_fields: list[CorrelationEntityField] = Field(
+        default_factory=_default_correlation_entity_fields,
+        min_length=1,
+    )
+    max_gap_minutes: int = Field(default=60, ge=1, le=1440)
+    intrinsic_sequence_score: int = Field(default=0, ge=0, le=25)
+    intrinsic_sequence_rationale: str | None = None
+    intrinsic_sequence_summary: str | None = None
+
+    @field_validator("behaviors")
+    @classmethod
+    def validate_behaviors(cls, behaviors: list[str]) -> list[str]:
+        if len(behaviors) != len(set(behaviors)):
+            raise ValueError("Correlation behaviors must be unique.")
+        if any(
+            not behavior
+            or not behavior[0].isalnum()
+            or any(char not in "abcdefghijklmnopqrstuvwxyz0123456789_" for char in behavior)
+            for behavior in behaviors
+        ):
+            raise ValueError(
+                "Correlation behaviors must use lowercase letters, numbers, and underscores."
+            )
+        return behaviors
+
+    @field_validator("entity_fields")
+    @classmethod
+    def validate_entity_fields(
+        cls, entity_fields: list[CorrelationEntityField]
+    ) -> list[CorrelationEntityField]:
+        if len(entity_fields) != len(set(entity_fields)):
+            raise ValueError("Correlation entity fields must be unique.")
+        return entity_fields
+
+    @model_validator(mode="after")
+    def validate_intrinsic_sequence(self) -> Self:
+        has_explanation = bool(
+            self.intrinsic_sequence_rationale or self.intrinsic_sequence_summary
+        )
+        if self.intrinsic_sequence_score and not self.intrinsic_sequence_rationale:
+            raise ValueError(
+                "Intrinsic sequence scores require intrinsic_sequence_rationale."
+            )
+        if not self.intrinsic_sequence_score and has_explanation:
+            raise ValueError(
+                "Intrinsic sequence rationale or summary requires a positive score."
+            )
+        return self
+
+
 class DetectionRule(BaseModel):
     id: str
     title: str
@@ -88,6 +149,7 @@ class DetectionRule(BaseModel):
     confidence: Confidence
     log_types: list[str]
     mitre: MitreMapping = Field(default_factory=MitreMapping)
+    correlation: RuleCorrelationMetadata = Field(default_factory=RuleCorrelationMetadata)
     conditions: RuleConditions
     evidence: RuleEvidencePolicy = Field(default_factory=RuleEvidencePolicy)
     false_positives: list[str] = Field(default_factory=list)

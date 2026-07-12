@@ -1,16 +1,16 @@
 # Current Detection Quality
 
-Generated: `2026-07-09T21:39:53.740722+00:00`
+Generated: `2026-07-12T21:02:18.750749+00:00`
 
 ## Contract Summary
 
 | Measure | Result |
 | --- | ---: |
-| Detection rules | 65 |
-| Rules with a positive contract | 65 |
-| Labeled scenarios | 33 |
-| Benign negative-control scenarios | 11 |
-| True-positive rule matches | 71 |
+| Detection rules | 66 |
+| Rules with a positive contract | 66 |
+| Labeled scenarios | 35 |
+| Benign negative-control scenarios | 12 |
+| True-positive rule matches | 73 |
 | Unexpected rule matches | 0 |
 | Missing expected matches | 0 |
 | Contract precision | 1.0000 |
@@ -35,6 +35,7 @@ contract suite cannot establish real-world prevalence or population-level false-
 - `windows-benign`
 - `zeek-admin-service-benign`
 - `zeek-benign-no-alert`
+- `zeek-stable-endpoint-retry-benign`
 
 All committed negative controls produced zero findings. Exact-port controls include
 Zeek destination port `33022`, which must not match SSH port `22`.

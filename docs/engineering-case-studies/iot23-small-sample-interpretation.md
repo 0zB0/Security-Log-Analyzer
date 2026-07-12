@@ -46,6 +46,19 @@ are approximately `0.0945–0.9055`, making the uncertainty explicit.
 
 ## Residual Risk
 
-This is still one scan-family evaluation. The repository does not claim external validation for all
-65 rules. A second independently labeled behavior family remains future evidence, not a fabricated
-completion claim.
+The scan result remains exactly `TP=1, FP=1, FN=1, TN=877`; adding data must not rewrite historical
+error interpretation.
+
+The later v0.9.0 extension added a second objective for a neutral, low-confidence stable-endpoint
+retry rule. Capture roles were frozen before final scoring: `20-1` development, `21-1` and `8-1`
+validation, `42-1` and `44-1` final, and benign `4-1` negative control. The final matrix was:
+
+```text
+TP=2, FP=21, FN=1, TN=246
+precision=0.0870, recall=0.6667, specificity=0.9213
+```
+
+Most false-positive windows come from repeated endpoint retries labeled benign in capture `42-1`.
+That result was retained without threshold retuning. It shows that the shape can be a hunting lead
+but is not a specific C2 classifier. External evidence now covers two behavior families, but it
+still does not validate all 66 rules, current enterprise traffic, or production prevalence.

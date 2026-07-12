@@ -9,6 +9,11 @@ mitre:
   tactic: Command and Control
   technique_id: T1071
   technique_name: Application Layer Protocol
+correlation:
+  family: command_and_control
+  behaviors: [c2_or_high_alert]
+  entity_fields: [source_ip, destination_ip]
+  max_gap_minutes: 15
 conditions:
   event_type: suricata_alert
   field_contains_any:

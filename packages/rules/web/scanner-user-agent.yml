@@ -9,6 +9,11 @@ mitre:
   tactic: Discovery
   technique_id: T1595.002
   technique_name: Vulnerability Scanning
+correlation:
+  family: network_scan
+  behaviors: [network_scan]
+  entity_fields: [source_ip]
+  max_gap_minutes: 15
 conditions:
   event_type: http_request
   field_contains_any:
@@ -28,4 +33,3 @@ false_positives:
 recommendations:
   - Identify whether the source IP belongs to an approved scanner.
   - Review request paths and response status codes for successful access.
-

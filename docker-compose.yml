@@ -66,5 +66,32 @@ services:
     profiles:
       - app
 
+  syslog-collector:
+    build:
+      context: .
+    command:
+      - python
+      - -m
+      - tracehawk_api.collector
+    ports:
+      - "127.0.0.1:5514:5514/udp"
+      - "127.0.0.1:5514:5514/tcp"
+    volumes:
+      - tracehawk-data:/data
+    environment:
+      TRACEHAWK_DB_PATH: /data/tracehawk.db
+      TRACEHAWK_SYSLOG_BIND_HOST: 0.0.0.0
+      TRACEHAWK_SYSLOG_ALLOW_REMOTE_BIND: "true"
+      TRACEHAWK_SYSLOG_UDP_PORT: 5514
+      TRACEHAWK_SYSLOG_TCP_PORT: 5514
+      TRACEHAWK_SYSLOG_MAX_LINE_BYTES: 8192
+      TRACEHAWK_SYSLOG_QUEUE_SIZE: 1000
+      TRACEHAWK_SYSLOG_MAX_CONNECTIONS: 32
+      TRACEHAWK_SYSLOG_IDLE_TIMEOUT_SECONDS: 30
+      TRACEHAWK_SYSLOG_BATCH_SIZE: 100
+      TRACEHAWK_SYSLOG_FLUSH_INTERVAL_SECONDS: 1
+    profiles:
+      - collectors
+
 volumes:
   tracehawk-data:

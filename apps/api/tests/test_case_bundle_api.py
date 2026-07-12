@@ -71,9 +71,9 @@ def test_real_lab_case_sample_correlates_zeek_and_suricata_exports() -> None:
     assert any(
         phrase in body["incidents"][0]["summary"]
         for phrase in (
-            "DNS burst followed by alert or C2 activity",
-            "alert burst includes high severity Suricata evidence",
-            "scan activity followed by sensitive HTTP access",
+            "A DNS burst was followed by a C2 indicator or high-severity alert",
+            "An alert burst included high-severity Suricata evidence",
+            "Scan activity was followed by sensitive HTTP access",
         )
     )
     assert body["entities"]

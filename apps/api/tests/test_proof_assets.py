@@ -41,7 +41,7 @@ def test_sample_report_artifacts_are_readable() -> None:
     text = "\n".join(page.extract_text() or "" for page in reader.pages)
 
     assert html.startswith("<!doctype html>")
-    assert "Correlated security activity" in html
+    assert "Reconnaissance followed by sensitive HTTP access" in html
     assert "Report Integrity Notes" in html
     assert len(reader.pages) >= 10
     assert "TraceHawk Incident Report" in text

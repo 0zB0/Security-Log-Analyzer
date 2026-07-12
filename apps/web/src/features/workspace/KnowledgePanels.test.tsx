@@ -35,6 +35,16 @@ it("moves rule detail to a current-case match when Found only is enabled", async
         look_for: [],
         false_positives: [],
         recommendations: [],
+        correlation: {
+          family: null,
+          incident_title: null,
+          behaviors: [],
+          entity_fields: ["source_ip", "username", "host"],
+          max_gap_minutes: 60,
+          intrinsic_sequence_score: 0,
+          intrinsic_sequence_rationale: null,
+          intrinsic_sequence_summary: null,
+        },
       },
       {
         id: "ssh-bruteforce-001",
@@ -51,6 +61,16 @@ it("moves rule detail to a current-case match when Found only is enabled", async
         look_for: ["Repeated failures"],
         false_positives: [],
         recommendations: ["Validate the source"],
+        correlation: {
+          family: "ssh_auth",
+          incident_title: null,
+          behaviors: ["ssh_failures"],
+          entity_fields: ["source_ip", "username", "host"],
+          max_gap_minutes: 30,
+          intrinsic_sequence_score: 0,
+          intrinsic_sequence_rationale: null,
+          intrinsic_sequence_summary: null,
+        },
       },
     ],
   });
@@ -64,6 +84,23 @@ it("moves rule detail to a current-case match when Found only is enabled", async
   );
 
   expect(await screen.findByRole("heading", { name: "Unrelated rule" })).toBeInTheDocument();
+  fireEvent.change(screen.getByRole("combobox", { name: "Detection category" }), {
+    target: { value: "Auth" },
+  });
+  expect(screen.getByRole("heading", { name: "SSH brute force attempt" })).toBeInTheDocument();
+
+  fireEvent.change(screen.getByRole("textbox", { name: "Search detection rules" }), {
+    target: { value: "no-such-technique" },
+  });
+  expect(screen.getByText("0 visible rules from the deterministic rule engine.")).toBeInTheDocument();
+  expect(screen.getByText("No rule selected.")).toBeInTheDocument();
+
+  fireEvent.change(screen.getByRole("textbox", { name: "Search detection rules" }), {
+    target: { value: "" },
+  });
+  fireEvent.change(screen.getByRole("combobox", { name: "Detection category" }), {
+    target: { value: "all" },
+  });
   fireEvent.click(screen.getByRole("checkbox", { name: "Found only" }));
 
   await waitFor(() => {

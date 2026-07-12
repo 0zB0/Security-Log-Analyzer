@@ -1,5 +1,5 @@
 import { chromium } from "@playwright/test";
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -13,6 +13,7 @@ const browser = await chromium.launch({
   executablePath: process.env.TRACEHAWK_CHROMIUM_PATH || undefined,
 });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+const cdp = await page.context().newCDPSession(page);
 
 async function clickButton(name) {
   const button = page.getByRole("button", { name, exact: true });
@@ -23,7 +24,9 @@ async function clickButton(name) {
 }
 
 async function capture(filename) {
-  await page.waitForTimeout(400);
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+  });
   await page.evaluate(() => {
     window.scrollTo(0, 0);
     for (const element of document.querySelectorAll("*")) {
@@ -31,7 +34,15 @@ async function capture(filename) {
       if (element.scrollLeft) element.scrollLeft = 0;
     }
   });
-  await page.screenshot({ path: resolve(outputDirectory, filename) });
+  await page.evaluate(
+    () => new Promise((resolvePaint) => requestAnimationFrame(() => requestAnimationFrame(resolvePaint))),
+  );
+  const screenshot = await cdp.send("Page.captureScreenshot", {
+    format: "png",
+    fromSurface: true,
+    captureBeyondViewport: false,
+  });
+  await writeFile(resolve(outputDirectory, filename), Buffer.from(screenshot.data, "base64"));
 }
 
 try {
@@ -60,7 +71,7 @@ try {
   await clickButton("Real lab case");
   await page.getByRole("heading", { name: "Case investigation", exact: true }).waitFor();
   await capture("04-case-correlation.png");
-  await page.screenshot({ path: resolve(caseProofDirectory, "case-workbench.png") });
+  await capture("../../proof-pack/current-case-investigation-ux/case-workbench.png");
 
   await clickButton("Library");
   await page.getByRole("heading", { name: "Detection library", exact: true }).waitFor();
@@ -69,16 +80,7 @@ try {
     throw new Error("Expected one Found only checkbox.");
   }
   await foundOnly.check();
-  await page.waitForTimeout(400);
-  await page.evaluate(() => {
-    window.scrollTo(0, 0);
-    for (const element of document.querySelectorAll("*")) {
-      if (element.scrollTop) element.scrollTop = 0;
-      if (element.scrollLeft) element.scrollLeft = 0;
-    }
-  });
-  await page.waitForTimeout(400);
-  await page.screenshot({ path: resolve(caseProofDirectory, "library-current-case.png") });
+  await capture("../../proof-pack/current-case-investigation-ux/library-current-case.png");
 } finally {
   await browser.close();
 }

@@ -12,6 +12,7 @@ from tracehawk_api.models.domain import Incident, RawLogLine
 from tracehawk_api.services.analysis import AnalysisResult, EvidenceLine, analyze_text
 from tracehawk_api.services.case_bundle import CaseBundleInput, analyze_case_bundle
 from tracehawk_api.services.ingest import build_raw_lines_from_text
+from tracehawk_api.services.live_attestation import verify_live_snapshot_attestation
 from tracehawk_api.services.persistence import (
     AnalysisRunSummary,
     get_analysis_result,
@@ -135,20 +136,26 @@ def persist_live_snapshot(snapshot: AnalysisResult, session: SessionDep) -> Anal
     if not snapshot.evidence:
         raise HTTPException(status_code=422, detail="Live snapshot has no evidence to persist.")
 
-    created_at = datetime.now(UTC)
-    analysis_id = _live_analysis_id(snapshot.source_id, created_at)
-    result = _namespace_live_result(snapshot, analysis_id)
-    raw_lines = _raw_lines_from_evidence(result.source_id, result.evidence, created_at)
-    filename = f"live-{snapshot.parser}-{created_at.strftime('%Y%m%d-%H%M%S')}.json"
+    try:
+        verify_live_snapshot_attestation(snapshot)
+        created_at = datetime.now(UTC)
+        analysis_id = _live_analysis_id(snapshot.source_id, created_at)
+        result = _namespace_live_result(snapshot, analysis_id)
+        raw_lines = _raw_lines_from_evidence(result.source_id, result.evidence, created_at)
+        filename = f"live-{snapshot.parser}-{created_at.strftime('%Y%m%d-%H%M%S')}.json"
 
-    return persist_analysis(
-        session,
-        result,
-        raw_lines,
-        filename,
-        source_type=_live_source_type(snapshot.source_id),
-        analysis_id=analysis_id,
-    )
+        return persist_analysis(
+            session,
+            result,
+            raw_lines,
+            filename,
+            source_type=_live_source_type(snapshot.source_id),
+            analysis_id=analysis_id,
+            evidence_origin="live_snapshot",
+            attested_live_snapshot=True,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @router.get("/runs", response_model=list[AnalysisRunSummary])
@@ -258,6 +265,7 @@ def _namespace_live_result(snapshot: AnalysisResult, analysis_id: str) -> Analys
         findings=findings,
         incidents=incidents,
         evidence=evidence,
+        live_retention=snapshot.live_retention,
     )
 
 

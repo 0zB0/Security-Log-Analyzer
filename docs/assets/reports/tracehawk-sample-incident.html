@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>TraceHawk Incident Report - Correlated security activity</title>
+  <title>TraceHawk Incident Report - Reconnaissance followed by sensitive HTTP access</title>
   <style>
     body {
       margin: 0;
@@ -68,11 +68,11 @@
 <body>
   <main>
     <header>
-      <h1>TraceHawk Incident Report: Correlated security activity</h1>
+      <h1>TraceHawk Incident Report: Reconnaissance followed by sensitive HTTP access</h1>
       <div class="meta">
         <span class="label">Generated</span><span>2026-07-12T00:00:00+00:00</span>
         <span class="label">Mode</span><span>Local-only deterministic report</span>
-        <span class="label">Incident ID</span><span><code>incident:3d31e5e2cd04</code></span>
+        <span class="label">Incident ID</span><span><code>incident:cd60ba568311</code></span>
         <span class="label">Status</span><span>active</span>
         <span class="label">Severity</span><span>critical</span>
         <span class="label">Score</span><span>100</span>
@@ -82,14 +82,14 @@
     </header>
     <section>
       <h2>Executive Summary</h2>
-      <p>Correlated security activity grouped 12 finding(s) involving dst:10.20.0.53, dst:203.0.113.80, host:10.20.0.53, host:lab-app.internal, ip:10.20.0.25. Sequence: scan activity followed by sensitive HTTP access. Sequence: DNS burst followed by alert or C2 activity. Sequence: alert burst includes high severity Suricata evidence. Cross-source corroboration links 20 related evidence pair(s).</p>
+      <p>Reconnaissance followed by sensitive HTTP access grouped 12 finding(s) involving dst:10.20.0.53, dst:203.0.113.80, host:10.20.0.53, host:lab-app.internal, ip:10.20.0.25. Scan activity was followed by sensitive HTTP access. A DNS burst was followed by a C2 indicator or high-severity alert. An alert burst included high-severity Suricata evidence. Cross-source corroboration links 20 related evidence pair(s).</p>
       <div class="chips"><span class="chip">dst:10.20.0.53</span><span class="chip">dst:203.0.113.80</span><span class="chip">host:10.20.0.53</span><span class="chip">host:lab-app.internal</span><span class="chip">ip:10.20.0.25</span><span class="chip">port:53</span><span class="chip">port:80</span><span class="chip">T1071</span><span class="chip">T1071.004</span><span class="chip">T1083</span><span class="chip">T1190</span><span class="chip">T1595.002</span></div>
     </section>
 
     <section>
       <h2>Scoring Rationale</h2>
-      <dl><dt>Base Severity</dt><dd>95</dd><dt>Finding Volume</dt><dd>20</dd><dt>Sequence Quality</dt><dd>25</dd><dt>Time Window Proximity</dt><dd>10</dd><dt>Cross Source Corroboration</dt><dd>18</dd><dt>Rule Family Diversity</dt><dd>8</dd></dl>
-      <ul><li>critical severity baseline contributes 95.</li><li>12 finding(s) contribute 20 volume point(s).</li><li>Sequence quality: scan activity is followed by sensitive HTTP access.</li><li>Sequence quality: DNS burst is followed by alert or C2 activity.</li><li>Sequence quality: alert burst includes high severity Suricata evidence.</li><li>Time-window proximity: related findings occur within five minutes.</li><li>Cross-source corroboration: 20 related link(s) across dns_query_match, http_path_match contribute 18 point(s).</li><li>Rule-family diversity: 5 families (alert, c2, dns, http, scan) contribute 8 point(s).</li></ul>
+      <dl><dt>Base Severity</dt><dd>95</dd><dt>Finding Volume</dt><dd>20</dd><dt>Sequence Quality</dt><dd>25</dd><dt>Time Window Proximity</dt><dd>10</dd><dt>Cross Source Corroboration</dt><dd>18</dd><dt>Rule Family Diversity</dt><dd>10</dd></dl>
+      <ul><li>critical severity baseline contributes 95.</li><li>12 finding(s) contribute 20 volume point(s).</li><li>Sequence quality: pattern scan-to-sensitive-http: Scan activity is followed by sensitive HTTP access.</li><li>Sequence quality: pattern dns-burst-to-c2-alert: DNS burst is followed by a C2 indicator or high-severity alert.</li><li>Sequence quality: pattern alert-burst-to-high-severity: Alert burst includes high-severity Suricata evidence.</li><li>Time-window proximity: related findings occur within five minutes.</li><li>Cross-source corroboration: 20 related link(s) across dns_query_match, http_path_match contribute 18 point(s).</li><li>Rule-family diversity: 6 families (alert, command_and_control, dns, high_severity_alert, network_scan, sensitive_http) contribute 10 point(s).</li></ul>
     </section>
 
 

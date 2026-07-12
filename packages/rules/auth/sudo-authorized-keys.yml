@@ -9,6 +9,12 @@ mitre:
   tactic: Persistence
   technique_id: T1098.004
   technique_name: SSH Authorized Keys
+correlation:
+  family: persistence
+  incident_title: Privileged sudo activity
+  behaviors: [privileged_action]
+  entity_fields: [username, host]
+  max_gap_minutes: 30
 conditions:
   event_type: sudo_command
   field_contains_any:
@@ -25,4 +31,3 @@ false_positives:
 recommendations:
   - Verify the account and key owner.
   - Remove unauthorized keys and rotate impacted credentials.
-

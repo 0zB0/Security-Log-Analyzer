@@ -39,6 +39,7 @@ from tracehawk_api.security import (
     RequestBodyLimitMiddleware,
     SecurityHeadersMiddleware,
 )
+from tracehawk_api.version import API_VERSION, RELEASE
 
 
 @asynccontextmanager
@@ -52,7 +53,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(
     title="TraceHawk API",
     description="Local-only live SOC assistant API.",
-    version="0.8.0",
+    version=API_VERSION,
     lifespan=lifespan,
 )
 
@@ -120,7 +121,7 @@ def version() -> dict[str, str]:
     return {
         "app": "tracehawk",
         "api_version": app.version,
-        "release": "v0.8.0",
+        "release": RELEASE,
         "build_commit": settings.build_commit,
         "runtime_mode": settings.runtime_mode,
         "llm_provider": settings.llm_provider,

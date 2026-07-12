@@ -60,12 +60,14 @@ export function EvidenceReview({
   evidence,
   onSelectFinding,
   onOpenRule,
+  emptyText = "No findings available. Upload a log or start live monitoring to inspect evidence.",
 }: {
   findings: Finding[];
   selectedFinding: Finding | null;
   evidence: EvidenceLine[];
   onSelectFinding: (id: string) => void;
   onOpenRule: (ruleId: string) => void;
+  emptyText?: string;
 }) {
   return (
     <section className="evidence-workbench">
@@ -74,7 +76,7 @@ export function EvidenceReview({
         selectedFinding={selectedFinding}
         onSelect={onSelectFinding}
         onOpenRule={onOpenRule}
-        emptyText="No findings available. Upload a log or start live monitoring to inspect evidence."
+        emptyText={emptyText}
       />
       <section className="surface evidence-main">
         <div className="surface-header">

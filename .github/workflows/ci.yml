@@ -31,6 +31,8 @@ jobs:
         run: ruff check --no-cache apps/api/tracehawk_api apps/api/migrations apps/api/tests tools
       - name: Type check stable backend boundaries
         run: cd apps/api && mypy
+      - name: Generated API contract drift
+        run: python tools/generate_api_contract.py --check
       - name: Test and coverage
         run: pytest apps/api/tests --cov=tracehawk_api --cov-report=term --cov-report=xml:coverage.xml --cov-fail-under=85 -W error -q
       - name: Dependency audit
@@ -55,6 +57,13 @@ jobs:
         run: npm --prefix apps/web audit --omit=dev --audit-level=high
       - name: Test and coverage
         run: npm --prefix apps/web run test:coverage
+      - name: Upload web coverage
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: web-coverage
+          path: apps/web/coverage/
+          if-no-files-found: error
       - name: Build web
         run: npm --prefix apps/web run build
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
@@ -68,6 +77,15 @@ jobs:
         env:
           TRACEHAWK_PYTHON: python
         run: npm --prefix apps/web run test:e2e
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-evidence
+          path: |
+            apps/web/playwright-report/
+            apps/web/test-results/
+          if-no-files-found: ignore
 
   security:
     runs-on: ubuntu-latest

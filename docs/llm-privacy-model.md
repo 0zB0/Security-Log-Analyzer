@@ -4,7 +4,8 @@ TraceHawk uses a local-only LLM design.
 
 ## Rules
 
-- Ollama is the only planned LLM provider for the first release.
+- Ollama is the supported optional model provider; deterministic mock and disabled modes support
+  verification and deployments without a model.
 - LLM support is optional.
 - Raw logs are not blindly dumped into prompts.
 - Prompt input is structured incident context.
@@ -45,7 +46,7 @@ The Ollama provider:
 The mock provider:
 
 - does not call a network or cloud service;
-- uses the same bounded prompt builder planned for Ollama;
+- uses the same bounded prompt builder as Ollama;
 - returns evidence-referenced summaries, next steps, and guardrails;
 - keeps deterministic findings and evidence immutable.
 

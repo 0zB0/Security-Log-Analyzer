@@ -1,4 +1,4 @@
-# Current Performance Benchmark
+# Current Scale Performance Benchmark
 
 Generated: `2026-07-10T12:17:35.277265+00:00`
 Base commit: `842cfa2274e703c483fc95b26c5a767ae2cd8521`

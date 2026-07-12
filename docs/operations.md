@@ -8,11 +8,12 @@ self-hosted operation; they do not provide multi-region or multi-tenant SIEM gua
 | Signal | Endpoint or source | Access | Purpose |
 | --- | --- | --- | --- |
 | Liveness | `GET /api/health/live` | public | process is serving HTTP |
-| Readiness | `GET /api/health/ready` | public | SQLite query and YAML rules load successfully |
+| Readiness | `GET /api/health/ready` | public | SQLite query plus YAML rules and correlation patterns load successfully |
 | Health | `GET /api/health` | public | client and smoke compatibility |
 | Metrics | `GET /metrics` | admin | request count, status, in-flight gauge, latency, build metadata |
 | Structured logs | stdout JSON | operator | request ID, route template, status, duration, role, build |
 | Audit events | `GET /api/audit/events` | admin | mutations, denied access, and live connection attempts |
+| Syslog collector stats | structured JSON stdout | local operator | accepted, dropped, queued, failed, and persisted work |
 
 Request logs use route templates, omit query strings and bodies, and never log uploaded evidence.
 `X-Request-ID` correlates responses, structured logs, and audit events.
@@ -25,6 +26,8 @@ Request logs use route templates, omit query strings and bodies, and never log u
 - upload latency and memory must remain inside `docs/performance.md` budgets;
 - rate limits, metrics, and SQLite writes are instance-local;
 - horizontal write scaling requires external shared state and is not supported by this release.
+- the optional syslog collector is loopback-default, in-memory-queue bounded, and has no delivery
+  acknowledgement or replay guarantee.
 
 The container runs as a non-root user and exposes a Docker healthcheck. Backup export is available
 to administrators; restore is an explicit offline CLI operation. Review `docs/deployment-selfhost.md`,

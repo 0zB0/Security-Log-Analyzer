@@ -1,8 +1,43 @@
 {
   "aggregate_scan_window_metrics": {
     "balanced_accuracy": 0.7494,
+    "detected_rule_windows": {
+      "zeek-conn-attempt-burst-001": 2
+    },
     "f1": 0.5,
+    "false_negative_examples": [
+      {
+        "event_count": 5,
+        "label_counts": {
+          "Benign": 4,
+          "PartOfAHorizontalPortScan": 1
+        },
+        "observed_rule_ids": [],
+        "sample_endpoints": [
+          "192.168.1.195 -> 1.1.1.1 -> 1",
+          "192.168.1.195 -> 1.1.1.1 -> 256"
+        ],
+        "window_start": "2018-12-22T05:22:00+00:00"
+      }
+    ],
     "false_negative_windows": 1,
+    "false_positive_examples": [
+      {
+        "event_count": 151,
+        "label_counts": {
+          "C&C": 18,
+          "DDoS": 133
+        },
+        "observed_rule_ids": [
+          "zeek-conn-attempt-burst-001"
+        ],
+        "sample_endpoints": [
+          "192.168.1.195 -> 185.244.25.235 -> 6667",
+          "192.168.1.195 -> 71.61.66.148 -> 80"
+        ],
+        "window_start": "2018-12-22T10:50:00+00:00"
+      }
+    ],
     "false_positive_rate": 0.0011,
     "false_positive_windows": 1,
     "positive_prevalence": 0.0023,
@@ -30,6 +65,7 @@
   "datasets": [
     {
       "bytes": 2926718,
+      "capture_id": "34-1",
       "filename": "iot23-34-1-conn.log.labeled",
       "label_counts": {
         "Benign": 1923,
@@ -37,11 +73,999 @@
         "DDoS": 14394,
         "PartOfAHorizontalPortScan": 122
       },
+      "label_format_counts": {
+        "separate_columns": 23145
+      },
+      "license": "CC-BY; source citation required.",
+      "objective_metrics": {
+        "network_scan": {
+          "detected_rule_windows": {
+            "zeek-conn-attempt-burst-001": 2
+          },
+          "false_negative_examples": [
+            {
+              "event_count": 5,
+              "label_counts": {
+                "Benign": 4,
+                "PartOfAHorizontalPortScan": 1
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.1.195 -> 1.1.1.1 -> 1",
+                "192.168.1.195 -> 1.1.1.1 -> 256"
+              ],
+              "window_start": "2018-12-22T05:22:00+00:00"
+            }
+          ],
+          "false_negative_windows": 1,
+          "false_positive_examples": [
+            {
+              "event_count": 151,
+              "label_counts": {
+                "C&C": 18,
+                "DDoS": 133
+              },
+              "observed_rule_ids": [
+                "zeek-conn-attempt-burst-001"
+              ],
+              "sample_endpoints": [
+                "192.168.1.195 -> 185.244.25.235 -> 6667",
+                "192.168.1.195 -> 71.61.66.148 -> 80"
+              ],
+              "window_start": "2018-12-22T10:50:00+00:00"
+            }
+          ],
+          "false_positive_windows": 1,
+          "true_negative_windows": 696,
+          "true_positive_windows": 1,
+          "window_count": 699
+        }
+      },
+      "objectives": [
+        "network_scan"
+      ],
       "parsed_rows": 23145,
-      "scan_window_metrics": {
+      "role": "final_evaluation",
+      "sha256": "d69e49b2aae8c1bd33286936531658202dec47d989f0439bad3f8be180467a6e",
+      "source_url": "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/CTU-IoT-Malware-Capture-34-1/bro/conn.log.labeled"
+    },
+    {
+      "bytes": 419604,
+      "capture_id": "20-1",
+      "filename": "iot23-20-1-conn.log.labeled",
+      "label_counts": {
+        "Benign": 3193,
+        "C&C-Torii": 16
+      },
+      "label_format_counts": {
+        "combined_column": 3209
+      },
+      "license": "CC-BY; source citation required.",
+      "objective_metrics": {
+        "command_and_control": {
+          "detected_rule_windows": {
+            "zeek-stable-endpoint-retry-001": 1
+          },
+          "false_negative_examples": [
+            {
+              "event_count": 69,
+              "label_counts": {
+                "Benign": 66,
+                "C&C-Torii": 3
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.100.102 -> 192.168.100.103 -> 22",
+                "192.168.100.103 -> 192.168.100.1 -> 53",
+                "192.168.100.103 -> 31.31.74.35 -> 123",
+                "192.168.100.103 -> 5.1.56.123 -> 123",
+                "192.168.100.103 -> 66.85.157.90 -> 443"
+              ],
+              "window_start": "2018-10-02T11:15:00+00:00"
+            },
+            {
+              "event_count": 23,
+              "label_counts": {
+                "Benign": 17,
+                "C&C-Torii": 6
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.100.103 -> 185.189.115.149 -> 123",
+                "192.168.100.103 -> 192.168.100.1 -> 53",
+                "192.168.100.103 -> 217.30.75.147 -> 123",
+                "192.168.100.103 -> 66.85.157.90 -> 443",
+                "192.168.100.103 -> 77.78.107.252 -> 123"
+              ],
+              "window_start": "2018-10-02T22:50:00+00:00"
+            }
+          ],
+          "false_negative_windows": 2,
+          "false_positive_examples": [],
+          "false_positive_windows": 0,
+          "true_negative_windows": 286,
+          "true_positive_windows": 1,
+          "window_count": 289
+        }
+      },
+      "objectives": [
+        "command_and_control"
+      ],
+      "parsed_rows": 3209,
+      "role": "development",
+      "sha256": "ef48ad72f65efd13d517223e61e4d877ba53a082ddb8159324b18d3f310d0711",
+      "source_url": "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/CTU-IoT-Malware-Capture-20-1/bro/conn.log.labeled"
+    },
+    {
+      "bytes": 428943,
+      "capture_id": "21-1",
+      "filename": "iot23-21-1-conn.log.labeled",
+      "label_counts": {
+        "Benign": 3272,
+        "C&C-Torii": 14
+      },
+      "label_format_counts": {
+        "combined_column": 3286
+      },
+      "license": "CC-BY; source citation required.",
+      "objective_metrics": {
+        "command_and_control": {
+          "detected_rule_windows": {
+            "zeek-stable-endpoint-retry-001": 1
+          },
+          "false_negative_examples": [
+            {
+              "event_count": 57,
+              "label_counts": {
+                "Benign": 53,
+                "C&C-Torii": 4
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.100.113 -> 192.168.100.1 -> 53",
+                "192.168.100.113 -> 195.181.241.93 -> 123",
+                "192.168.100.113 -> 213.199.225.40 -> 123",
+                "192.168.100.113 -> 66.85.157.90 -> 443",
+                "192.168.100.113 -> 77.78.107.252 -> 123"
+              ],
+              "window_start": "2018-10-03T13:25:00+00:00"
+            },
+            {
+              "event_count": 42,
+              "label_counts": {
+                "Benign": 41,
+                "C&C-Torii": 1
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.100.113 -> 192.168.100.1 -> 53",
+                "192.168.100.113 -> 66.85.157.90 -> 443",
+                "192.168.100.113 -> 8.8.8.8 -> 53"
+              ],
+              "window_start": "2018-10-04T07:05:00+00:00"
+            }
+          ],
+          "false_negative_windows": 2,
+          "false_positive_examples": [],
+          "false_positive_windows": 0,
+          "true_negative_windows": 262,
+          "true_positive_windows": 1,
+          "window_count": 265
+        }
+      },
+      "objectives": [
+        "command_and_control"
+      ],
+      "parsed_rows": 3286,
+      "role": "validation",
+      "sha256": "b63db259aead078f50fc150aa97ace4d1f69576e1245334962759d978ce437eb",
+      "source_url": "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/CTU-IoT-Malware-Capture-21-1/bro/conn.log.labeled"
+    },
+    {
+      "bytes": 1431000,
+      "capture_id": "8-1",
+      "filename": "iot23-8-1-conn.log.labeled",
+      "label_counts": {
+        "Benign": 2181,
+        "C&C": 8222
+      },
+      "label_format_counts": {
+        "combined_column": 10403
+      },
+      "license": "CC-BY; source citation required.",
+      "objective_metrics": {
+        "command_and_control": {
+          "detected_rule_windows": {
+            "zeek-stable-endpoint-retry-001": 274
+          },
+          "false_negative_examples": [
+            {
+              "event_count": 13,
+              "label_counts": {
+                "Benign": 6,
+                "C&C": 7
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.100.113 -> 128.185.250.50 -> 50",
+                "192.168.100.113 -> 147.231.100.5 -> 123",
+                "192.168.100.113 -> 178.128.185.250 -> 50",
+                "192.168.100.113 -> 80.79.25.111 -> 123",
+                "192.168.100.113 -> 81.2.254.224 -> 123"
+              ],
+              "window_start": "2018-07-31T14:20:00+00:00"
+            },
+            {
+              "event_count": 1,
+              "label_counts": {
+                "C&C": 1
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.100.113 -> 128.185.250.50 -> 50"
+              ],
+              "window_start": "2018-08-01T13:15:00+00:00"
+            }
+          ],
+          "false_negative_windows": 2,
+          "false_positive_examples": [],
+          "false_positive_windows": 0,
+          "true_negative_windows": 13,
+          "true_positive_windows": 274,
+          "window_count": 289
+        }
+      },
+      "objectives": [
+        "command_and_control"
+      ],
+      "parsed_rows": 10403,
+      "role": "validation",
+      "sha256": "4877ca8f0f01902fbd18d28b7d06cb3d0be082355b7f2c8862c9deef1782eb8a",
+      "source_url": "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/CTU-IoT-Malware-Capture-8-1/bro/conn.log.labeled"
+    },
+    {
+      "bytes": 585829,
+      "capture_id": "42-1",
+      "filename": "iot23-42-1-conn.log.labeled",
+      "label_counts": {
+        "Benign": 4420,
+        "C&C-FileDownload": 3,
+        "FileDownload": 3
+      },
+      "label_format_counts": {
+        "combined_column": 4426
+      },
+      "license": "CC-BY; source citation required.",
+      "objective_metrics": {
+        "command_and_control": {
+          "detected_rule_windows": {
+            "zeek-stable-endpoint-retry-001": 22
+          },
+          "false_negative_examples": [
+            {
+              "event_count": 9,
+              "label_counts": {
+                "Benign": 6,
+                "C&C-FileDownload": 2,
+                "FileDownload": 1
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.1.1 -> 192.168.1.197 -> 22",
+                "192.168.1.197 -> 104.24.96.120 -> 80",
+                "192.168.1.197 -> 104.24.97.120 -> 80",
+                "192.168.1.197 -> 192.168.1.1 -> 53"
+              ],
+              "window_start": "2019-01-10T13:30:00+00:00"
+            }
+          ],
+          "false_negative_windows": 1,
+          "false_positive_examples": [
+            {
+              "event_count": 187,
+              "label_counts": {
+                "Benign": 187
+              },
+              "observed_rule_ids": [
+                "zeek-stable-endpoint-retry-001"
+              ],
+              "sample_endpoints": [
+                "192.168.1.197 -> 147.231.100.5 -> 123",
+                "192.168.1.197 -> 185.244.25.183 -> 4975",
+                "192.168.1.197 -> 192.168.1.1 -> 53",
+                "192.168.1.197 -> 212.96.160.147 -> 123"
+              ],
+              "window_start": "2019-01-10T13:40:00+00:00"
+            },
+            {
+              "event_count": 193,
+              "label_counts": {
+                "Benign": 193
+              },
+              "observed_rule_ids": [
+                "zeek-stable-endpoint-retry-001"
+              ],
+              "sample_endpoints": [
+                "192.168.1.197 -> 147.231.100.5 -> 123",
+                "192.168.1.197 -> 185.244.25.183 -> 4975",
+                "192.168.1.197 -> 192.168.1.1 -> 53",
+                "192.168.1.197 -> 81.2.248.189 -> 123",
+                "192.168.1.197 -> 82.113.53.40 -> 123"
+              ],
+              "window_start": "2019-01-10T13:45:00+00:00"
+            },
+            {
+              "event_count": 139,
+              "label_counts": {
+                "Benign": 139
+              },
+              "observed_rule_ids": [
+                "zeek-stable-endpoint-retry-001"
+              ],
+              "sample_endpoints": [
+                "192.168.1.197 -> 147.231.100.5 -> 123",
+                "192.168.1.197 -> 185.244.25.183 -> 4975",
+                "192.168.1.197 -> 192.168.1.1 -> 53",
+                "192.168.1.197 -> 89.221.214.130 -> 123"
+              ],
+              "window_start": "2019-01-10T13:50:00+00:00"
+            },
+            {
+              "event_count": 149,
+              "label_counts": {
+                "Benign": 149
+              },
+              "observed_rule_ids": [
+                "zeek-stable-endpoint-retry-001"
+              ],
+              "sample_endpoints": [
+                "192.168.1.197 -> 147.231.100.5 -> 123",
+                "192.168.1.197 -> 185.244.25.183 -> 4975",
+                "192.168.1.197 -> 192.168.1.1 -> 53",
+                "192.168.1.197 -> 212.96.160.147 -> 123",
+                "192.168.1.197 -> 81.2.248.189 -> 123"
+              ],
+              "window_start": "2019-01-10T13:55:00+00:00"
+            },
+            {
+              "event_count": 167,
+              "label_counts": {
+                "Benign": 167
+              },
+              "observed_rule_ids": [
+                "zeek-stable-endpoint-retry-001"
+              ],
+              "sample_endpoints": [
+                "192.168.1.197 -> 147.231.100.5 -> 123",
+                "192.168.1.197 -> 185.244.25.183 -> 4975",
+                "192.168.1.197 -> 192.168.1.1 -> 53",
+                "192.168.1.197 -> 82.113.53.40 -> 123",
+                "192.168.1.197 -> 83.167.252.118 -> 123"
+              ],
+              "window_start": "2019-01-10T14:00:00+00:00"
+            }
+          ],
+          "false_positive_windows": 21,
+          "true_negative_windows": 76,
+          "true_positive_windows": 1,
+          "window_count": 99
+        }
+      },
+      "objectives": [
+        "command_and_control"
+      ],
+      "parsed_rows": 4426,
+      "role": "final_evaluation",
+      "sha256": "269fa1b22d9a37e159cf41b81a213a0032d21306f5d39b4c20cb0d211b04e8aa",
+      "source_url": "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/CTU-IoT-Malware-Capture-42-1/bro/conn.log.labeled"
+    },
+    {
+      "bytes": 31179,
+      "capture_id": "44-1",
+      "filename": "iot23-44-1-conn.log.labeled",
+      "label_counts": {
+        "Benign": 211,
+        "C&C": 14,
+        "C&C-FileDownload": 11,
+        "DDoS": 1
+      },
+      "label_format_counts": {
+        "combined_column": 237
+      },
+      "license": "CC-BY; source citation required.",
+      "objective_metrics": {
+        "command_and_control": {
+          "detected_rule_windows": {
+            "zeek-stable-endpoint-retry-001": 1
+          },
+          "false_negative_examples": [],
+          "false_negative_windows": 0,
+          "false_positive_examples": [],
+          "false_positive_windows": 0,
+          "true_negative_windows": 23,
+          "true_positive_windows": 1,
+          "window_count": 24
+        }
+      },
+      "objectives": [
+        "command_and_control"
+      ],
+      "parsed_rows": 237,
+      "role": "final_evaluation",
+      "sha256": "12cd99bcda78140dd5f31cf3d786642f150e42e0ebc3599190f35314e406f71f",
+      "source_url": "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/CTU-IoT-Malware-Capture-44-1/bro/conn.log.labeled"
+    },
+    {
+      "bytes": 61653,
+      "capture_id": "4-1",
+      "filename": "iot23-benign-4-1-conn.log.labeled",
+      "label_counts": {
+        "Benign": 452
+      },
+      "label_format_counts": {
+        "combined_column": 452
+      },
+      "license": "CC-BY; source citation required.",
+      "objective_metrics": {
+        "command_and_control": {
+          "detected_rule_windows": {},
+          "false_negative_examples": [],
+          "false_negative_windows": 0,
+          "false_positive_examples": [],
+          "false_positive_windows": 0,
+          "true_negative_windows": 147,
+          "true_positive_windows": 0,
+          "window_count": 147
+        },
+        "network_scan": {
+          "detected_rule_windows": {},
+          "false_negative_examples": [],
+          "false_negative_windows": 0,
+          "false_positive_examples": [],
+          "false_positive_windows": 0,
+          "true_negative_windows": 181,
+          "true_positive_windows": 0,
+          "window_count": 181
+        }
+      },
+      "objectives": [
+        "network_scan",
+        "command_and_control"
+      ],
+      "parsed_rows": 452,
+      "role": "negative_control",
+      "sha256": "aebe40ea0e03b120265a5c7bc140dd9b0d3fe2fce65559e84776b7dd5360e71e",
+      "source_url": "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/CTU-Honeypot-Capture-4-1/bro/conn.log.labeled"
+    }
+  ],
+  "generated_at": "2026-07-12T21:04:06.529562+00:00",
+  "license": "CC-BY; source citation required.",
+  "methodology": {
+    "frozen_rule": "zeek-stable-endpoint-retry-001: six S0 attempts to one endpoint in five minutes",
+    "label_formats": [
+      "separate label and detailed-label TSV columns",
+      "legacy combined tunnel_parents/label/detailed-label column"
+    ],
+    "limitations": [
+      "Fixed windows can split activity across a boundary.",
+      "The C2 objective measures one low-confidence retry indicator, not all C2 behavior.",
+      "IoT-23 is a controlled, historical research dataset, not current production traffic.",
+      "Metrics are window-level and do not estimate packet-, flow-, host-, or tenant prevalence.",
+      "Capture heterogeneity makes per-capture errors more informative than one pooled score."
+    ],
+    "role_policy": {
+      "development": "May guide the rule shape and threshold.",
+      "final_evaluation": "Scored only after the rule and threshold are frozen.",
+      "negative_control": "Contributes final negative windows to each assigned objective.",
+      "supplemental": "Reported but excluded from final metrics until explicitly classified.",
+      "validation": "May expose instability but is not counted as final holdout evidence."
+    },
+    "rule_freeze_commit": "df5811a6f98e48ea046247fcbb770fa9ecbd32ed"
+  },
+  "objectives": {
+    "command_and_control": {
+      "final_capture_ids": [
+        "42-1",
+        "44-1"
+      ],
+      "final_metrics": {
+        "balanced_accuracy": 0.794,
+        "detected_rule_windows": {
+          "zeek-stable-endpoint-retry-001": 23
+        },
+        "f1": 0.1538,
+        "false_negative_examples": [
+          {
+            "event_count": 9,
+            "label_counts": {
+              "Benign": 6,
+              "C&C-FileDownload": 2,
+              "FileDownload": 1
+            },
+            "observed_rule_ids": [],
+            "sample_endpoints": [
+              "192.168.1.1 -> 192.168.1.197 -> 22",
+              "192.168.1.197 -> 104.24.96.120 -> 80",
+              "192.168.1.197 -> 104.24.97.120 -> 80",
+              "192.168.1.197 -> 192.168.1.1 -> 53"
+            ],
+            "window_start": "2019-01-10T13:30:00+00:00"
+          }
+        ],
+        "false_negative_windows": 1,
+        "false_positive_examples": [
+          {
+            "event_count": 187,
+            "label_counts": {
+              "Benign": 187
+            },
+            "observed_rule_ids": [
+              "zeek-stable-endpoint-retry-001"
+            ],
+            "sample_endpoints": [
+              "192.168.1.197 -> 147.231.100.5 -> 123",
+              "192.168.1.197 -> 185.244.25.183 -> 4975",
+              "192.168.1.197 -> 192.168.1.1 -> 53",
+              "192.168.1.197 -> 212.96.160.147 -> 123"
+            ],
+            "window_start": "2019-01-10T13:40:00+00:00"
+          },
+          {
+            "event_count": 193,
+            "label_counts": {
+              "Benign": 193
+            },
+            "observed_rule_ids": [
+              "zeek-stable-endpoint-retry-001"
+            ],
+            "sample_endpoints": [
+              "192.168.1.197 -> 147.231.100.5 -> 123",
+              "192.168.1.197 -> 185.244.25.183 -> 4975",
+              "192.168.1.197 -> 192.168.1.1 -> 53",
+              "192.168.1.197 -> 81.2.248.189 -> 123",
+              "192.168.1.197 -> 82.113.53.40 -> 123"
+            ],
+            "window_start": "2019-01-10T13:45:00+00:00"
+          },
+          {
+            "event_count": 139,
+            "label_counts": {
+              "Benign": 139
+            },
+            "observed_rule_ids": [
+              "zeek-stable-endpoint-retry-001"
+            ],
+            "sample_endpoints": [
+              "192.168.1.197 -> 147.231.100.5 -> 123",
+              "192.168.1.197 -> 185.244.25.183 -> 4975",
+              "192.168.1.197 -> 192.168.1.1 -> 53",
+              "192.168.1.197 -> 89.221.214.130 -> 123"
+            ],
+            "window_start": "2019-01-10T13:50:00+00:00"
+          },
+          {
+            "event_count": 149,
+            "label_counts": {
+              "Benign": 149
+            },
+            "observed_rule_ids": [
+              "zeek-stable-endpoint-retry-001"
+            ],
+            "sample_endpoints": [
+              "192.168.1.197 -> 147.231.100.5 -> 123",
+              "192.168.1.197 -> 185.244.25.183 -> 4975",
+              "192.168.1.197 -> 192.168.1.1 -> 53",
+              "192.168.1.197 -> 212.96.160.147 -> 123",
+              "192.168.1.197 -> 81.2.248.189 -> 123"
+            ],
+            "window_start": "2019-01-10T13:55:00+00:00"
+          },
+          {
+            "event_count": 167,
+            "label_counts": {
+              "Benign": 167
+            },
+            "observed_rule_ids": [
+              "zeek-stable-endpoint-retry-001"
+            ],
+            "sample_endpoints": [
+              "192.168.1.197 -> 147.231.100.5 -> 123",
+              "192.168.1.197 -> 185.244.25.183 -> 4975",
+              "192.168.1.197 -> 192.168.1.1 -> 53",
+              "192.168.1.197 -> 82.113.53.40 -> 123",
+              "192.168.1.197 -> 83.167.252.118 -> 123"
+            ],
+            "window_start": "2019-01-10T14:00:00+00:00"
+          }
+        ],
+        "false_positive_rate": 0.0787,
+        "false_positive_windows": 21,
+        "positive_prevalence": 0.0111,
+        "precision": 0.087,
+        "precision_wilson_95": [
+          0.0242,
+          0.268
+        ],
+        "recall": 0.6667,
+        "recall_wilson_95": [
+          0.2077,
+          0.9385
+        ],
+        "specificity": 0.9213,
+        "specificity_wilson_95": [
+          0.8828,
+          0.948
+        ],
+        "true_negative_windows": 246,
+        "true_positive_windows": 2,
+        "window_count": 270
+      },
+      "ground_truth_positive": "A window contains at least one label in the C&C or a detailed label beginning with C&C- family.",
+      "metrics_by_role": {
+        "development": {
+          "balanced_accuracy": 0.6667,
+          "detected_rule_windows": {
+            "zeek-stable-endpoint-retry-001": 1
+          },
+          "f1": 0.5,
+          "false_negative_examples": [
+            {
+              "event_count": 69,
+              "label_counts": {
+                "Benign": 66,
+                "C&C-Torii": 3
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.100.102 -> 192.168.100.103 -> 22",
+                "192.168.100.103 -> 192.168.100.1 -> 53",
+                "192.168.100.103 -> 31.31.74.35 -> 123",
+                "192.168.100.103 -> 5.1.56.123 -> 123",
+                "192.168.100.103 -> 66.85.157.90 -> 443"
+              ],
+              "window_start": "2018-10-02T11:15:00+00:00"
+            },
+            {
+              "event_count": 23,
+              "label_counts": {
+                "Benign": 17,
+                "C&C-Torii": 6
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.100.103 -> 185.189.115.149 -> 123",
+                "192.168.100.103 -> 192.168.100.1 -> 53",
+                "192.168.100.103 -> 217.30.75.147 -> 123",
+                "192.168.100.103 -> 66.85.157.90 -> 443",
+                "192.168.100.103 -> 77.78.107.252 -> 123"
+              ],
+              "window_start": "2018-10-02T22:50:00+00:00"
+            }
+          ],
+          "false_negative_windows": 2,
+          "false_positive_examples": [],
+          "false_positive_rate": 0.0,
+          "false_positive_windows": 0,
+          "positive_prevalence": 0.0104,
+          "precision": 1.0,
+          "precision_wilson_95": [
+            0.2065,
+            1.0
+          ],
+          "recall": 0.3333,
+          "recall_wilson_95": [
+            0.0615,
+            0.7923
+          ],
+          "specificity": 1.0,
+          "specificity_wilson_95": [
+            0.9867,
+            1.0
+          ],
+          "true_negative_windows": 286,
+          "true_positive_windows": 1,
+          "window_count": 289
+        },
+        "final_evaluation": {
+          "balanced_accuracy": 0.7458,
+          "detected_rule_windows": {
+            "zeek-stable-endpoint-retry-001": 23
+          },
+          "f1": 0.1538,
+          "false_negative_examples": [
+            {
+              "event_count": 9,
+              "label_counts": {
+                "Benign": 6,
+                "C&C-FileDownload": 2,
+                "FileDownload": 1
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.1.1 -> 192.168.1.197 -> 22",
+                "192.168.1.197 -> 104.24.96.120 -> 80",
+                "192.168.1.197 -> 104.24.97.120 -> 80",
+                "192.168.1.197 -> 192.168.1.1 -> 53"
+              ],
+              "window_start": "2019-01-10T13:30:00+00:00"
+            }
+          ],
+          "false_negative_windows": 1,
+          "false_positive_examples": [
+            {
+              "event_count": 187,
+              "label_counts": {
+                "Benign": 187
+              },
+              "observed_rule_ids": [
+                "zeek-stable-endpoint-retry-001"
+              ],
+              "sample_endpoints": [
+                "192.168.1.197 -> 147.231.100.5 -> 123",
+                "192.168.1.197 -> 185.244.25.183 -> 4975",
+                "192.168.1.197 -> 192.168.1.1 -> 53",
+                "192.168.1.197 -> 212.96.160.147 -> 123"
+              ],
+              "window_start": "2019-01-10T13:40:00+00:00"
+            },
+            {
+              "event_count": 193,
+              "label_counts": {
+                "Benign": 193
+              },
+              "observed_rule_ids": [
+                "zeek-stable-endpoint-retry-001"
+              ],
+              "sample_endpoints": [
+                "192.168.1.197 -> 147.231.100.5 -> 123",
+                "192.168.1.197 -> 185.244.25.183 -> 4975",
+                "192.168.1.197 -> 192.168.1.1 -> 53",
+                "192.168.1.197 -> 81.2.248.189 -> 123",
+                "192.168.1.197 -> 82.113.53.40 -> 123"
+              ],
+              "window_start": "2019-01-10T13:45:00+00:00"
+            },
+            {
+              "event_count": 139,
+              "label_counts": {
+                "Benign": 139
+              },
+              "observed_rule_ids": [
+                "zeek-stable-endpoint-retry-001"
+              ],
+              "sample_endpoints": [
+                "192.168.1.197 -> 147.231.100.5 -> 123",
+                "192.168.1.197 -> 185.244.25.183 -> 4975",
+                "192.168.1.197 -> 192.168.1.1 -> 53",
+                "192.168.1.197 -> 89.221.214.130 -> 123"
+              ],
+              "window_start": "2019-01-10T13:50:00+00:00"
+            },
+            {
+              "event_count": 149,
+              "label_counts": {
+                "Benign": 149
+              },
+              "observed_rule_ids": [
+                "zeek-stable-endpoint-retry-001"
+              ],
+              "sample_endpoints": [
+                "192.168.1.197 -> 147.231.100.5 -> 123",
+                "192.168.1.197 -> 185.244.25.183 -> 4975",
+                "192.168.1.197 -> 192.168.1.1 -> 53",
+                "192.168.1.197 -> 212.96.160.147 -> 123",
+                "192.168.1.197 -> 81.2.248.189 -> 123"
+              ],
+              "window_start": "2019-01-10T13:55:00+00:00"
+            },
+            {
+              "event_count": 167,
+              "label_counts": {
+                "Benign": 167
+              },
+              "observed_rule_ids": [
+                "zeek-stable-endpoint-retry-001"
+              ],
+              "sample_endpoints": [
+                "192.168.1.197 -> 147.231.100.5 -> 123",
+                "192.168.1.197 -> 185.244.25.183 -> 4975",
+                "192.168.1.197 -> 192.168.1.1 -> 53",
+                "192.168.1.197 -> 82.113.53.40 -> 123",
+                "192.168.1.197 -> 83.167.252.118 -> 123"
+              ],
+              "window_start": "2019-01-10T14:00:00+00:00"
+            }
+          ],
+          "false_positive_rate": 0.175,
+          "false_positive_windows": 21,
+          "positive_prevalence": 0.0244,
+          "precision": 0.087,
+          "precision_wilson_95": [
+            0.0242,
+            0.268
+          ],
+          "recall": 0.6667,
+          "recall_wilson_95": [
+            0.2077,
+            0.9385
+          ],
+          "specificity": 0.825,
+          "specificity_wilson_95": [
+            0.7472,
+            0.8826
+          ],
+          "true_negative_windows": 99,
+          "true_positive_windows": 2,
+          "window_count": 123
+        },
+        "negative_control": {
+          "balanced_accuracy": 0.5,
+          "detected_rule_windows": {},
+          "f1": 0.0,
+          "false_negative_examples": [],
+          "false_negative_windows": 0,
+          "false_positive_examples": [],
+          "false_positive_rate": 0.0,
+          "false_positive_windows": 0,
+          "positive_prevalence": 0.0,
+          "precision": 0.0,
+          "precision_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "recall": 0.0,
+          "recall_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "specificity": 1.0,
+          "specificity_wilson_95": [
+            0.9745,
+            1.0
+          ],
+          "true_negative_windows": 147,
+          "true_positive_windows": 0,
+          "window_count": 147
+        },
+        "supplemental": {
+          "balanced_accuracy": 0.0,
+          "detected_rule_windows": {},
+          "f1": 0.0,
+          "false_negative_examples": [],
+          "false_negative_windows": 0,
+          "false_positive_examples": [],
+          "false_positive_rate": 0.0,
+          "false_positive_windows": 0,
+          "positive_prevalence": 0.0,
+          "precision": 0.0,
+          "precision_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "recall": 0.0,
+          "recall_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "specificity": 0.0,
+          "specificity_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "true_negative_windows": 0,
+          "true_positive_windows": 0,
+          "window_count": 0
+        },
+        "validation": {
+          "balanced_accuracy": 0.9928,
+          "detected_rule_windows": {
+            "zeek-stable-endpoint-retry-001": 275
+          },
+          "f1": 0.9928,
+          "false_negative_examples": [
+            {
+              "event_count": 57,
+              "label_counts": {
+                "Benign": 53,
+                "C&C-Torii": 4
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.100.113 -> 192.168.100.1 -> 53",
+                "192.168.100.113 -> 195.181.241.93 -> 123",
+                "192.168.100.113 -> 213.199.225.40 -> 123",
+                "192.168.100.113 -> 66.85.157.90 -> 443",
+                "192.168.100.113 -> 77.78.107.252 -> 123"
+              ],
+              "window_start": "2018-10-03T13:25:00+00:00"
+            },
+            {
+              "event_count": 42,
+              "label_counts": {
+                "Benign": 41,
+                "C&C-Torii": 1
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.100.113 -> 192.168.100.1 -> 53",
+                "192.168.100.113 -> 66.85.157.90 -> 443",
+                "192.168.100.113 -> 8.8.8.8 -> 53"
+              ],
+              "window_start": "2018-10-04T07:05:00+00:00"
+            },
+            {
+              "event_count": 13,
+              "label_counts": {
+                "Benign": 6,
+                "C&C": 7
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.100.113 -> 128.185.250.50 -> 50",
+                "192.168.100.113 -> 147.231.100.5 -> 123",
+                "192.168.100.113 -> 178.128.185.250 -> 50",
+                "192.168.100.113 -> 80.79.25.111 -> 123",
+                "192.168.100.113 -> 81.2.254.224 -> 123"
+              ],
+              "window_start": "2018-07-31T14:20:00+00:00"
+            },
+            {
+              "event_count": 1,
+              "label_counts": {
+                "C&C": 1
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.100.113 -> 128.185.250.50 -> 50"
+              ],
+              "window_start": "2018-08-01T13:15:00+00:00"
+            }
+          ],
+          "false_negative_windows": 4,
+          "false_positive_examples": [],
+          "false_positive_rate": 0.0,
+          "false_positive_windows": 0,
+          "positive_prevalence": 0.5036,
+          "precision": 1.0,
+          "precision_wilson_95": [
+            0.9862,
+            1.0
+          ],
+          "recall": 0.9857,
+          "recall_wilson_95": [
+            0.9637,
+            0.9944
+          ],
+          "specificity": 1.0,
+          "specificity_wilson_95": [
+            0.9862,
+            1.0
+          ],
+          "true_negative_windows": 275,
+          "true_positive_windows": 275,
+          "window_count": 554
+        }
+      },
+      "negative_control_capture_ids": [
+        "4-1"
+      ],
+      "prediction_positive": "A window produces the low-confidence repeated failed stable-endpoint finding.",
+      "rule_ids": [
+        "zeek-stable-endpoint-retry-001"
+      ],
+      "title": "Stable-endpoint C2-indicator windows",
+      "window_seconds": 300
+    },
+    "network_scan": {
+      "final_capture_ids": [
+        "34-1"
+      ],
+      "final_metrics": {
+        "balanced_accuracy": 0.7494,
         "detected_rule_windows": {
           "zeek-conn-attempt-burst-001": 2
         },
+        "f1": 0.5,
         "false_negative_examples": [
           {
             "event_count": 5,
@@ -75,47 +1099,220 @@
             "window_start": "2018-12-22T10:50:00+00:00"
           }
         ],
+        "false_positive_rate": 0.0011,
         "false_positive_windows": 1,
-        "true_negative_windows": 696,
+        "positive_prevalence": 0.0023,
+        "precision": 0.5,
+        "precision_wilson_95": [
+          0.0945,
+          0.9055
+        ],
+        "recall": 0.5,
+        "recall_wilson_95": [
+          0.0945,
+          0.9055
+        ],
+        "specificity": 0.9989,
+        "specificity_wilson_95": [
+          0.9936,
+          0.9998
+        ],
+        "true_negative_windows": 877,
         "true_positive_windows": 1,
-        "window_count": 699
+        "window_count": 880
       },
-      "sha256": "d69e49b2aae8c1bd33286936531658202dec47d989f0439bad3f8be180467a6e",
-      "source_url": "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/CTU-IoT-Malware-Capture-34-1/bro/conn.log.labeled"
-    },
-    {
-      "bytes": 61653,
-      "filename": "iot23-benign-4-1-conn.log.labeled",
-      "label_counts": {
-        "Benign": 452
+      "ground_truth_positive": "A window contains at least one `PartOfAHorizontalPortScan` flow.",
+      "metrics_by_role": {
+        "development": {
+          "balanced_accuracy": 0.0,
+          "detected_rule_windows": {},
+          "f1": 0.0,
+          "false_negative_examples": [],
+          "false_negative_windows": 0,
+          "false_positive_examples": [],
+          "false_positive_rate": 0.0,
+          "false_positive_windows": 0,
+          "positive_prevalence": 0.0,
+          "precision": 0.0,
+          "precision_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "recall": 0.0,
+          "recall_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "specificity": 0.0,
+          "specificity_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "true_negative_windows": 0,
+          "true_positive_windows": 0,
+          "window_count": 0
+        },
+        "final_evaluation": {
+          "balanced_accuracy": 0.7493,
+          "detected_rule_windows": {
+            "zeek-conn-attempt-burst-001": 2
+          },
+          "f1": 0.5,
+          "false_negative_examples": [
+            {
+              "event_count": 5,
+              "label_counts": {
+                "Benign": 4,
+                "PartOfAHorizontalPortScan": 1
+              },
+              "observed_rule_ids": [],
+              "sample_endpoints": [
+                "192.168.1.195 -> 1.1.1.1 -> 1",
+                "192.168.1.195 -> 1.1.1.1 -> 256"
+              ],
+              "window_start": "2018-12-22T05:22:00+00:00"
+            }
+          ],
+          "false_negative_windows": 1,
+          "false_positive_examples": [
+            {
+              "event_count": 151,
+              "label_counts": {
+                "C&C": 18,
+                "DDoS": 133
+              },
+              "observed_rule_ids": [
+                "zeek-conn-attempt-burst-001"
+              ],
+              "sample_endpoints": [
+                "192.168.1.195 -> 185.244.25.235 -> 6667",
+                "192.168.1.195 -> 71.61.66.148 -> 80"
+              ],
+              "window_start": "2018-12-22T10:50:00+00:00"
+            }
+          ],
+          "false_positive_rate": 0.0014,
+          "false_positive_windows": 1,
+          "positive_prevalence": 0.0029,
+          "precision": 0.5,
+          "precision_wilson_95": [
+            0.0945,
+            0.9055
+          ],
+          "recall": 0.5,
+          "recall_wilson_95": [
+            0.0945,
+            0.9055
+          ],
+          "specificity": 0.9986,
+          "specificity_wilson_95": [
+            0.9919,
+            0.9997
+          ],
+          "true_negative_windows": 696,
+          "true_positive_windows": 1,
+          "window_count": 699
+        },
+        "negative_control": {
+          "balanced_accuracy": 0.5,
+          "detected_rule_windows": {},
+          "f1": 0.0,
+          "false_negative_examples": [],
+          "false_negative_windows": 0,
+          "false_positive_examples": [],
+          "false_positive_rate": 0.0,
+          "false_positive_windows": 0,
+          "positive_prevalence": 0.0,
+          "precision": 0.0,
+          "precision_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "recall": 0.0,
+          "recall_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "specificity": 1.0,
+          "specificity_wilson_95": [
+            0.9792,
+            1.0
+          ],
+          "true_negative_windows": 181,
+          "true_positive_windows": 0,
+          "window_count": 181
+        },
+        "supplemental": {
+          "balanced_accuracy": 0.0,
+          "detected_rule_windows": {},
+          "f1": 0.0,
+          "false_negative_examples": [],
+          "false_negative_windows": 0,
+          "false_positive_examples": [],
+          "false_positive_rate": 0.0,
+          "false_positive_windows": 0,
+          "positive_prevalence": 0.0,
+          "precision": 0.0,
+          "precision_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "recall": 0.0,
+          "recall_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "specificity": 0.0,
+          "specificity_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "true_negative_windows": 0,
+          "true_positive_windows": 0,
+          "window_count": 0
+        },
+        "validation": {
+          "balanced_accuracy": 0.0,
+          "detected_rule_windows": {},
+          "f1": 0.0,
+          "false_negative_examples": [],
+          "false_negative_windows": 0,
+          "false_positive_examples": [],
+          "false_positive_rate": 0.0,
+          "false_positive_windows": 0,
+          "positive_prevalence": 0.0,
+          "precision": 0.0,
+          "precision_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "recall": 0.0,
+          "recall_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "specificity": 0.0,
+          "specificity_wilson_95": [
+            0.0,
+            0.0
+          ],
+          "true_negative_windows": 0,
+          "true_positive_windows": 0,
+          "window_count": 0
+        }
       },
-      "parsed_rows": 452,
-      "scan_window_metrics": {
-        "detected_rule_windows": {},
-        "false_negative_examples": [],
-        "false_negative_windows": 0,
-        "false_positive_examples": [],
-        "false_positive_windows": 0,
-        "true_negative_windows": 181,
-        "true_positive_windows": 0,
-        "window_count": 181
-      },
-      "sha256": "aebe40ea0e03b120265a5c7bc140dd9b0d3fe2fce65559e84776b7dd5360e71e",
-      "source_url": "https://mcfp.felk.cvut.cz/publicDatasets/IoT-23-Dataset/IndividualScenarios/CTU-Honeypot-Capture-4-1/bro/conn.log.labeled"
+      "negative_control_capture_ids": [
+        "4-1"
+      ],
+      "prediction_positive": "A window produces a Zeek connection-attempt burst, host-sweep, or port-scan finding.",
+      "rule_ids": [
+        "zeek-conn-attempt-burst-001",
+        "zeek-conn-host-sweep-001",
+        "zeek-conn-port-scan-001"
+      ],
+      "title": "Horizontal network-scan windows",
+      "window_seconds": 120
     }
-  ],
-  "generated_at": "2026-07-12T14:09:10.447514+00:00",
-  "license": "CC-BY; source citation required.",
-  "methodology": {
-    "ground_truth_positive": "A window contains at least one `PartOfAHorizontalPortScan` flow.",
-    "limitations": [
-      "Fixed windows can split activity across a boundary.",
-      "Only scan rules are scored; C&C and DDoS labels are outside this evaluation.",
-      "IoT-23 is a controlled research dataset and is not current production traffic.",
-      "Metrics are window-level, not packet-level or host-level prevalence estimates."
-    ],
-    "objective": "Evaluate deterministic Zeek connection-attempt, host-sweep, and port-scan findings against the IoT-23 PartOfAHorizontalPortScan label.",
-    "prediction_positive": "A window produces a Zeek connection-attempt burst, host-sweep, or port-scan finding.",
-    "window_seconds": 120
-  }
+  },
+  "schema_version": 2
 }

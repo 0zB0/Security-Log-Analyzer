@@ -2,7 +2,7 @@
 
 > Audience: product reviewers, engineers, security analysts, and contributors
 > Canonical for: product promise, current user, scope, non-goals, and success criteria
-> Verified against: TraceHawk v0.8.0
+> Verified against: TraceHawk v0.9.0
 
 ## Product Promise
 
@@ -45,8 +45,8 @@ process the supplied logs or packet metadata.
 
 ## Core Workflow
 
-1. Add sanitized input through upload, case bundle, file tail, folder watch, Docker logs, or an
-   explicitly approved interface capture.
+1. Add sanitized input through upload, case bundle, file tail, folder watch, Docker logs, an
+   explicitly approved interface capture, or the opt-in loopback syslog collector.
 2. Validate resource, file, and source boundaries before analysis.
 3. Preserve raw lines and route them through confidence-ranked or per-line parsers.
 4. Normalize supported inputs into a shared event model with parser provenance.

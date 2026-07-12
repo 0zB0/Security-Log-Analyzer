@@ -14,6 +14,7 @@ import { EvidencePanel, EvidenceReview } from "./EvidencePanels";
 import { FindingsPanel, IncidentDetail, IncidentOverview } from "./IncidentPanels";
 import { DetectionLibrary, EntityInventory, MitreMapPanel } from "./KnowledgePanels";
 import { ReportPanel } from "./ReportPanel";
+import { filterFindingsByQuery } from "./workspaceSelectors";
 
 export { MetricGrid } from "./CasePanels";
 export { LiveMonitor, snapshotToAnalysisResult } from "./LiveMonitor";
@@ -24,6 +25,7 @@ interface WorkspaceBodyProps {
   selectedIncident: Incident | null;
   selectedFinding: Finding | null;
   evidenceForFinding: EvidenceLine[];
+  searchQuery: string;
   assistantResponse: AssistantResponse | null;
   assistantStatus: AssistantStatus | null;
   reportFormat: ReportFormat;
@@ -43,6 +45,7 @@ export function WorkspaceBody({
   selectedIncident,
   selectedFinding,
   evidenceForFinding,
+  searchQuery,
   assistantResponse,
   assistantStatus,
   reportFormat,
@@ -55,6 +58,18 @@ export function WorkspaceBody({
   onSelectIncident,
   onSelectFinding,
 }: WorkspaceBodyProps) {
+  const visibleFindings = filterFindingsByQuery(result?.findings ?? [], searchQuery);
+  const visibleSelectedFinding =
+    visibleFindings.find((finding) => finding.id === selectedFinding?.id) ??
+    visibleFindings[0] ??
+    null;
+  const visibleEvidence =
+    visibleSelectedFinding?.id === selectedFinding?.id
+      ? evidenceForFinding
+      : (result?.evidence ?? []).filter((line) =>
+          visibleSelectedFinding?.evidence_line_ids.includes(line.id),
+        );
+
   if (activeView === "assistant") {
     return (
       <AssistantPanel
@@ -126,11 +141,16 @@ export function WorkspaceBody({
   if (activeView === "evidence") {
     return (
       <EvidenceReview
-        findings={result?.findings ?? []}
-        selectedFinding={selectedFinding}
-        evidence={evidenceForFinding}
+        findings={visibleFindings}
+        selectedFinding={visibleSelectedFinding}
+        evidence={visibleEvidence}
         onSelectFinding={onSelectFinding}
         onOpenRule={onSelectRule}
+        emptyText={
+          searchQuery.trim()
+            ? "No findings match the current search."
+            : "No findings available. Upload a log or start live monitoring to inspect evidence."
+        }
       />
     );
   }
@@ -143,17 +163,19 @@ export function WorkspaceBody({
       />
       <section className="analysis-grid">
         <FindingsPanel
-          findings={result?.findings ?? []}
-          selectedFinding={selectedFinding}
+          findings={visibleFindings}
+          selectedFinding={visibleSelectedFinding}
           onSelect={onSelectFinding}
           onOpenRule={onSelectRule}
           emptyText={
-            activeView === "live"
+            searchQuery.trim()
+              ? "No findings match the current search."
+              : activeView === "live"
               ? "No findings yet. Start live monitoring or append matching log lines to the watched file."
               : "No findings yet. Upload a supported auth, web, Zeek, Suricata, JSON, CSV, or syslog file to test the rule engine."
           }
         />
-        <EvidencePanel finding={selectedFinding} evidence={evidenceForFinding} />
+        <EvidencePanel finding={visibleSelectedFinding} evidence={visibleEvidence} />
       </section>
     </>
   );

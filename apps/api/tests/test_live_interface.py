@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import UTC, datetime, timedelta
+from hashlib import sha256
 
 import pytest
 from fastapi.testclient import TestClient
@@ -7,7 +8,7 @@ from starlette.websockets import WebSocketDisconnect
 
 from tracehawk_api.main import app
 from tracehawk_api.services.detection import run_detection
-from tracehawk_api.services.live import parse_tshark_fields_line
+from tracehawk_api.services.live import LiveInterfacePacketStreamer, parse_tshark_fields_line
 from tracehawk_api.services.rules import load_rules
 
 
@@ -31,6 +32,21 @@ def test_tshark_fields_parser_normalizes_wireguard_packet_metadata() -> None:
     assert event.normalized_fields["destination_port"] == 22
     assert event.normalized_fields["transport_protocol"] == "tcp"
     assert event.normalized_fields["packet_length"] == 74
+
+
+def test_interface_snapshot_hashes_the_exact_displayed_evidence() -> None:
+    line = (
+        "1783539718.123456\t10.8.0.2\t\t10.0.0.5\t\t52144\t\t22\t\t"
+        "eth:ip:tcp\t74\tTCP\t52144 > 22 [SYN] Seq=0 Len=0"
+    )
+    streamer = LiveInterfacePacketStreamer("wg0", ROOT / "packages/rules")
+
+    snapshot = streamer._process_tshark_line(1, line)
+
+    assert snapshot is not None
+    evidence = snapshot.evidence[0]
+    assert evidence.raw_text.startswith("interface=wg0 proto=tcp")
+    assert evidence.content_hash == sha256(evidence.raw_text.encode("utf-8")).hexdigest()
 
 
 def test_wireguard_network_rules_match_admin_service_access() -> None:

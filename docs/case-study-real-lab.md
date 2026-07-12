@@ -49,8 +49,9 @@ and raw line IDs for side-by-side evidence review.
 ## What This Does Not Prove
 
 The lab is sanitized and intentionally seeded with correlated activity. It proves deterministic
-multi-source behavior and traceable evidence, not population-level detection accuracy. The IoT-23
-evaluation is separate and records false-positive and false-negative limitations.
+multi-source behavior and traceable evidence, not population-level detection accuracy. The
+separate IoT-23 report retains both scan errors and the low-precision stable-endpoint C2-indicator
+result instead of claiming production accuracy.
 
 ## Reproduce
 

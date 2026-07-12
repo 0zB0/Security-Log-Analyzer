@@ -9,6 +9,11 @@ mitre:
   tactic: Reconnaissance
   technique_id: T1595.002
   technique_name: Vulnerability Scanning
+correlation:
+  family: network_scan
+  behaviors: [network_scan]
+  entity_fields: [source_ip, destination_ip]
+  max_gap_minutes: 15
 conditions:
   event_type: suricata_alert
   field_contains_any:

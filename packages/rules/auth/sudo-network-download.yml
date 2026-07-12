@@ -9,6 +9,12 @@ mitre:
   tactic: Command and Control
   technique_id: T1105
   technique_name: Ingress Tool Transfer
+correlation:
+  family: command_and_control
+  incident_title: Privileged sudo activity
+  behaviors: [privileged_action]
+  entity_fields: [username, host]
+  max_gap_minutes: 30
 conditions:
   event_type: sudo_command
   field_contains_any:
@@ -27,4 +33,3 @@ false_positives:
 recommendations:
   - Validate the URL reputation and downloaded file hash.
   - Review subsequent execution events.
-

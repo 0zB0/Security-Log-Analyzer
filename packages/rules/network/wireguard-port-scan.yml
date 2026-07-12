@@ -9,6 +9,11 @@ mitre:
   tactic: Discovery
   technique_id: T1046
   technique_name: Network Service Discovery
+correlation:
+  family: network_scan
+  behaviors: [network_scan]
+  entity_fields: [source_ip, destination_ip]
+  max_gap_minutes: 15
 conditions:
   event_type: network_packet
   field_equals:

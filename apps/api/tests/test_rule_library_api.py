@@ -19,3 +19,7 @@ def test_rule_library_exposes_detection_learning_context() -> None:
     assert ssh_rule["look_for"]
     assert ssh_rule["false_positives"]
     assert ssh_rule["recommendations"]
+    assert ssh_rule["correlation"]["family"] == "credential_access"
+    assert ssh_rule["correlation"]["incident_title"] is None
+    assert "ssh_failures" in ssh_rule["correlation"]["behaviors"]
+    assert ssh_rule["correlation"]["entity_fields"] == ["source_ip", "username"]

@@ -1,7 +1,7 @@
-# Security Log Analyzer Design System
+# TraceHawk Design System
 
-Version: alpha
-Product: Security Log Analyzer / SOC Assistant
+Version: 0.9.0
+Product: TraceHawk / Security Log Analyzer
 Direction: darker OpenCode-inspired evidence console
 
 ## Reference
@@ -151,7 +151,7 @@ Use the product path and version:
 
 Show:
 
-- `TraceHawk v0.7.0`
+- `TraceHawk v0.9.0`
 - auth state
 - data scope
 - refresh action
@@ -215,17 +215,17 @@ Until real GeoIP enrichment exists, call it source distribution, not attacker ma
 
 ## Interaction Rules
 
-- Search filters findings only.
-- Hovering a finding temporarily highlights its evidence.
-- Clicking a finding pins the highlight.
-- Clicking the selected finding again clears the pinned state.
-- Refresh reruns the current source: upload or demo.
+- Search filters findings by title, rule, summary, rationale, severity, confidence, and MITRE text.
+- Clicking a finding selects its exact backend-linked evidence lines.
+- `/` focuses search; `Escape` clears it and returns focus to the workspace.
+- Refresh reloads the current workspace and does not silently rerun an upload.
 - Exports are disabled until results exist.
 
 ## Implementation Notes
 
-- Keep implementation inside `app/ui.py` for this pass.
-- Do not introduce frontend dependencies.
+- Keep top-level coordination in `apps/web/src/app/main.tsx` and panel-local behavior in
+  `apps/web/src/features/workspace/`.
+- Keep domain response types derived from the generated FastAPI contract.
 - Favor semantic CSS variables and component classes.
-- Avoid inline style except where existing backend simplicity makes it materially easier.
-- Verify with lint, tests, and desktop/mobile browser smoke.
+- Avoid inline style unless runtime data makes a class impractical.
+- Verify with TypeScript build, interaction/axe tests, and Playwright Chromium workflows.

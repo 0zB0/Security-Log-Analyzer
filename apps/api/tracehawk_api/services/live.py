@@ -1,16 +1,29 @@
 import asyncio
 import shutil
 from asyncio.subprocess import PIPE
+from collections import deque
 from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
 
 from pydantic import BaseModel, Field
 
-from tracehawk_api.models.domain import Finding, Incident, ParsedEvent, RawLogLine
+from tracehawk_api.config import settings
+from tracehawk_api.models.domain import (
+    DetectionRule,
+    Finding,
+    Incident,
+    ParsedEvent,
+    RawLogLine,
+)
 from tracehawk_api.services.correlation import correlate_incidents
+from tracehawk_api.services.correlation_patterns import (
+    default_correlation_pattern_path,
+    load_correlation_patterns,
+)
 from tracehawk_api.services.detection import run_detection
 from tracehawk_api.services.analysis import EvidenceLine
+from tracehawk_api.services.evidence_integrity import LiveRetentionSummary
 from tracehawk_api.services.parser_registry import default_parsers
 from tracehawk_api.services.parsers import LogParser
 from tracehawk_api.services.rules import load_rules
@@ -37,9 +50,81 @@ class LiveSnapshot(BaseModel):
     evidence: list[EvidenceLine] = Field(default_factory=list)
     findings: list[Finding] = Field(default_factory=list)
     incidents: list[Incident] = Field(default_factory=list)
+    live_retention: LiveRetentionSummary
+    live_snapshot_attestation: str | None = None
 
 
-class LiveFileTailer:
+class _BoundedLiveAnalyzer:
+    def __init__(
+        self,
+        rules_root: Path,
+        *,
+        max_raw_lines: int | None = None,
+        max_events: int | None = None,
+    ) -> None:
+        self.rules_root = rules_root
+        self.max_raw_lines = (
+            settings.live_max_raw_lines if max_raw_lines is None else max_raw_lines
+        )
+        self.max_events = settings.live_max_events if max_events is None else max_events
+        if self.max_raw_lines < 1 or self.max_events < 1:
+            raise ValueError("Live retention limits must be positive.")
+
+        self.raw_lines: deque[RawLogLine] = deque()
+        self.events: deque[ParsedEvent] = deque()
+        self.findings: list[Finding] = []
+        self.incidents: list[Incident] = []
+        self.total_raw_lines = 0
+        self.total_parsed_events = 0
+        self._all_rules = load_rules(self.rules_root)
+        self._patterns = load_correlation_patterns(
+            default_correlation_pattern_path(self.rules_root), self._all_rules
+        )
+        self._rules_by_log_type: dict[str, list[DetectionRule]] = {}
+
+    def _append_raw_line(self, raw_line: RawLogLine) -> None:
+        self.total_raw_lines += 1
+        if len(self.raw_lines) >= self.max_raw_lines:
+            expired = self.raw_lines.popleft()
+            self.events = deque(
+                event for event in self.events if event.raw_line_id != expired.id
+            )
+        self.raw_lines.append(raw_line)
+
+    def _append_event(self, event: ParsedEvent) -> None:
+        self.total_parsed_events += 1
+        if len(self.events) >= self.max_events:
+            self.events.popleft()
+        self.events.append(event)
+
+    def _rebuild_analysis(self, parser_name: str) -> None:
+        rules = self._rules_by_log_type.setdefault(
+            parser_name,
+            [rule for rule in self._all_rules if parser_name in rule.log_types],
+        )
+        retained_events = list(self.events)
+        self.findings = run_detection(rules, retained_events)
+        self.incidents = correlate_incidents(
+            self.findings,
+            retained_events,
+            rules=self._all_rules,
+            patterns=self._patterns,
+        )
+
+    def _retention_summary(self) -> LiveRetentionSummary:
+        return LiveRetentionSummary(
+            raw_line_capacity=self.max_raw_lines,
+            event_capacity=self.max_events,
+            total_raw_lines=self.total_raw_lines,
+            total_parsed_events=self.total_parsed_events,
+            retained_raw_lines=len(self.raw_lines),
+            retained_parsed_events=len(self.events),
+            dropped_raw_lines=self.total_raw_lines - len(self.raw_lines),
+            dropped_parsed_events=self.total_parsed_events - len(self.events),
+        )
+
+
+class LiveFileTailer(_BoundedLiveAnalyzer):
     def __init__(
         self,
         path: Path,
@@ -48,18 +133,20 @@ class LiveFileTailer:
         poll_interval_seconds: float = 0.25,
         start_at_end: bool = True,
         parsers: list[LogParser] | None = None,
+        max_raw_lines: int | None = None,
+        max_events: int | None = None,
     ) -> None:
+        super().__init__(
+            rules_root,
+            max_raw_lines=max_raw_lines,
+            max_events=max_events,
+        )
         self.path = path
-        self.rules_root = rules_root
         self.poll_interval_seconds = poll_interval_seconds
         self.start_at_end = start_at_end
         self.parsers = parsers or default_parsers()
         self.source_id = _source_id(path)
         self.parser: LogParser | None = None
-        self.raw_lines: list[RawLogLine] = []
-        self.events: list[ParsedEvent] = []
-        self.findings: list[Finding] = []
-        self.incidents: list[Incident] = []
 
     async def snapshots(self, control: LiveTailControl | None = None):
         offset = self.path.stat().st_size if self.start_at_end else 0
@@ -96,26 +183,23 @@ class LiveFileTailer:
             timestamp_observed=datetime.now(UTC),
             content_hash=sha256(raw_text.encode("utf-8")).hexdigest(),
         )
-        self.raw_lines.append(raw_line)
+        self._append_raw_line(raw_line)
 
         if self.parser is None:
             self.parser = _select_parser(raw_text, self.parsers)
 
         if self.parser is None:
+            self.findings = []
+            self.incidents = []
             return self.snapshot(latest_line_number=line_number)
 
         event = self.parser.parse_line(raw_line.id, self.source_id, raw_text)
         if event is None:
+            self._rebuild_analysis(self.parser.parser_name)
             return self.snapshot(latest_line_number=line_number)
 
-        self.events.append(event)
-        rules = [
-            rule
-            for rule in load_rules(self.rules_root)
-            if self.parser.parser_name in rule.log_types
-        ]
-        self.findings = run_detection(rules, self.events)
-        self.incidents = correlate_incidents(self.findings, self.events)
+        self._append_event(event)
+        self._rebuild_analysis(self.parser.parser_name)
         return self.snapshot(latest_line_number=line_number, latest_event=event)
 
     def snapshot(
@@ -135,7 +219,7 @@ class LiveFileTailer:
             incident_count=len(self.incidents),
             latest_line_number=latest_line_number,
             latest_event=latest_event,
-            events=self.events,
+            events=list(self.events),
             evidence=[
                 EvidenceLine(
                     id=line.id,
@@ -147,6 +231,7 @@ class LiveFileTailer:
             ],
             findings=self.findings,
             incidents=self.incidents,
+            live_retention=self._retention_summary(),
         )
 
 
@@ -157,7 +242,7 @@ def _select_parser(raw_text: str, parsers: list[LogParser]) -> LogParser | None:
     return None
 
 
-class LiveFolderWatcher:
+class LiveFolderWatcher(_BoundedLiveAnalyzer):
     def __init__(
         self,
         path: Path,
@@ -167,19 +252,21 @@ class LiveFolderWatcher:
         poll_interval_seconds: float = 0.5,
         start_at_end: bool = True,
         parsers: list[LogParser] | None = None,
+        max_raw_lines: int | None = None,
+        max_events: int | None = None,
     ) -> None:
+        super().__init__(
+            rules_root,
+            max_raw_lines=max_raw_lines,
+            max_events=max_events,
+        )
         self.path = path
-        self.rules_root = rules_root
         self.pattern = pattern
         self.poll_interval_seconds = poll_interval_seconds
         self.start_at_end = start_at_end
         self.source_id = _source_id(path)
         self.parsers = parsers or default_parsers()
         self.parser: LogParser | None = None
-        self.raw_lines: list[RawLogLine] = []
-        self.events: list[ParsedEvent] = []
-        self.findings: list[Finding] = []
-        self.incidents: list[Incident] = []
         self._offsets: dict[Path, int] = {}
         self._line_numbers: dict[Path, int] = {}
 
@@ -226,31 +313,28 @@ class LiveFolderWatcher:
         raw_line = RawLogLine(
             id=f"{self.source_id}:{file_path.name}:line:{line_number}",
             source_id=self.source_id,
-            line_number=len(self.raw_lines) + 1,
+            line_number=self.total_raw_lines + 1,
             raw_text=raw_text,
             timestamp_observed=datetime.now(UTC),
             content_hash=sha256(raw_text.encode("utf-8")).hexdigest(),
         )
-        self.raw_lines.append(raw_line)
+        self._append_raw_line(raw_line)
 
         if self.parser is None:
             self.parser = _select_parser(raw_text, self.parsers)
 
         if self.parser is None:
+            self.findings = []
+            self.incidents = []
             return self.snapshot(latest_line_number=raw_line.line_number)
 
         event = self.parser.parse_line(raw_line.id, self.source_id, raw_text)
         if event is None:
+            self._rebuild_analysis(self.parser.parser_name)
             return self.snapshot(latest_line_number=raw_line.line_number)
 
-        self.events.append(event)
-        rules = [
-            rule
-            for rule in load_rules(self.rules_root)
-            if self.parser.parser_name in rule.log_types
-        ]
-        self.findings = run_detection(rules, self.events)
-        self.incidents = correlate_incidents(self.findings, self.events)
+        self._append_event(event)
+        self._rebuild_analysis(self.parser.parser_name)
         return self.snapshot(latest_line_number=raw_line.line_number, latest_event=event)
 
     def snapshot(
@@ -270,7 +354,7 @@ class LiveFolderWatcher:
             incident_count=len(self.incidents),
             latest_line_number=latest_line_number,
             latest_event=latest_event,
-            events=self.events,
+            events=list(self.events),
             evidence=[
                 EvidenceLine(
                     id=line.id,
@@ -282,6 +366,7 @@ class LiveFolderWatcher:
             ],
             findings=self.findings,
             incidents=self.incidents,
+            live_retention=self._retention_summary(),
         )
 
 
@@ -293,6 +378,8 @@ class LiveDockerLogStreamer(LiveFileTailer):
         *,
         tail: str = "0",
         parsers: list[LogParser] | None = None,
+        max_raw_lines: int | None = None,
+        max_events: int | None = None,
     ) -> None:
         self.container = container
         self.tail = tail
@@ -302,6 +389,8 @@ class LiveDockerLogStreamer(LiveFileTailer):
             rules_root,
             start_at_end=False,
             parsers=parsers or default_parsers(),
+            max_raw_lines=max_raw_lines,
+            max_events=max_events,
         )
         self.source_id = f"docker:{container}"
 
@@ -340,7 +429,7 @@ class LiveDockerLogStreamer(LiveFileTailer):
             await process.wait()
 
 
-class LiveInterfacePacketStreamer:
+class LiveInterfacePacketStreamer(_BoundedLiveAnalyzer):
     def __init__(
         self,
         interface: str,
@@ -348,17 +437,19 @@ class LiveInterfacePacketStreamer:
         *,
         capture_filter: str = "ip or ip6",
         tshark_path: str = "tshark",
+        max_raw_lines: int | None = None,
+        max_events: int | None = None,
     ) -> None:
+        super().__init__(
+            rules_root,
+            max_raw_lines=max_raw_lines,
+            max_events=max_events,
+        )
         self.interface = interface
-        self.rules_root = rules_root
         self.capture_filter = capture_filter
         self.tshark_path = tshark_path
         self.source_id = f"interface:{interface}"
         self.parser_name = "network_packet"
-        self.raw_lines: list[RawLogLine] = []
-        self.events: list[ParsedEvent] = []
-        self.findings: list[Finding] = []
-        self.incidents: list[Incident] = []
         self.source_error: str | None = None
 
     async def snapshots(self, control: LiveTailControl | None = None):
@@ -449,20 +540,15 @@ class LiveInterfacePacketStreamer:
             timestamp_observed=datetime.now(UTC),
             content_hash=sha256(raw_text.encode("utf-8")).hexdigest(),
         )
-        self.raw_lines.append(raw_line)
+        self._append_raw_line(raw_line)
 
         event = parse_tshark_fields_line(raw_line.id, self.source_id, raw_text, self.interface)
         if event is None:
+            self._rebuild_analysis(self.parser_name)
             return self.snapshot(latest_line_number=line_number)
 
-        self.events.append(event)
-        rules = [
-            rule
-            for rule in load_rules(self.rules_root)
-            if self.parser_name in rule.log_types
-        ]
-        self.findings = run_detection(rules, self.events)
-        self.incidents = correlate_incidents(self.findings, self.events)
+        self._append_event(event)
+        self._rebuild_analysis(self.parser_name)
         return self.snapshot(latest_line_number=line_number, latest_event=event)
 
     def snapshot(
@@ -472,6 +558,10 @@ class LiveInterfacePacketStreamer:
         latest_line_number: int | None = None,
         latest_event: ParsedEvent | None = None,
     ) -> LiveSnapshot:
+        evidence = [
+            _packet_evidence_line(line, self.interface)
+            for line in self.raw_lines
+        ]
         return LiveSnapshot(
             source_id=self.source_id,
             status=status,
@@ -483,18 +573,11 @@ class LiveInterfacePacketStreamer:
             source_error=self.source_error,
             latest_line_number=latest_line_number,
             latest_event=latest_event,
-            events=self.events,
-            evidence=[
-                EvidenceLine(
-                    id=line.id,
-                    line_number=line.line_number,
-                    raw_text=_packet_evidence_text(line.raw_text, self.interface),
-                    content_hash=line.content_hash,
-                )
-                for line in self.raw_lines
-            ],
+            events=list(self.events),
+            evidence=evidence,
             findings=self.findings,
             incidents=self.incidents,
+            live_retention=self._retention_summary(),
         )
 
 
@@ -575,6 +658,16 @@ def _packet_evidence_text(raw_line: str, interface: str) -> str:
         f"len={event.normalized_fields.get('packet_length') or '?'} "
         f"info={event.normalized_fields.get('info') or ''}"
     ).strip()
+
+
+def _packet_evidence_line(line: RawLogLine, interface: str) -> EvidenceLine:
+    evidence_text = _packet_evidence_text(line.raw_text, interface)
+    return EvidenceLine(
+        id=line.id,
+        line_number=line.line_number,
+        raw_text=evidence_text,
+        content_hash=sha256(evidence_text.encode("utf-8")).hexdigest(),
+    )
 
 
 def _first_field(value: str | None) -> str | None:

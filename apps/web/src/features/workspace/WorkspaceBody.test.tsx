@@ -22,6 +22,17 @@ describe("workspace public components", () => {
       evidence: [],
       findings: [],
       incidents: [],
+      live_retention: {
+        raw_line_capacity: 100,
+        event_capacity: 100,
+        total_raw_lines: 3,
+        total_parsed_events: 2,
+        retained_raw_lines: 3,
+        retained_parsed_events: 2,
+        dropped_raw_lines: 0,
+        dropped_parsed_events: 0,
+      },
+      live_snapshot_attestation: "attestation-proof",
     });
 
     expect(result).toMatchObject({
@@ -32,6 +43,11 @@ describe("workspace public components", () => {
       sources: [],
       cross_source_links: [],
       case_quality: null,
+      live_snapshot_attestation: "attestation-proof",
+      live_retention: {
+        retained_raw_lines: 3,
+        dropped_raw_lines: 0,
+      },
     });
   });
 

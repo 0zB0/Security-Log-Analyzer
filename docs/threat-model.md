@@ -22,6 +22,7 @@ the application-level email allowlist.
 Browser or API client
   -> loopback boundary or trusted identity proxy
   -> FastAPI request-body and identity middleware
+  -> live-snapshot attestation and evidence-integrity validation
   -> parser, detection, correlation, and report services
   -> SQLite volume and optional local Ollama service
 ```
@@ -35,19 +36,26 @@ fields; the optional LLM receives bounded evidence only and cannot create findin
 | --- | --- | --- |
 | Oversized upload or bundle | ASGI request-body cap plus per-file, line-count, file-count, and total bundle limits | Multipart parsing and bounded in-memory analysis still consume resources up to the configured limit |
 | Decompression bomb or opaque binary | Archives and binary captures are rejected; only allowlisted UTF-8 text formats are accepted | A text payload can still be computationally expensive within its budget |
-| Parser confusion | Parser selection is deterministic and covered by parser-specific fixtures | Mixed input confidence remains a separate hardening milestone |
+| Parser confusion | Parser selection is deterministic, stratified, and covered by parser-specific and mixed-input fixtures | Headerless or arbitrarily interleaved stateful rows can still be skipped or misclassified |
 | Malicious log prompt injection | Local-only LLM, structured prompt, bounded evidence, response validation, deterministic findings remain authoritative | LLM explanation can still be wrong and must not be treated as evidence |
 | Sensitive report disclosure | Optional redaction, authenticated demo, bounded evidence, explicit handling guidance | Authorized users can still export sensitive data |
 | Header spoofing | Identity headers are ignored in local mode and trusted only in explicit `azure_easy_auth` compatibility mode behind a header-sanitizing identity boundary | Exposing this mode without a trusted proxy permits forged headers |
 | Privilege misuse | Least-privileged viewer default, analyst/admin capability gates, server-attributed note authors, and persistent audit events | Application administrators can still access all locally persisted evidence |
 | Request flooding | Per-principal/client in-memory rate limit and single-replica deployment | Limits are not shared across replicas and reset on restart |
+| Collector memory exhaustion | Loopback-default listener, byte cap, fixed queue, TCP connection cap, idle timeout, bounded batch | Explicit remote bind expands exposure; queue or UDP drops lose telemetry |
+| Live source growth | Fixed raw-line and event windows with signed retained/dropped counters | Evicted evidence is unavailable for later investigation |
 | Stored evidence exposure | Private SQLite volume, retention and purge workflow, no original file retention | Evidence text needed for reports remains sensitive at rest |
+| Forged or modified live save | Process-local HMAC over the server snapshot plus server-side hash, counter, and graph verification before persistence | Attestation proves current-process snapshot integrity, not sensor identity or legal chain of custody |
 | Supply-chain compromise | Locked dependencies, SHA-pinned GitHub Actions, Dependabot, Gitleaks, Semgrep, CycloneDX SBOM, and Trivy image scanning | Upstream registries and newly disclosed vulnerabilities still require scheduled review and dependency updates |
 
 ## Security Invariants
 
 - Rejected uploads never create analysis records.
 - Findings are deterministic and evidence-backed.
+- Unpurged evidence hashes are recomputed by the server before persistence.
+- Live snapshot saves require a valid server-generated attestation.
+- Live snapshot attestation covers bounded-window provenance and retained/dropped counters.
+- Default application profiles and Azure publish no syslog listener.
 - The LLM cannot create, suppress, or change findings.
 - Original uploaded files are not retained after request processing.
 - Authentication must fail closed when the deployed allowlist is enabled.

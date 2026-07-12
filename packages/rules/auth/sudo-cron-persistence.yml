@@ -9,6 +9,12 @@ mitre:
   tactic: Persistence
   technique_id: T1053.003
   technique_name: Cron
+correlation:
+  family: persistence
+  incident_title: Privileged sudo activity
+  behaviors: [privileged_action]
+  entity_fields: [username, host]
+  max_gap_minutes: 30
 conditions:
   event_type: sudo_command
   field_contains_any:
@@ -26,4 +32,3 @@ false_positives:
 recommendations:
   - Review the scheduled command and owner.
   - Compare cron files against a known-good baseline.
-

@@ -1,0 +1,2 @@
+API_VERSION = "0.9.0"
+RELEASE = f"v{API_VERSION}"
