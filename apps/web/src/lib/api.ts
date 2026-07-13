@@ -15,6 +15,8 @@ import type {
   MitreMapping as ApiMitreMapping,
   ParsedEvent as ApiParsedEvent,
   PromptBuildResult as ApiPromptBuildResult,
+  PublicDemoAnalysisResponse as ApiPublicDemoAnalysisResponse,
+  PublicDemoStatus as ApiPublicDemoStatus,
   ReportRedactionOptions as ApiReportRedactionOptions,
   ReportResponse as ApiReportResponse,
   RuleCorrelationMetadata as ApiRuleCorrelationMetadata,
@@ -93,6 +95,11 @@ export type AssistantResponse = Required<ApiAssistantResponse>;
 export type AssistantStatus = Required<ApiLocalLLMStatus>;
 export type AssistantSettings = Required<ApiAssistantSettings>;
 export type PromptBuildResult = Required<ApiPromptBuildResult>;
+export type PublicDemoStatus = Required<ApiPublicDemoStatus>;
+export type PublicDemoAnalysisResponse = Omit<
+  Required<ApiPublicDemoAnalysisResponse>,
+  "analysis"
+> & { analysis: AnalysisResult };
 
 export interface AuthStatus {
   authenticated: boolean;
@@ -127,6 +134,43 @@ export async function getAuthStatus(): Promise<AuthStatus> {
     throw new Error(error.detail ?? "Auth status failed");
   }
 
+  return response.json();
+}
+
+export async function getPublicDemoStatus(): Promise<PublicDemoStatus> {
+  const response = await fetch(`${API_BASE_URL}/api/public-demo/status`, {
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "Public demo status failed" }));
+    throw new Error(error.detail ?? "Public demo status failed");
+  }
+  return response.json();
+}
+
+export async function analyzePublicDemo(file: File): Promise<PublicDemoAnalysisResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/public-demo/analyze`, {
+    method: "POST",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename: file.name, text: await file.text() }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "Public demo analysis failed" }));
+    throw new Error(error.detail ?? "Public demo analysis failed");
+  }
+  return response.json();
+}
+
+export async function analyzePublicSample(sampleId: string): Promise<PublicDemoAnalysisResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/public-demo/analyze/sample/${encodeURIComponent(sampleId)}`,
+    { method: "POST", cache: "no-store" },
+  );
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "Public demo sample failed" }));
+    throw new Error(error.detail ?? "Public demo sample failed");
+  }
   return response.json();
 }
 
@@ -439,5 +483,41 @@ export async function generateCaseReport(payload: {
     throw new Error(error.detail ?? "Case report generation failed");
   }
 
+  return response.json();
+}
+
+export async function generatePublicIncidentReport(payload: {
+  incident: Incident;
+  findings: Finding[];
+  evidence: EvidenceLine[];
+  redaction?: ReportRedactionOptions;
+}): Promise<ReportResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/public-demo/report/incident`, {
+    method: "POST",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, assistant_summary: null }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "Public report failed" }));
+    throw new Error(error.detail ?? "Public report failed");
+  }
+  return response.json();
+}
+
+export async function generatePublicCaseReport(payload: {
+  analysis: AnalysisResult;
+  redaction?: ReportRedactionOptions;
+}): Promise<ReportResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/public-demo/report/case`, {
+    method: "POST",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, assistant_summary: null }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "Public report failed" }));
+    throw new Error(error.detail ?? "Public report failed");
+  }
   return response.json();
 }

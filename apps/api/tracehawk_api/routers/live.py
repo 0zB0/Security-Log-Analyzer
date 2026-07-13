@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from tracehawk_api.auth import authenticate_headers, has_required_role, request_id_from_headers
-from tracehawk_api.config import settings
+from tracehawk_api.config import DEPLOYMENT_PROFILE_PUBLIC_DEMO, settings
 from tracehawk_api.database import SessionLocal, init_db
 from tracehawk_api.services.audit import record_audit_event
 from tracehawk_api.services.live import (
@@ -217,6 +217,9 @@ def _valid_interface(interface: str) -> bool:
 
 
 async def _authorize_live(websocket: WebSocket) -> bool:
+    if settings.deployment_profile == DEPLOYMENT_PROFILE_PUBLIC_DEMO:
+        await websocket.close(code=4404, reason="Live sources are disabled in public demo mode.")
+        return False
     authentication = authenticate_headers(websocket.headers)
     principal = authentication.principal
     request_id = request_id_from_headers(websocket.headers)

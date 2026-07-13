@@ -13,6 +13,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
 from tracehawk_api.config import settings
+from tracehawk_api.config import DEPLOYMENT_PROFILE_PUBLIC_DEMO
 
 
 Role = Literal["viewer", "analyst", "admin"]
@@ -80,6 +81,8 @@ def allowed_emails() -> set[str]:
 def authenticate_headers(headers: Mapping[str, str]) -> AuthenticationResult:
     if settings.auth_mode not in SUPPORTED_AUTH_MODES:
         raise RuntimeError("Unsupported TRACEHAWK_AUTH_MODE.")
+    if settings.deployment_profile == DEPLOYMENT_PROFILE_PUBLIC_DEMO:
+        return AuthenticationResult(principal=None, email=None, error="missing")
     if settings.auth_mode == AUTH_MODE_DISABLED:
         return AuthenticationResult(
             principal=Principal(
@@ -180,8 +183,20 @@ def is_public_path(path: str) -> bool:
         or path == "/auth/status"
         or path in {"/api/health", "/api/health/live", "/api/health/ready", "/api/version"}
         or path.startswith("/assets/")
+        or path.startswith("/tutorial-videos/")
         or path.startswith("/.auth/")
+        or path.startswith("/api/public-demo/")
+        or (
+            settings.deployment_profile == DEPLOYMENT_PROFILE_PUBLIC_DEMO
+            and path in {"/tutorial", "/api/rules/library"}
+        )
     )
+
+
+def is_disabled_public_demo_path(path: str) -> bool:
+    if settings.deployment_profile != DEPLOYMENT_PROFILE_PUBLIC_DEMO:
+        return False
+    return not is_public_path(path)
 
 
 def _email_set(value: str) -> set[str]:
@@ -201,6 +216,11 @@ class AuthRbacAuditMiddleware(BaseHTTPMiddleware):
             request.headers
         )
         path = request.url.path
+
+        if is_disabled_public_demo_path(path):
+            response = JSONResponse({"detail": "Not found"}, status_code=404)
+            response.headers["X-Request-ID"] = request_id
+            return response
 
         if is_public_path(path):
             response = await call_next(request)

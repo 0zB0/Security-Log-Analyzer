@@ -1659,6 +1659,132 @@
         "title": "PromptBuildResult",
         "type": "object"
       },
+      "PublicDemoAnalysisResponse": {
+        "properties": {
+          "analysis": {
+            "$ref": "#/components/schemas/AnalysisResult"
+          },
+          "ephemeral": {
+            "const": true,
+            "default": true,
+            "title": "Ephemeral",
+            "type": "boolean"
+          },
+          "external_ai": {
+            "const": false,
+            "default": false,
+            "title": "External Ai",
+            "type": "boolean"
+          },
+          "lifecycle": {
+            "const": "request_and_browser_memory_only",
+            "default": "request_and_browser_memory_only",
+            "title": "Lifecycle",
+            "type": "string"
+          },
+          "session_timeout_seconds": {
+            "title": "Session Timeout Seconds",
+            "type": "integer"
+          },
+          "stored": {
+            "const": false,
+            "default": false,
+            "title": "Stored",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "analysis",
+          "session_timeout_seconds"
+        ],
+        "title": "PublicDemoAnalysisResponse",
+        "type": "object"
+      },
+      "PublicDemoAnalyzeRequest": {
+        "properties": {
+          "filename": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Filename",
+            "type": "string"
+          },
+          "text": {
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filename",
+          "text"
+        ],
+        "title": "PublicDemoAnalyzeRequest",
+        "type": "object"
+      },
+      "PublicDemoStatus": {
+        "properties": {
+          "allowed_extensions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Extensions",
+            "type": "array"
+          },
+          "available_views": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Available Views",
+            "type": "array"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "external_ai": {
+            "default": false,
+            "title": "External Ai",
+            "type": "boolean"
+          },
+          "max_bytes": {
+            "title": "Max Bytes",
+            "type": "integer"
+          },
+          "max_lines": {
+            "title": "Max Lines",
+            "type": "integer"
+          },
+          "profile": {
+            "enum": [
+              "private",
+              "public_demo"
+            ],
+            "title": "Profile",
+            "type": "string"
+          },
+          "session_timeout_seconds": {
+            "title": "Session Timeout Seconds",
+            "type": "integer"
+          },
+          "storage": {
+            "const": "disabled",
+            "default": "disabled",
+            "title": "Storage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "profile",
+          "max_bytes",
+          "max_lines",
+          "session_timeout_seconds",
+          "allowed_extensions",
+          "available_views"
+        ],
+        "title": "PublicDemoStatus",
+        "type": "object"
+      },
       "ReportRedactionOptions": {
         "properties": {
           "enabled": {
@@ -2210,7 +2336,7 @@
   "info": {
     "description": "Local-only live SOC assistant API.",
     "title": "TraceHawk API",
-    "version": "0.9.0"
+    "version": "0.10.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -3175,6 +3301,192 @@
         "summary": "Download Database Backup",
         "tags": [
           "operations"
+        ]
+      }
+    },
+    "/api/public-demo/analyze": {
+      "post": {
+        "operationId": "analyze_public_demo_api_public_demo_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicDemoAnalyzeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicDemoAnalysisResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Analyze Public Demo",
+        "tags": [
+          "public-demo"
+        ]
+      }
+    },
+    "/api/public-demo/analyze/sample/{sample_id}": {
+      "post": {
+        "operationId": "analyze_public_sample_api_public_demo_analyze_sample__sample_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sample_id",
+            "required": true,
+            "schema": {
+              "title": "Sample Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicDemoAnalysisResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Analyze Public Sample",
+        "tags": [
+          "public-demo"
+        ]
+      }
+    },
+    "/api/public-demo/report/case": {
+      "post": {
+        "operationId": "public_case_report_api_public_demo_report_case_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Public Case Report",
+        "tags": [
+          "public-demo"
+        ]
+      }
+    },
+    "/api/public-demo/report/incident": {
+      "post": {
+        "operationId": "public_incident_report_api_public_demo_report_incident_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Public Incident Report",
+        "tags": [
+          "public-demo"
+        ]
+      }
+    },
+    "/api/public-demo/status": {
+      "get": {
+        "operationId": "public_demo_status_api_public_demo_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicDemoStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Public Demo Status",
+        "tags": [
+          "public-demo"
         ]
       }
     },

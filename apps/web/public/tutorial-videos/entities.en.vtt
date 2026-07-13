@@ -1,0 +1,25 @@
+WEBVTT
+
+1
+00:00:01.400 --> 00:00:12.584
+Welcome to the Entities tutorial. Entities connect users, addresses, hosts, services, paths, domains, and containers across the current analysis.
+
+2
+00:00:13.984 --> 00:00:22.384
+We load the sanitized SSH sample to create a consistent set of users, source addresses, findings, and one correlated incident.
+
+3
+00:00:23.784 --> 00:00:36.408
+Each card shows entity type, normalized value, risk, event volume, finding count, and incident count. These values prioritize pivots; they do not provide external reputation.
+
+4
+00:00:37.808 --> 00:00:47.624
+We click the incident title chip. It selects the related story without re-running analysis, so Incidents and Reports use the same context.
+
+5
+00:00:49.024 --> 00:00:57.688
+A short finding identifier selects the linked detection. Findings and Evidence will now open with that exact signal active.
+
+6
+00:00:59.088 --> 00:01:09.144
+Shared entities explain why events were grouped. Always follow the links back to chronology, rule logic, and raw evidence before attributing activity.

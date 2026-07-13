@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Activity,
@@ -9,6 +9,7 @@ import {
   FileUp,
   Fingerprint,
   Network,
+  ListChecks,
   RadioTower,
   Search,
   SlidersHorizontal,
@@ -22,6 +23,9 @@ import {
   EvidenceLine,
   LiveSnapshot,
   ReportResponse,
+  PublicDemoStatus,
+  analyzePublicDemo,
+  analyzePublicSample,
   analyzeCaseBundle,
   analyzeDemo,
   analyzeRealLabCase,
@@ -29,20 +33,34 @@ import {
   analyzeUpload,
   getAssistantStatus,
   getAuthStatus,
+  getPublicDemoStatus,
 } from "../lib/api";
-import { LiveMonitor, MetricGrid, WorkspaceBody, snapshotToAnalysisResult } from "../features/workspace/WorkspaceBody";
+import {
+  LiveMonitor,
+  MetricGrid,
+  WorkspaceBody,
+  snapshotToAnalysisResult,
+} from "../features/workspace/WorkspaceBody";
 import { SAMPLE_OPTIONS } from "./workspaceOptions";
 import { ReportFormat, WorkspaceView } from "./workspaceTypes";
+import {
+  ContextHelpButton,
+  GuidedTour,
+  TutorialPage,
+} from "../features/tutorial/TutorialExperience";
+import type { PublicTutorialView } from "../features/tutorial/tutorialRegistry";
 import "../styles/main.css";
 
 export function App() {
-  const [activeView, setActiveView] = useState<WorkspaceView>("upload");
+  const [activeView, setActiveView] = useState<WorkspaceView>(initialWorkspaceView);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
   const [selectedFindingId, setSelectedFindingId] = useState<string | null>(null);
   const [assistantResponse, setAssistantResponse] = useState<AssistantResponse | null>(null);
   const [assistantStatus, setAssistantStatus] = useState<AssistantStatus | null>(null);
   const [authStatus, setAuthStatus] = useState<AuthStatus | null>(null);
+  const [publicDemoStatus, setPublicDemoStatus] = useState<PublicDemoStatus | null>(null);
+  const [runtimeProfileError, setRuntimeProfileError] = useState<string | null>(null);
   const [reportResponse, setReportResponse] = useState<ReportResponse | null>(null);
   const [reportFormat, setReportFormat] = useState<ReportFormat>("markdown");
   const [sampleId, setSampleId] = useState(SAMPLE_OPTIONS[0].id);
@@ -51,8 +69,49 @@ export function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [, setSessionExpiresAt] = useState<number | null>(null);
+  const [sessionRemainingSeconds, setSessionRemainingSeconds] = useState(0);
+  const [tourView, setTourView] = useState<PublicTutorialView | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const isAdmin = authStatus?.role === "admin" || authStatus?.local_admin === true;
+  const isPublicDemo = publicDemoStatus?.enabled === true;
+  const isAdmin =
+    !isPublicDemo && (authStatus?.role === "admin" || authStatus?.local_admin === true);
+
+  const navigateToView = useCallback((view: WorkspaceView) => {
+    setActiveView(view);
+    const path = view === "tutorial" ? "/tutorial" : "/";
+    if (window.location.pathname !== path) {
+      window.history.pushState({ view }, "", path);
+    }
+  }, []);
+
+  const clearPublicSession = useCallback(() => {
+    setResult(null);
+    setSelectedIncidentId(null);
+    setSelectedFindingId(null);
+    setAssistantResponse(null);
+    setReportResponse(null);
+    setSearchQuery("");
+    setError(null);
+    setSessionExpiresAt(null);
+    setSessionRemainingSeconds(0);
+    navigateToView("upload");
+  }, [navigateToView]);
+  const closeTour = useCallback(() => setTourView(null), []);
+
+  const acceptAnalysis = useCallback(
+    (analysis: AnalysisResult, view: WorkspaceView) => {
+      setResult(analysis);
+      setSelectedIncidentId(analysis.incidents[0]?.id ?? null);
+      setSelectedFindingId(analysis.findings[0]?.id ?? null);
+      setReportResponse(null);
+      navigateToView(view);
+      if (publicDemoStatus?.enabled) {
+        setSessionExpiresAt(Date.now() + publicDemoStatus.session_timeout_seconds * 1000);
+      }
+    },
+    [navigateToView, publicDemoStatus],
+  );
 
   const selectedFinding = useMemo(() => {
     if (!result) {
@@ -88,40 +147,83 @@ export function App() {
 
   useEffect(() => {
     let isMounted = true;
-    getAuthStatus()
-      .then((status) => {
-        if (isMounted) {
-          setAuthStatus(status);
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
+    getPublicDemoStatus()
+      .then(async (status) => {
+        if (!isMounted) return;
+        setRuntimeProfileError(null);
+        setPublicDemoStatus(status);
+        if (status.enabled) {
           setAuthStatus(null);
+          setAssistantStatus(disabledAssistantStatus("Disabled in public demo"));
+          return;
         }
-      });
-    getAssistantStatus()
-      .then((status) => {
-        if (isMounted) {
-          setAssistantStatus(status);
-        }
+        const [auth, assistant] = await Promise.allSettled([
+          getAuthStatus(),
+          getAssistantStatus(),
+        ]);
+        if (!isMounted) return;
+        setAuthStatus(auth.status === "fulfilled" ? auth.value : null);
+        setAssistantStatus(
+          assistant.status === "fulfilled"
+            ? assistant.value
+            : disabledAssistantStatus("Assistant API unavailable"),
+        );
       })
       .catch(() => {
         if (isMounted) {
-          setAssistantStatus({
-            enabled: false,
-            provider: "unknown",
-            url: "",
-            model: null,
-            available: false,
-            installed_models: [],
-            error: "Assistant API unavailable",
-          });
+          setRuntimeProfileError("The runtime capability profile could not be verified.");
+          setPublicDemoStatus(null);
+          setAuthStatus(null);
+          setAssistantStatus(disabledAssistantStatus("Application status unavailable"));
         }
       });
     return () => {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    function handleHistoryNavigation() {
+      setActiveView(initialWorkspaceView());
+    }
+    window.addEventListener("popstate", handleHistoryNavigation);
+    return () => window.removeEventListener("popstate", handleHistoryNavigation);
+  }, []);
+
+  useEffect(() => {
+    if (publicDemoStatus && !publicDemoStatus.enabled && activeView === "tutorial") {
+      navigateToView("upload");
+    }
+  }, [activeView, navigateToView, publicDemoStatus]);
+
+  useEffect(() => {
+    if (!isPublicDemo || !result || !publicDemoStatus) {
+      return;
+    }
+    const timeoutMs = publicDemoStatus.session_timeout_seconds * 1000;
+    function refreshActivityDeadline() {
+      setSessionExpiresAt(Date.now() + timeoutMs);
+    }
+    window.addEventListener("pointerdown", refreshActivityDeadline);
+    window.addEventListener("keydown", refreshActivityDeadline);
+    const interval = window.setInterval(() => {
+      setSessionExpiresAt((current) => {
+        if (current === null) return null;
+        const remaining = Math.max(0, Math.ceil((current - Date.now()) / 1000));
+        setSessionRemainingSeconds(remaining);
+        if (remaining === 0) {
+          clearPublicSession();
+          return null;
+        }
+        return current;
+      });
+    }, 1000);
+    return () => {
+      window.removeEventListener("pointerdown", refreshActivityDeadline);
+      window.removeEventListener("keydown", refreshActivityDeadline);
+      window.clearInterval(interval);
+    };
+  }, [clearPublicSession, isPublicDemo, publicDemoStatus, result]);
 
   useEffect(() => {
     function handleWorkspaceShortcut(event: KeyboardEvent) {
@@ -154,11 +256,19 @@ export function App() {
     setIsAnalyzing(true);
     setError(null);
     try {
-      const analysis = await analyzeUpload(file);
-      setResult(analysis);
-      setSelectedIncidentId(analysis.incidents[0]?.id ?? null);
-      setSelectedFindingId(analysis.findings[0]?.id ?? null);
-      setActiveView("incidents");
+      if (
+        isPublicDemo &&
+        publicDemoStatus &&
+        file.size > publicDemoStatus.max_bytes
+      ) {
+        throw new Error(
+          `Public demo files are limited to ${publicDemoStatus.max_bytes} bytes.`,
+        );
+      }
+      const analysis = isPublicDemo
+        ? (await analyzePublicDemo(file)).analysis
+        : await analyzeUpload(file);
+      acceptAnalysis(analysis, "incidents");
     } catch (caught) {
       setResult(null);
       setSelectedFindingId(null);
@@ -173,11 +283,10 @@ export function App() {
     setIsAnalyzing(true);
     setError(null);
     try {
-      const analysis = await analyzeDemo();
-      setResult(analysis);
-      setSelectedIncidentId(analysis.incidents[0]?.id ?? null);
-      setSelectedFindingId(analysis.findings[0]?.id ?? null);
-      setActiveView("incidents");
+      const analysis = isPublicDemo
+        ? (await analyzePublicSample("auth-ssh-compromise")).analysis
+        : await analyzeDemo();
+      acceptAnalysis(analysis, "incidents");
     } catch (caught) {
       setResult(null);
       setSelectedIncidentId(null);
@@ -192,11 +301,10 @@ export function App() {
     setIsAnalyzing(true);
     setError(null);
     try {
-      const analysis = await analyzeSample(sampleId);
-      setResult(analysis);
-      setSelectedIncidentId(analysis.incidents[0]?.id ?? null);
-      setSelectedFindingId(analysis.findings[0]?.id ?? null);
-      setActiveView("incidents");
+      const analysis = isPublicDemo
+        ? (await analyzePublicSample(sampleId)).analysis
+        : await analyzeSample(sampleId);
+      acceptAnalysis(analysis, "incidents");
     } catch (caught) {
       setResult(null);
       setSelectedIncidentId(null);
@@ -216,10 +324,7 @@ export function App() {
     setError(null);
     try {
       const analysis = await analyzeCaseBundle(files);
-      setResult(analysis);
-      setSelectedIncidentId(analysis.incidents[0]?.id ?? null);
-      setSelectedFindingId(analysis.findings[0]?.id ?? null);
-      setActiveView("case");
+      acceptAnalysis(analysis, "case");
     } catch (caught) {
       setResult(null);
       setSelectedIncidentId(null);
@@ -236,10 +341,7 @@ export function App() {
     setError(null);
     try {
       const analysis = await analyzeRealLabCase();
-      setResult(analysis);
-      setSelectedIncidentId(analysis.incidents[0]?.id ?? null);
-      setSelectedFindingId(analysis.findings[0]?.id ?? null);
-      setActiveView("case");
+      acceptAnalysis(analysis, "case");
     } catch (caught) {
       setResult(null);
       setSelectedIncidentId(null);
@@ -250,6 +352,20 @@ export function App() {
     }
   }
 
+  if (publicDemoStatus === null) {
+    return (
+      <main className="shell runtime-profile-loading" aria-live="polite">
+        <section className="surface">
+          <h1>{runtimeProfileError ? "TraceHawk unavailable" : "Loading TraceHawk"}</h1>
+          <p>
+            {runtimeProfileError ??
+              "Resolving the runtime capability profile before enabling the workspace."}
+          </p>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="shell">
       <section className="topbar">
@@ -258,12 +374,14 @@ export function App() {
           <strong>{viewTitle(activeView)}</strong>
           <span className="version-pill">
             <span className="status-dot" />
-            TraceHawk v0.9.0
+            TraceHawk v0.10.0
           </span>
         </div>
         <div className="topbar-actions">
-          <span className="demo-label">{authLabel(authStatus)}</span>
-          {authStatus?.allowlist_enabled ? (
+          <span className="demo-label">
+            {isPublicDemo ? "Public session-only demo" : authLabel(authStatus)}
+          </span>
+          {!isPublicDemo && authStatus?.allowlist_enabled ? (
             <div className="auth-links">
               {!authStatus.authenticated ? (
                 <a href="/.auth/login/google?post_login_redirect_uri=%2F">Login</a>
@@ -273,17 +391,17 @@ export function App() {
               ) : null}
             </div>
           ) : null}
-          <div className={`status ${assistantStatus?.enabled ? "" : "muted"}`}>
+          {!isPublicDemo ? <div className={`status ${assistantStatus?.enabled ? "" : "muted"}`}>
             {assistantStatus
               ? `${assistantStatus.provider.toUpperCase()} ${
                   assistantStatus.enabled ? "READY" : "UNAVAILABLE"
                 }`
               : "AI STATUS"}
-          </div>
+          </div> : null}
         </div>
       </section>
       <section className="commandbar">
-        <label className="search-box">
+        <label className="search-box" data-tour="global-search">
           <Search size={16} />
           <input
             ref={searchInputRef}
@@ -295,95 +413,159 @@ export function App() {
         </label>
         <span className="toolbar-button">Data tier: Evidence</span>
         <span className="toolbar-button">Last 24 hours</span>
-        <button className="toolbar-button primary" onClick={() => window.location.reload()}>
-          Refresh
-        </button>
+        {isPublicDemo ? (
+          <button
+            className="toolbar-button primary"
+            onClick={clearPublicSession}
+            data-tour="clear-session-top"
+          >
+            Clear session
+          </button>
+        ) : (
+          <button className="toolbar-button primary" onClick={() => window.location.reload()}>
+            Refresh
+          </button>
+        )}
       </section>
       <section className="workspace">
         <aside className="sidebar">
           <button
             className={activeView === "upload" ? "nav-active" : ""}
-            onClick={() => setActiveView("upload")}
+            onClick={() => navigateToView("upload")}
+            data-tour="nav-upload"
           >
             <FileUp size={16} /> Upload
           </button>
-          <button
+          {!isPublicDemo ? <button
             className={activeView === "case" ? "nav-active" : ""}
-            onClick={() => setActiveView("case")}
+            onClick={() => navigateToView("case")}
           >
             <Network size={16} /> Case
-          </button>
+          </button> : null}
           {isAdmin ? (
             <button
               className={activeView === "live" ? "nav-active" : ""}
-              onClick={() => setActiveView("live")}
+              onClick={() => navigateToView("live")}
             >
               <RadioTower size={16} /> Live Monitor
             </button>
           ) : null}
           <button
             className={activeView === "entities" ? "nav-active" : ""}
-            onClick={() => setActiveView("entities")}
+            onClick={() => navigateToView("entities")}
+            data-tour="nav-entities"
           >
             <Fingerprint size={16} /> Entities
           </button>
           <button
             className={activeView === "mitre" ? "nav-active" : ""}
-            onClick={() => setActiveView("mitre")}
+            onClick={() => navigateToView("mitre")}
+            data-tour="nav-mitre"
           >
             <Activity size={16} /> MITRE
           </button>
           <button
             className={activeView === "incidents" ? "nav-active" : ""}
-            onClick={() => setActiveView("incidents")}
+            onClick={() => navigateToView("incidents")}
+            data-tour="nav-incidents"
           >
             <AlertTriangle size={16} /> Incidents
           </button>
+          {isPublicDemo ? (
+            <button
+              className={activeView === "findings" ? "nav-active" : ""}
+              onClick={() => navigateToView("findings")}
+              data-tour="nav-findings"
+            >
+              <ListChecks size={16} /> Findings
+            </button>
+          ) : null}
           <button
             className={activeView === "evidence" ? "nav-active" : ""}
-            onClick={() => setActiveView("evidence")}
+            onClick={() => navigateToView("evidence")}
+            data-tour="nav-evidence"
           >
             <FileSearch size={16} /> Evidence
           </button>
-          <button
+          {!isPublicDemo ? <button
             className={activeView === "assistant" ? "nav-active" : ""}
-            onClick={() => setActiveView("assistant")}
+            onClick={() => navigateToView("assistant")}
           >
             <BrainCircuit size={16} /> Local AI
-          </button>
+          </button> : null}
           <button
             className={activeView === "reports" ? "nav-active" : ""}
-            onClick={() => setActiveView("reports")}
+            onClick={() => navigateToView("reports")}
+            data-tour="nav-reports"
           >
             <ScrollText size={16} /> Reports
           </button>
           <button
             className={activeView === "library" ? "nav-active" : ""}
-            onClick={() => setActiveView("library")}
+            onClick={() => navigateToView("library")}
+            data-tour="nav-library"
           >
             <BookOpen size={16} /> Library
           </button>
+          {isPublicDemo ? (
+            <button
+              className={activeView === "tutorial" ? "nav-active" : ""}
+              onClick={() => navigateToView("tutorial")}
+            >
+              <BookOpen size={16} /> Tutorial
+            </button>
+          ) : null}
           {isAdmin ? (
             <button
               className={activeView === "settings" ? "nav-active" : ""}
-              onClick={() => setActiveView("settings")}
+              onClick={() => navigateToView("settings")}
             >
               <SlidersHorizontal size={16} /> Settings
             </button>
           ) : null}
         </aside>
         <section className="panel investigation">
-          <section className="intake-strip">
+          {isPublicDemo ? (
+            <section className="public-session-banner" data-tour="session-privacy">
+              <div>
+                <strong>Session-only processing</strong>
+                <span>
+                  Logs are processed in request memory, are not stored, and are never sent to
+                  external AI. Refresh or close this tab to erase the result.
+                </span>
+              </div>
+              <div className="session-banner-actions">
+                <span>
+                  {result && sessionRemainingSeconds > 0
+                    ? `Auto-clear in ${formatDuration(sessionRemainingSeconds)}`
+                    : "No active result"}
+                </span>
+                <button
+                  type="button"
+                  className="stop-button"
+                  onClick={clearPublicSession}
+                  data-tour="clear-session-banner"
+                >
+                  Clear session
+                </button>
+              </div>
+            </section>
+          ) : null}
+          <section className="intake-strip" data-tour="upload-intake">
             <div className="intake-title">[Investigation intake]</div>
             <div className="intake-subtle">
               {result ? `${result.raw_line_count} lines loaded` : "No file selected"}
             </div>
             <div className="intake-controls">
-              <label className="file-inline">
+              <label className="file-inline" data-tour="upload-file">
                 <span>Browse...</span>
                 <input
                   type="file"
-                  accept=".log,.txt,.csv,.json,.jsonl,text/plain,application/json"
+                  accept={
+                    publicDemoStatus?.enabled
+                      ? publicDemoStatus.allowed_extensions.join(",")
+                      : ".log,.txt,.csv,.json,.jsonl,text/plain,application/json"
+                  }
                   onChange={handleFileChange}
                   disabled={isAnalyzing}
                 />
@@ -395,6 +577,7 @@ export function App() {
                 className="upload-button inline-action"
                 onClick={handleRunDemo}
                 disabled={isAnalyzing}
+                data-tour="upload-demo"
               >
                 Run demo
               </button>
@@ -404,17 +587,29 @@ export function App() {
                 value={sampleId}
                 onChange={(event) => setSampleId(event.target.value)}
                 disabled={isAnalyzing}
+                data-tour="upload-samples"
               >
-                {SAMPLE_OPTIONS.map((sample) => (
+                {SAMPLE_OPTIONS.filter(
+                  (sample) =>
+                    !isPublicDemo ||
+                    ["auth-ssh-compromise", "suricata-alert-burst", "zeek-port-scan"].includes(
+                      sample.id,
+                    ),
+                ).map((sample) => (
                   <option key={sample.id} value={sample.id}>
                     {sample.label}
                   </option>
                 ))}
               </select>
-              <button className="stop-button" onClick={handleRunSample} disabled={isAnalyzing}>
+              <button
+                className="stop-button"
+                onClick={handleRunSample}
+                disabled={isAnalyzing}
+                data-tour="upload-run-sample"
+              >
                 Run sample
               </button>
-              <label className="file-inline">
+              {!isPublicDemo ? <label className="file-inline">
                 <span>Case...</span>
                 <input
                   type="file"
@@ -423,39 +618,46 @@ export function App() {
                   onChange={handleCaseBundleChange}
                   disabled={isAnalyzing}
                 />
-              </label>
-              <button
+              </label> : null}
+              {!isPublicDemo ? <button
                 className="stop-button"
                 onClick={handleRunRealLabCase}
                 disabled={isAnalyzing}
               >
                 Real lab case
-              </button>
+              </button> : null}
               <button
                 className="stop-button"
+                data-tour="upload-markdown"
                 onClick={() => {
                   setReportFormat("markdown");
-                  setActiveView("reports");
+                  navigateToView("reports");
                 }}
               >
                 Markdown
               </button>
-              <button
+              {!isPublicDemo ? <button
                 className="stop-button"
                 onClick={() => {
                   setReportFormat("pdf");
-                  setActiveView("reports");
+                  navigateToView("reports");
                 }}
               >
                 PDF
-              </button>
+              </button> : null}
             </div>
           </section>
-          <header className="panel-header">
+          <header className="panel-header" data-tour={`view-${activeView}-header`}>
             <div>
               <h1>{viewTitle(activeView)}</h1>
               <p>{viewDescription(activeView)}</p>
             </div>
+            {isPublicDemo && activeView !== "tutorial" ? (
+              <ContextHelpButton
+                view={activeView}
+                onStart={(view) => setTourView(view)}
+              />
+            ) : null}
           </header>
 
           {error ? <div className="error-banner">{error}</div> : null}
@@ -480,8 +682,14 @@ export function App() {
             />
           ) : null}
 
-          {activeView !== "library" ? <MetricGrid result={result} isAnalyzing={isAnalyzing} /> : null}
+          {activeView !== "library" && activeView !== "tutorial" ? (
+            <MetricGrid result={result} isAnalyzing={isAnalyzing} />
+          ) : null}
 
+          {activeView === "tutorial" ? (
+            <TutorialPage onStart={(view) => setTourView(view)} />
+          ) : (
+          <div data-tour={`view-${activeView}-content`}>
           <WorkspaceBody
             activeView={activeView}
             result={result}
@@ -496,10 +704,11 @@ export function App() {
             reportResponse={reportResponse}
             onReportResponse={setReportResponse}
             onReportFormatChange={setReportFormat}
+            publicDemo={isPublicDemo}
             selectedRuleId={libraryRuleId}
             onSelectRule={(ruleId) => {
               setLibraryRuleId(ruleId);
-              setActiveView("library");
+              navigateToView("library");
             }}
             onSelectIncident={(incident) => {
               setSelectedIncidentId(incident.id);
@@ -507,8 +716,17 @@ export function App() {
             }}
             onSelectFinding={setSelectedFindingId}
           />
+          </div>
+          )}
         </section>
       </section>
+      {tourView ? (
+        <GuidedTour
+          initialView={tourView}
+          onNavigate={navigateToView}
+          onClose={closeTour}
+        />
+      ) : null}
     </main>
   );
 }
@@ -529,6 +747,28 @@ function authLabel(status: AuthStatus | null): string {
   return "Sign in required";
 }
 
+function initialWorkspaceView(): WorkspaceView {
+  return window.location.pathname === "/tutorial" ? "tutorial" : "upload";
+}
+
+function disabledAssistantStatus(error: string): AssistantStatus {
+  return {
+    enabled: false,
+    provider: "mock",
+    url: "",
+    model: null,
+    available: false,
+    installed_models: [],
+    error,
+  };
+}
+
+function formatDuration(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
 function viewTitle(view: WorkspaceView): string {
   switch (view) {
     case "case":
@@ -541,6 +781,8 @@ function viewTitle(view: WorkspaceView): string {
       return "MITRE map";
     case "incidents":
       return "Incident desk";
+    case "findings":
+      return "Findings";
     case "evidence":
       return "Evidence review";
     case "assistant":
@@ -549,6 +791,8 @@ function viewTitle(view: WorkspaceView): string {
       return "Reports";
     case "library":
       return "Detection library";
+    case "tutorial":
+      return "Guided tutorial";
     case "settings":
       return "Settings";
     case "upload":
@@ -568,6 +812,8 @@ function viewDescription(view: WorkspaceView): string {
       return "Group findings by MITRE tactic and technique with linked rules and evidence counts.";
     case "incidents":
       return "Review correlated security stories, linked findings, entity context, MITRE techniques, and the investigation timeline.";
+    case "findings":
+      return "Review individual deterministic rule matches, confidence, severity, rationale, MITRE context, and linked evidence.";
     case "evidence":
       return "Inspect the exact raw log lines behind each finding without losing rule, severity, and MITRE context.";
     case "assistant":
@@ -576,6 +822,8 @@ function viewDescription(view: WorkspaceView): string {
       return "Generate local Markdown, HTML, or PDF incident reports with findings, timeline, evidence hashes, and optional assistant summary.";
     case "library":
       return "Browse detection patterns, why they matter, what evidence to look for, MITRE context, false positives, and next analyst steps.";
+    case "tutorial":
+      return "Learn every public demo view through one evidence-first, step-by-step workflow.";
     case "settings":
       return "Control local AI availability, prompt preview, model defaults, and bounded evidence limits.";
     case "upload":

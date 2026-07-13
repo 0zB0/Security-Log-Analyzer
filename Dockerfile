@@ -10,7 +10,7 @@ RUN npm run build
 
 FROM python:3.12-slim@sha256:423ed6ab25b1921a477529254bfeeabf5855151dc2c3141699a1bfc852199fbf
 
-ARG TRACEHAWK_VERSION=0.9.0
+ARG TRACEHAWK_VERSION=0.10.0
 ARG VCS_REF=unknown
 
 LABEL org.opencontainers.image.title="TraceHawk" \

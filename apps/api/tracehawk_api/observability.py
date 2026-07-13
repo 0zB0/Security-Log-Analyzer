@@ -184,13 +184,16 @@ class ObservabilityMiddleware(BaseHTTPMiddleware):
 
 def readiness_report() -> tuple[bool, dict[str, Any]]:
     checks: dict[str, Any] = {}
-    try:
-        init_db()
-        with SessionLocal() as session:
-            session.execute(text("SELECT 1"))
-        checks["database"] = "ok"
-    except Exception as exc:
-        checks["database"] = f"error:{type(exc).__name__}"
+    if settings.deployment_profile == "public_demo":
+        checks["database"] = "disabled"
+    else:
+        try:
+            init_db()
+            with SessionLocal() as session:
+                session.execute(text("SELECT 1"))
+            checks["database"] = "ok"
+        except Exception as exc:
+            checks["database"] = f"error:{type(exc).__name__}"
 
     try:
         rules_root = _project_root() / "packages/rules"
@@ -209,7 +212,7 @@ def readiness_report() -> tuple[bool, dict[str, Any]]:
         checks["correlation_pattern_count"] = 0
 
     ready = (
-        checks.get("database") == "ok"
+        checks.get("database") in {"ok", "disabled"}
         and checks.get("rules") == "ok"
         and checks.get("correlation_patterns") == "ok"
     )
@@ -218,6 +221,7 @@ def readiness_report() -> tuple[bool, dict[str, Any]]:
         "checks": checks,
         "build_commit": settings.build_commit,
         "runtime_mode": settings.runtime_mode,
+        "deployment_profile": settings.deployment_profile,
     }
 
 

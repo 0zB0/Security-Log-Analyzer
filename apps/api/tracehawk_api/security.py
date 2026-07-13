@@ -1,4 +1,6 @@
 from collections import defaultdict, deque
+from hashlib import sha256
+from ipaddress import ip_address
 from threading import Lock
 from time import monotonic
 
@@ -16,8 +18,6 @@ EXPENSIVE_PATH_PREFIXES = (
     "/api/assistant/explain",
     "/api/reports/",
 )
-
-
 class RequestBodyTooLarge(Exception):
     pass
 
@@ -96,31 +96,75 @@ class SecurityHeadersMiddleware:
         await self.app(scope, receive, send_with_headers)
 
 
+class PublicDemoNoStoreMiddleware:
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        path = str(scope.get("path", ""))
+        if scope["type"] != "http" or not path.startswith("/api/public-demo/"):
+            await self.app(scope, receive, send)
+            return
+
+        async def send_without_cache(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                headers = list(message.get("headers", []))
+                headers.extend(
+                    [
+                        (b"cache-control", b"no-store, max-age=0"),
+                        (b"pragma", b"no-cache"),
+                        (b"expires", b"0"),
+                    ]
+                )
+                message["headers"] = headers
+            await send(message)
+
+        await self.app(scope, receive, send_without_cache)
+
+
 class InMemoryRateLimitMiddleware:
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         path = str(scope.get("path", ""))
-        if scope["type"] != "http" or not path.startswith(EXPENSIVE_PATH_PREFIXES):
+        if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
 
-        limit = settings.rate_limit_per_minute
-        if limit <= 0:
+        if path.startswith("/api/public-demo/") and scope.get("method") == "POST":
+            request = Request(scope)
+            allowed, retry_after = PUBLIC_DEMO_RATE_LIMITER.allow(
+                _rate_limit_key(request),
+                settings.public_demo_rate_limit_requests,
+                window_seconds=settings.public_demo_rate_limit_window_seconds,
+            )
+            if not allowed:
+                await JSONResponse(
+                    {"detail": "Public demo rate limit exceeded."},
+                    status_code=429,
+                    headers={"Retry-After": str(retry_after)},
+                )(scope, receive, send)
+                return
+        elif not path.startswith(EXPENSIVE_PATH_PREFIXES):
             await self.app(scope, receive, send)
             return
+        else:
+            limit = settings.rate_limit_per_minute
+            if limit <= 0:
+                await self.app(scope, receive, send)
+                return
 
-        request = Request(scope)
-        key = _rate_limit_key(request)
-        allowed, retry_after = RATE_LIMITER.allow(key, limit)
-        if not allowed:
-            await JSONResponse(
-                {"detail": "Rate limit exceeded."},
-                status_code=429,
-                headers={"Retry-After": str(retry_after)},
-            )(scope, receive, send)
-            return
+            request = Request(scope)
+            key = _rate_limit_key(request)
+            allowed, retry_after = RATE_LIMITER.allow(key, limit)
+            if not allowed:
+                await JSONResponse(
+                    {"detail": "Rate limit exceeded."},
+                    status_code=429,
+                    headers={"Retry-After": str(retry_after)},
+                )(scope, receive, send)
+                return
         await self.app(scope, receive, send)
 
 
@@ -129,15 +173,21 @@ class SlidingWindowRateLimiter:
         self._requests: dict[str, deque[float]] = defaultdict(deque)
         self._lock = Lock()
 
-    def allow(self, key: str, limit: int) -> tuple[bool, int]:
+    def allow(
+        self,
+        key: str,
+        limit: int,
+        *,
+        window_seconds: int = 60,
+    ) -> tuple[bool, int]:
         now = monotonic()
-        cutoff = now - 60
+        cutoff = now - window_seconds
         with self._lock:
             requests = self._requests[key]
             while requests and requests[0] <= cutoff:
                 requests.popleft()
             if len(requests) >= limit:
-                retry_after = max(1, int(60 - (now - requests[0])))
+                retry_after = max(1, int(window_seconds - (now - requests[0])))
                 return False, retry_after
             requests.append(now)
             return True, 0
@@ -148,6 +198,31 @@ class SlidingWindowRateLimiter:
 
 
 RATE_LIMITER = SlidingWindowRateLimiter()
+PUBLIC_DEMO_RATE_LIMITER = SlidingWindowRateLimiter()
+
+
+class PublicDemoConcurrencyGate:
+    def __init__(self) -> None:
+        self._active = 0
+        self._lock = Lock()
+
+    def try_acquire(self, limit: int) -> bool:
+        with self._lock:
+            if self._active >= limit:
+                return False
+            self._active += 1
+            return True
+
+    def release(self) -> None:
+        with self._lock:
+            self._active = max(0, self._active - 1)
+
+    def clear(self) -> None:
+        with self._lock:
+            self._active = 0
+
+
+PUBLIC_DEMO_CONCURRENCY = PublicDemoConcurrencyGate()
 
 
 def _request_body_limit(path: str) -> int | None:
@@ -156,6 +231,10 @@ def _request_body_limit(path: str) -> int | None:
         return settings.max_upload_bytes + multipart_overhead
     if path == "/api/analyze/case-bundle":
         return settings.max_case_total_bytes + multipart_overhead
+    if path.startswith("/api/public-demo/report/"):
+        return settings.public_demo_max_bytes * 12 + 256 * 1024
+    if path.startswith("/api/public-demo/"):
+        return settings.public_demo_max_bytes * 4 + 64 * 1024
     return None
 
 
@@ -171,4 +250,11 @@ def _rate_limit_key(request: Request) -> str:
     if principal is not None and principal.authenticated:
         return f"principal:{principal.audit_actor.lower()}"
     client_host = request.client.host if request.client else "unknown"
-    return f"client:{client_host}"
+    if settings.runtime_mode == "azure-container-apps":
+        forwarded_for = request.headers.get("x-forwarded-for", "")
+        candidate = forwarded_for.rsplit(",", 1)[-1].strip()
+        try:
+            client_host = str(ip_address(candidate))
+        except ValueError:
+            pass
+    return sha256(client_host.encode("utf-8")).hexdigest()

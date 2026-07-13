@@ -7,6 +7,10 @@ multi-tenant SIEM. The public quick start binds to loopback and uses local admin
 that enables trusted-proxy authentication must place a header-sanitizing identity boundary before
 the application-level email allowlist.
 
+The anonymous session-only demo is a second deployment profile, not the private workspace with its
+login removed. It exposes a separate stateless namespace, has no SQLite lifecycle, and must run as a
+separate Container App without the private data volume.
+
 ## Assets
 
 - Raw log content and evidence lines.
@@ -41,7 +45,10 @@ fields; the optional LLM receives bounded evidence only and cannot create findin
 | Sensitive report disclosure | Optional redaction, authenticated demo, bounded evidence, explicit handling guidance | Authorized users can still export sensitive data |
 | Header spoofing | Identity headers are ignored in local mode and trusted only in explicit `azure_easy_auth` compatibility mode behind a header-sanitizing identity boundary | Exposing this mode without a trusted proxy permits forged headers |
 | Privilege misuse | Least-privileged viewer default, analyst/admin capability gates, server-attributed note authors, and persistent audit events | Application administrators can still access all locally persisted evidence |
-| Request flooding | Per-principal/client in-memory rate limit and single-replica deployment | Limits are not shared across replicas and reset on restart |
+| Request flooding | Per-principal/client in-memory rate limit, Azure-validated rightmost forwarded IP, concurrency/timeout caps, and single-replica deployment | Limits are not shared across replicas and reset on restart |
+| Public visitor reads another result | Public responses have no reusable analysis ID, no history endpoint, no database write, and no server result store | A visitor can still retain or share their own browser response |
+| Public payload retained by cache or temporary upload spool | JSON browser-read text, non-cacheable responses, no multipart upload, and body-free logs | Platform-level memory and transport handling still exist during the bounded request |
+| Public profile exposes private capability | Profile-aware allowlist returns `404` for private HTTP/WebSocket routes; separate deployment has no private volume | A future route must be added to the allowlist tests or it can create a regression |
 | Collector memory exhaustion | Loopback-default listener, byte cap, fixed queue, TCP connection cap, idle timeout, bounded batch | Explicit remote bind expands exposure; queue or UDP drops lose telemetry |
 | Live source growth | Fixed raw-line and event windows with signed retained/dropped counters | Evicted evidence is unavailable for later investigation |
 | Stored evidence exposure | Private SQLite volume, retention and purge workflow, no original file retention | Evidence text needed for reports remains sensitive at rest |
@@ -59,6 +66,9 @@ fields; the optional LLM receives bounded evidence only and cannot create findin
 - The LLM cannot create, suppress, or change findings.
 - Original uploaded files are not retained after request processing.
 - Authentication must fail closed when the deployed allowlist is enabled.
+- Public analysis never initializes SQLite, persists a result, invokes external AI, or exposes a
+  reusable analysis identifier.
+- Public results are non-cacheable and private HTTP/WebSocket capabilities remain unavailable.
 - Allowlisted identities without a role binding receive viewer, never analyst or admin.
 - Request bodies and evidence content are excluded from authorization audit events.
 - Security controls documented as current must have executable tests.

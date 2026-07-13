@@ -1,6 +1,6 @@
 # Current API Contract And Frontend Verification Proof
 
-Captured: 2026-07-12
+Captured: 2026-07-13
 
 ## Result
 
@@ -23,19 +23,19 @@ axe, and built-application Chromium tests.
 
 | Layer | Measured result | Behavior covered |
 | --- | --- | --- |
-| Vitest / Testing Library | 31 tests in 11 files | intake success/failure/recovery, case links, evidence selection, notes, reports, settings, assistant, global finding search, rule filters, live retention and save rejection/recovery, keyboard shortcut, empty states |
+| Vitest / Testing Library | 38 tests in 12 files | private intake/recovery, case/evidence/report behavior, public capability isolation, pre-read size rejection, inactivity clearing, fail-closed profile loading, tutorial registry, guided-tour keyboard behavior, and primary axe states |
 | axe | zero violations in asserted primary component/application states | main workspace, incident, evidence, metrics, settings, live, and case states |
-| Playwright Chromium | 5 tests | demo/report, settings/live admin navigation, real-lab source correlation, finding-to-evidence pivot, rejected action and successful retry |
+| Playwright Chromium | 5 private + 2 public tests | private report/admin/real-lab/evidence/recovery paths plus anonymous stateless upload, refresh clearing, restricted controls, contextual help, Escape handling, and direct tutorial routing |
 | TypeScript/Vite | production build passed | generated aliases and maintained frontend compile together |
 
 Whole-source V8 coverage after the behavior tests:
 
 | Metric | Measured | Enforced floor |
 | --- | ---: | ---: |
-| Statements | 74.34% | 70% |
-| Branches | 60.61% | 50% |
-| Functions | 71.66% | 65% |
-| Lines | 75.31% | 70% |
+| Statements | 74.08% | 70% |
+| Branches | 61.93% | 50% |
+| Functions | 71.70% | 65% |
+| Lines | 75.46% | 70% |
 
 Coverage includes maintained `src` TypeScript/TSX and excludes tests, declarations, test support,
 and generated type-only artifacts. GitLab and GitHub retain the HTML, LCOV, and summary coverage
@@ -60,6 +60,7 @@ make api-contract-check
 npm --prefix apps/web run test:coverage
 npm --prefix apps/web run build
 npm --prefix apps/web run test:e2e
+npm --prefix apps/web run test:e2e:public
 ```
 
 ## Boundary

@@ -2,7 +2,7 @@
 
 > Audience: backend engineers, detection engineers, and technical reviewers
 > Canonical for: the path from untrusted input to `AnalysisResult`
-> Verified against: TraceHawk v0.9.0
+> Verified against: TraceHawk v0.10.0
 
 This document explains how TraceHawk turns bounded input into deterministic findings, incidents,
 entities, and evidence. Source-specific field mappings belong in the ingest guides; YAML syntax and

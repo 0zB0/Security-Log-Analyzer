@@ -6,6 +6,38 @@ All notable public TraceHawk releases are documented here.
 
 No unreleased changes.
 
+## [0.10.0] - 2026-07-13
+
+### Added
+
+- a separate `public_demo` profile for bounded anonymous in-memory analysis;
+- eight per-view learning chapters with worked interpretations and control-level walkthroughs;
+- contextual question buttons generated from one shared tutorial registry;
+- eight self-hosted English narrated walkthrough videos with captions and sanitized-sample-only
+  generation;
+- public browser workflows and a deployment verifier for the stateless safety contract.
+
+### Changed
+
+- the anonymous workspace now functions as an interactive cybersecurity learning environment in
+  addition to demonstrating deterministic log analysis;
+- public intake uses a browser-read JSON request instead of multipart upload;
+- tutorial progress and evidence remain session-only browser state.
+
+### Security
+
+- the public profile disables persistence, external AI, host capabilities, notes, settings,
+  retention, backup, audit, admin operations, and private report formats;
+- private HTTP and WebSocket routes are denied;
+- non-cacheable responses expose no reusable analysis identifier or history lookup;
+- request size, lines, file type, content, rate, concurrency, and execution time are bounded.
+
+### Known Limitations
+
+- the public demo is a single-replica learning environment, not tenant-isolated storage or a
+  production SIEM;
+- process-local rate and concurrency controls require one public replica.
+
 ## [0.9.0] - 2026-07-12
 
 ### Added
@@ -112,7 +144,8 @@ No unreleased changes.
 - no multi-tenant isolation or autonomous response;
 - the documented IoT-23 slice is deliberately small and not a production accuracy claim.
 
-[Unreleased]: https://github.com/0zB0/Security-Log-Analyzer/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/0zB0/Security-Log-Analyzer/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.10.0
 [0.9.0]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.9.0
 [0.8.0]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.8.0
 [0.7.1]: https://github.com/0zB0/Security-Log-Analyzer/releases/tag/v0.7.1

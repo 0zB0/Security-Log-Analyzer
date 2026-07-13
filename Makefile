@@ -81,11 +81,13 @@ web-build:
 
 web-e2e:
 	@npm --prefix apps/web run test:e2e
+	@npm --prefix apps/web run test:e2e:public
 
 compose-check:
 	@test "$$(docker compose --profile production config --services)" = "tracehawk"
 	@test "$$(docker compose --profile app config --services | tr '\n' ' ')" = "api web "
 	@test "$$(docker compose --profile collectors config --services)" = "syslog-collector"
+	@test "$$(docker compose --profile public-demo config --services)" = "public-demo"
 	@echo "Docker Compose config OK"
 
 smoke-live:

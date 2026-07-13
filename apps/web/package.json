@@ -1,6 +1,6 @@
 {
   "name": "tracehawk-web",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,9 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "capture:demo": "node scripts/capture-demo.mjs"
+    "test:e2e:public": "playwright test --config playwright.public-demo.config.ts",
+    "capture:demo": "node scripts/capture-demo.mjs",
+    "generate:tutorial-videos": "node scripts/generate-tutorial-videos.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "6.0.3",

@@ -9,9 +9,15 @@ TraceHawk is a local-first, evidence-first security log analyzer for homelabs an
 turns Linux, cloud, container, Windows, Zeek, and Suricata telemetry into deterministic findings,
 correlated incidents, line-level evidence, MITRE ATT&CK context, and analyst reports.
 
+The separate anonymous deployment also works as an interactive cybersecurity learning environment:
+eight per-view chapters explain what each panel shows, how to interpret it, and what every control
+does, with guided walkthroughs and self-hosted English narrated videos.
+
 Detection authority remains in transparent YAML rules. Optional local Ollama explanations are
 grounded in selected evidence and cannot create or alter findings.
 
+[Try the session-only public demo](https://ca-tracehawk-public-demo.bluebush-2bdd630a.germanywestcentral.azurecontainerapps.io/) ·
+[Public demo safety model](docs/public-demo.md) ·
 [Portfolio](https://ozbejbohanec.com) ·
 [Documentation](docs/README.md) ·
 [Engineering guide](docs/engineering-portfolio-guide.md) ·
@@ -33,6 +39,19 @@ grounded in selected evidence and cannot create or alter findings.
 | Resource safety | Bounded request, upload, live rolling window, collector line/queue/connection/batch, rate, and performance budgets |
 | Access control | Explicit local/deployed trust modes, viewer/analyst/admin RBAC, WebSocket gate, and audit trail |
 | Reports | Markdown, HTML, and PDF with scoring rationale, evidence, hashes, optional redaction, and no cloud dependency |
+| Public learning demo | Stateless bounded analysis, eight per-view learning chapters, contextual help, worked interpretations, guided controls, and eight self-hosted narrated videos with captions |
+
+## Try The Public Learning Demo
+
+Open the [anonymous session-only demo](https://ca-tracehawk-public-demo.bluebush-2bdd630a.germanywestcentral.azurecontainerapps.io/),
+select the sanitized SSH sample, and open **Tutorial**. The demo exposes Upload, Incidents,
+Findings, Evidence, Entities, MITRE ATT&CK, Markdown Reports, and the read-only Detection Library.
+
+The public deployment has no SQLite result store, external AI, host-connected collection, notes,
+settings, audit, retention, backup, or private report endpoints. Analysis results stay in request
+and browser memory and clear on refresh, tab close, explicit clear, or inactivity. Use only
+sanitized evaluation logs; never upload production, client, credential, topology, or confidential
+data.
 
 ## 30-Second Product Tour
 

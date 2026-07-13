@@ -1,0 +1,82 @@
+[
+  {
+    "view": "upload",
+    "title": "Upload and investigation intake",
+    "description": "Load a safe sample, read analysis totals, and understand the session-only privacy boundary.",
+    "duration_seconds": 75.3,
+    "video": "/tutorial-videos/upload.mp4",
+    "captions": "/tutorial-videos/upload.en.vtt",
+    "language": "en",
+    "voice": "en-US-GuyNeural"
+  },
+  {
+    "view": "incidents",
+    "title": "Incident prioritization",
+    "description": "Read correlation score, linked findings, entities, and event chronology as one reviewable story.",
+    "duration_seconds": 73.1,
+    "video": "/tutorial-videos/incidents.mp4",
+    "captions": "/tutorial-videos/incidents.en.vtt",
+    "language": "en",
+    "voice": "en-US-GuyNeural"
+  },
+  {
+    "view": "findings",
+    "title": "Deterministic finding review",
+    "description": "Select a rule match, inspect its reason and evidence, and open the transparent rule definition.",
+    "duration_seconds": 68.2,
+    "video": "/tutorial-videos/findings.mp4",
+    "captions": "/tutorial-videos/findings.en.vtt",
+    "language": "en",
+    "voice": "en-US-GuyNeural"
+  },
+  {
+    "view": "evidence",
+    "title": "Raw evidence validation",
+    "description": "Connect a selected finding to exact source lines, rule metadata, MITRE context, and hashes.",
+    "duration_seconds": 82,
+    "video": "/tutorial-videos/evidence.mp4",
+    "captions": "/tutorial-videos/evidence.en.vtt",
+    "language": "en",
+    "voice": "en-US-GuyNeural"
+  },
+  {
+    "view": "entities",
+    "title": "Entity pivots",
+    "description": "Prioritize extracted users, addresses, and systems, then pivot to their incidents and findings.",
+    "duration_seconds": 69.1,
+    "video": "/tutorial-videos/entities.mp4",
+    "captions": "/tutorial-videos/entities.en.vtt",
+    "language": "en",
+    "voice": "en-US-GuyNeural"
+  },
+  {
+    "view": "mitre",
+    "title": "MITRE ATT&CK context",
+    "description": "Read tactics and techniques as classification context and validate every mapping through its findings.",
+    "duration_seconds": 71.3,
+    "video": "/tutorial-videos/mitre.mp4",
+    "captions": "/tutorial-videos/mitre.en.vtt",
+    "language": "en",
+    "voice": "en-US-GuyNeural"
+  },
+  {
+    "view": "reports",
+    "title": "Session-only Markdown reports",
+    "description": "Confirm report scope, apply redaction, generate explicitly, review, and download locally.",
+    "duration_seconds": 68.6,
+    "video": "/tutorial-videos/reports.mp4",
+    "captions": "/tutorial-videos/reports.en.vtt",
+    "language": "en",
+    "voice": "en-US-GuyNeural"
+  },
+  {
+    "view": "library",
+    "title": "Detection library",
+    "description": "Filter transparent rules, select one, and compare its logic and false positives with current findings.",
+    "duration_seconds": 74.5,
+    "video": "/tutorial-videos/library.mp4",
+    "captions": "/tutorial-videos/library.en.vtt",
+    "language": "en",
+    "voice": "en-US-GuyNeural"
+  }
+]

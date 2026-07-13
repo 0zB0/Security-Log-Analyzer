@@ -73,10 +73,14 @@ jobs:
         run: python -m pip install --constraint apps/api/requirements.lock -e apps/api
       - name: Install Chromium
         run: npx --prefix apps/web playwright install --with-deps chromium
-      - name: Browser end-to-end test
+      - name: Private workspace browser end-to-end test
         env:
           TRACEHAWK_PYTHON: python
         run: npm --prefix apps/web run test:e2e
+      - name: Public demo browser end-to-end test
+        env:
+          TRACEHAWK_PYTHON: python
+        run: npm --prefix apps/web run test:e2e:public
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -84,6 +88,7 @@ jobs:
           name: browser-evidence
           path: |
             apps/web/playwright-report/
+            apps/web/playwright-report-public/
             apps/web/test-results/
           if-no-files-found: ignore
 

@@ -2,7 +2,7 @@
 
 > Audience: backend engineers, security reviewers, privacy reviewers, and operators
 > Canonical for: stored investigation state, evidence provenance, retention, and recovery
-> Verified against: TraceHawk v0.9.0
+> Verified against: TraceHawk v0.10.0
 
 TraceHawk uses SQLite to reopen bounded local investigations without retaining the original uploaded
 file as a file. It does persist selected investigation state, including raw evidence text required
@@ -39,8 +39,13 @@ flowchart LR
 | Application settings | Yes | Stored as bounded JSON values |
 | Audit events | Yes | Body-free request and authorization metadata |
 
-The public demo must receive sanitized input only. Not retaining the original file does not make
-persisted raw line text non-sensitive.
+The authenticated private workspace must receive sanitized input only. Not retaining the original
+file does not make persisted raw line text non-sensitive.
+
+The separate `public_demo` profile is the explicit exception to this table: it does not initialize
+SQLite and does not retain raw lines, events, findings, incidents, entities, reports, settings, or
+audit records. Its result exists only in the HTTP response and browser React memory. This exception
+does not change the private analysis routes, which continue to persist investigation evidence.
 
 ## Data Model
 

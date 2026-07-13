@@ -2,7 +2,7 @@
 
 > Audience: frontend engineers, full-stack reviewers, and accessibility reviewers
 > Canonical for: React workspace state, derived views, API integration, and UI verification
-> Verified against: TraceHawk v0.9.0
+> Verified against: TraceHawk v0.10.0
 
 TraceHawk's React application is an investigation workspace, not a generic metrics dashboard. It
 keeps the current analysis and analyst selection in one top-level workspace, then projects that

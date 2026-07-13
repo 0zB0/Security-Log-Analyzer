@@ -13,6 +13,7 @@ product, tests, sanitized fixtures, public evidence, and public-safe technical d
 - [Frontend architecture](frontend-architecture.md)
 - [Limitations](limitations.md)
 - [AI-assisted development disclosure](ai-assisted-development.md)
+- [Session-only public demo](public-demo.md)
 
 ## Security And Detection
 
@@ -56,7 +57,9 @@ product, tests, sanitized fixtures, public evidence, and public-safe technical d
 - [Current performance result](proof-pack/current-performance.md)
 - [Current scale result](proof-pack/current-scale-performance.md)
 - [Current API/frontend verification](proof-pack/current-api-frontend-verification.md)
-- [Current v0.9.0 release notes](releases/v0.9.0.md)
+- [Current public-demo safety proof](proof-pack/current-public-demo-safety.md)
+- [Current v0.10.0 release notes](releases/v0.10.0.md)
+- [Historical v0.9.0 release notes](releases/v0.9.0.md)
 - [Historical v0.8.0 release notes](releases/v0.8.0.md)
 - [Historical v0.7.1 release notes](releases/v0.7.1.md)
 

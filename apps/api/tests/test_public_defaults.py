@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[3]
 def test_compose_publishes_only_loopback_ports() -> None:
     compose = yaml.safe_load((ROOT / "docker-compose.yml").read_text(encoding="utf-8"))
 
-    for service_name in ("tracehawk", "api", "web", "syslog-collector"):
+    for service_name in ("tracehawk", "public-demo", "api", "web", "syslog-collector"):
         ports = compose["services"][service_name]["ports"]
         assert ports
         assert all(str(port).startswith("127.0.0.1:") for port in ports)
@@ -31,6 +31,20 @@ def test_syslog_collector_is_opt_in_and_default_services_expose_no_listener() ->
             "5514" not in str(port)
             for port in compose["services"][service_name]["ports"]
         )
+
+
+def test_public_demo_compose_profile_is_stateless_and_capability_reduced() -> None:
+    compose = yaml.safe_load((ROOT / "docker-compose.yml").read_text(encoding="utf-8"))
+    demo = compose["services"]["public-demo"]
+
+    assert demo["profiles"] == ["public-demo"]
+    assert "volumes" not in demo
+    assert demo["read_only"] is True
+    assert demo["tmpfs"] == ["/tmp:size=16m,mode=1777"]
+    assert demo["environment"]["TRACEHAWK_DEPLOYMENT_PROFILE"] == "public_demo"
+    assert demo["environment"]["TRACEHAWK_AUTH_MODE"] == "disabled"
+    assert demo["environment"]["TRACEHAWK_LLM_PROVIDER"] == "mock"
+    assert demo["environment"]["PUBLIC_DEMO_MAX_BYTES"] == 524288
 
 
 def test_azure_delivery_assets_do_not_configure_a_syslog_listener() -> None:
@@ -84,19 +98,19 @@ def test_public_release_versions_are_aligned() -> None:
     deployment_verifier_path = ROOT / "tools/verify_deployment.py"
     public_smoke_path = ROOT / "tools/smoke_azure_public.py"
 
-    assert api_project["project"]["version"] == "0.9.0"
-    assert web_project["version"] == "0.9.0"
-    assert web_lock["version"] == "0.9.0"
-    assert web_lock["packages"][""]["version"] == "0.9.0"
-    assert openapi["info"]["version"] == "0.9.0"
-    assert release_metadata["release"] == "v0.9.0"
-    assert "TraceHawk v0.9.0" in frontend
-    assert 'API_VERSION = "0.9.0"' in version_module
-    assert "ARG TRACEHAWK_VERSION=0.9.0" in (ROOT / "Dockerfile").read_text(encoding="utf-8")
-    assert (ROOT / "docs/releases/v0.9.0.md").is_file()
+    assert api_project["project"]["version"] == "0.10.0"
+    assert web_project["version"] == "0.10.0"
+    assert web_lock["version"] == "0.10.0"
+    assert web_lock["packages"][""]["version"] == "0.10.0"
+    assert openapi["info"]["version"] == "0.10.0"
+    assert release_metadata["release"] == "v0.10.0"
+    assert "TraceHawk v0.10.0" in frontend
+    assert 'API_VERSION = "0.10.0"' in version_module
+    assert "ARG TRACEHAWK_VERSION=0.10.0" in (ROOT / "Dockerfile").read_text(encoding="utf-8")
+    assert (ROOT / "docs/releases/v0.10.0.md").is_file()
     assert "RELEASE = f\"v{API_VERSION}\"" in version_module
 
-    public_overlay_release = ROOT / "public/github/docs/releases/v0.9.0.md"
+    public_overlay_release = ROOT / "public/github/docs/releases/v0.10.0.md"
     if (ROOT / "public/github").is_dir():
         assert public_overlay_release.is_file()
 

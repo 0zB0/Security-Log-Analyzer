@@ -293,6 +293,32 @@ export type PromptBuildResult = {
   truncated?: boolean;
 };
 
+export type PublicDemoAnalysisResponse = {
+  analysis: AnalysisResult;
+  ephemeral?: true;
+  external_ai?: false;
+  lifecycle?: "request_and_browser_memory_only";
+  session_timeout_seconds: number;
+  stored?: false;
+};
+
+export type PublicDemoAnalyzeRequest = {
+  filename: string;
+  text: string;
+};
+
+export type PublicDemoStatus = {
+  allowed_extensions: string[];
+  available_views: string[];
+  enabled: boolean;
+  external_ai?: boolean;
+  max_bytes: number;
+  max_lines: number;
+  profile: "private" | "public_demo";
+  session_timeout_seconds: number;
+  storage?: "disabled";
+};
+
 export type ReportRedactionOptions = {
   enabled?: boolean;
   mask_hosts?: boolean;
@@ -423,6 +449,9 @@ export interface ApiSchemas {
   MitreTechniqueSummary: MitreTechniqueSummary;
   ParsedEvent: ParsedEvent;
   PromptBuildResult: PromptBuildResult;
+  PublicDemoAnalysisResponse: PublicDemoAnalysisResponse;
+  PublicDemoAnalyzeRequest: PublicDemoAnalyzeRequest;
+  PublicDemoStatus: PublicDemoStatus;
   ReportRedactionOptions: ReportRedactionOptions;
   ReportRequest: ReportRequest;
   ReportResponse: ReportResponse;

@@ -1,0 +1,25 @@
+WEBVTT
+
+1
+00:00:01.400 --> 00:00:11.624
+Welcome to the Reports tutorial. The public demo builds a portable Markdown summary from the active in-memory incident without creating report history.
+
+2
+00:00:13.024 --> 00:00:22.000
+We load the sanitized SSH sample. The selected incident, its four findings, and linked evidence define the report scope.
+
+3
+00:00:23.400 --> 00:00:33.576
+The control panel shows the active incident and available format. Public mode supports Markdown only, and opening this view does not generate anything.
+
+4
+00:00:34.976 --> 00:00:44.120
+We enable redaction. The next report masks IP addresses, users, and hosts while leaving the analysis result unchanged.
+
+5
+00:00:45.520 --> 00:00:55.240
+We click Generate report. TraceHawk creates an in-memory preview; it does not persist a server-side report or download a file automatically.
+
+6
+00:00:56.640 --> 00:01:08.568
+We review evidence, conclusions, recommendations, and redaction in the preview. Download dot M D becomes available only after generation and saves the reviewed content locally.

@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   analyzeCaseBundle,
   analyzeDemo,
+  analyzePublicDemo,
+  analyzePublicSample,
   analyzeRealLabCase,
   analyzeSample,
   analyzeUpload,
@@ -10,9 +12,12 @@ import {
   explainIncident,
   generateCaseReport,
   generateIncidentReport,
+  generatePublicCaseReport,
+  generatePublicIncidentReport,
   getAssistantSettings,
   getAssistantStatus,
   getAuthStatus,
+  getPublicDemoStatus,
   getRuleLibrary,
   listIncidentNotes,
   liveFileWebSocketUrl,
@@ -150,6 +155,43 @@ describe("browser API boundary", () => {
     );
     expect(liveInterfaceWebSocketUrl("eth 0", "tcp port 443")).toBe(
       "ws://localhost:8000/api/live/interface?interface=eth+0&capture_filter=tcp+port+443",
+    );
+  });
+
+  it("uses only stateless public-demo endpoints for public analysis and reports", async () => {
+    fetchMock.mockResolvedValue(response({}));
+    const upload = new File(["event"], "event.log", { type: "text/plain" });
+
+    await getPublicDemoStatus();
+    await analyzePublicDemo(upload);
+    await analyzePublicSample("auth-ssh-compromise");
+    await generatePublicIncidentReport({
+      incident: incidentFixture,
+      findings: [findingFixture],
+      evidence: [evidenceFixture],
+    });
+    await generatePublicCaseReport({ analysis: analysisFixture });
+
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:8000/api/public-demo/status",
+      { cache: "no-store" },
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:8000/api/public-demo/analyze",
+      expect.objectContaining({
+        method: "POST",
+        cache: "no-store",
+        body: JSON.stringify({ filename: "event.log", text: "event" }),
+      }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:8000/api/public-demo/report/incident",
+      expect.objectContaining({ method: "POST", cache: "no-store" }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:8000/api/public-demo/report/case",
+      expect.objectContaining({ method: "POST", cache: "no-store" }),
     );
   });
 

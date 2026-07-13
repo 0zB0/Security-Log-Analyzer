@@ -15,7 +15,7 @@ export function IncidentOverview({
   onSelectIncident: (incident: Incident) => void;
 }) {
   return (
-    <section className="surface incident-surface">
+    <section className="surface incident-surface" data-tour="incident-list">
       <div className="surface-header compact">
         <div>
           <h2>Incidents</h2>
@@ -129,7 +129,7 @@ export function IncidentDetail({
 
   if (!incident) {
     return (
-      <section className="surface incident-detail">
+      <section className="surface incident-detail" data-tour="incident-detail">
         <div className="surface-header">
           <div>
             <h2>Incident detail</h2>
@@ -147,7 +147,7 @@ export function IncidentDetail({
     .filter((finding): finding is Finding => Boolean(finding));
 
   return (
-    <section className="surface incident-detail">
+    <section className="surface incident-detail" data-tour="incident-detail">
       <div className="surface-header">
         <div>
           <h2>{incident.title}</h2>
@@ -186,7 +186,7 @@ export function IncidentDetail({
         onTypeChange={setNoteType}
         onCreate={handleCreateNote}
       />
-      <div className="linked-findings">
+      <div className="linked-findings" data-tour="incident-linked-findings">
         <h3>Linked findings</h3>
         {linkedFindings.map((finding) => (
           <button className="linked-finding" key={finding.id} onClick={() => onSelectFinding(finding.id)}>
@@ -302,7 +302,7 @@ function ScoreBreakdownPanel({ incident }: { incident: Incident }) {
 
 function TimelinePanel({ timeline }: { timeline: string[] }) {
   return (
-    <div className="timeline-panel">
+    <div className="timeline-panel" data-tour="incident-timeline">
       <h3>Timeline</h3>
       {timeline.length === 0 ? (
         <div className="empty-state compact-empty">No timeline entries.</div>
@@ -325,16 +325,18 @@ export function FindingsPanel({
   selectedFinding,
   onSelect,
   onOpenRule,
+  dataTour = "finding-list",
   emptyText = "No findings available.",
 }: {
   findings: Finding[];
   selectedFinding: Finding | null;
   onSelect: (id: string) => void;
   onOpenRule: (ruleId: string) => void;
+  dataTour?: string;
   emptyText?: string;
 }) {
   return (
-    <section className="surface">
+    <section className="surface" data-tour={dataTour}>
       <div className="surface-header">
         <div>
           <h2>Findings</h2>
