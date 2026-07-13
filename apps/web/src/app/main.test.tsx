@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { axe } from "vitest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -8,8 +8,11 @@ import {
   analyzeRealLabCase,
   analyzeSample,
   analyzeUpload,
+  analyzePublicDemo,
+  analyzePublicSample,
   getAssistantStatus,
   getAuthStatus,
+  getPublicDemoStatus,
   listIncidentNotes,
 } from "../lib/api";
 import { analysisFixture } from "../test/workspaceFixtures";
@@ -24,8 +27,11 @@ vi.mock("../lib/api", async (importOriginal) => {
     analyzeRealLabCase: vi.fn(),
     analyzeSample: vi.fn(),
     analyzeUpload: vi.fn(),
+    analyzePublicDemo: vi.fn(),
+    analyzePublicSample: vi.fn(),
     getAssistantStatus: vi.fn(),
     getAuthStatus: vi.fn(),
+    getPublicDemoStatus: vi.fn(),
     listIncidentNotes: vi.fn(),
   };
 });
@@ -35,13 +41,28 @@ const mockedAnalyzeCaseBundle = vi.mocked(analyzeCaseBundle);
 const mockedAnalyzeRealLabCase = vi.mocked(analyzeRealLabCase);
 const mockedAnalyzeSample = vi.mocked(analyzeSample);
 const mockedAnalyzeUpload = vi.mocked(analyzeUpload);
+const mockedAnalyzePublicDemo = vi.mocked(analyzePublicDemo);
+const mockedAnalyzePublicSample = vi.mocked(analyzePublicSample);
 const mockedAssistantStatus = vi.mocked(getAssistantStatus);
 const mockedAuthStatus = vi.mocked(getAuthStatus);
+const mockedPublicDemoStatus = vi.mocked(getPublicDemoStatus);
 const mockedListNotes = vi.mocked(listIncidentNotes);
 
 describe("application investigation workflow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.history.replaceState({}, "", "/");
+    mockedPublicDemoStatus.mockResolvedValue({
+      enabled: false,
+      profile: "private",
+      storage: "disabled",
+      external_ai: false,
+      max_bytes: 524288,
+      max_lines: 20000,
+      session_timeout_seconds: 1800,
+      allowed_extensions: [".csv", ".json", ".jsonl", ".log", ".txt"],
+      available_views: [],
+    });
     mockedAuthStatus.mockResolvedValue({
       authenticated: false,
       email: null,
@@ -65,14 +86,30 @@ describe("application investigation workflow", () => {
     mockedAnalyzeRealLabCase.mockResolvedValue(analysisFixture);
     mockedAnalyzeSample.mockResolvedValue(analysisFixture);
     mockedAnalyzeUpload.mockResolvedValue(analysisFixture);
+    mockedAnalyzePublicDemo.mockResolvedValue({
+      analysis: analysisFixture,
+      ephemeral: true,
+      stored: false,
+      external_ai: false,
+      lifecycle: "request_and_browser_memory_only",
+      session_timeout_seconds: 1800,
+    });
+    mockedAnalyzePublicSample.mockResolvedValue({
+      analysis: analysisFixture,
+      ephemeral: true,
+      stored: false,
+      external_ai: false,
+      lifecycle: "request_and_browser_memory_only",
+      session_timeout_seconds: 1800,
+    });
   });
 
   it("runs the demo and moves from empty intake to an evidence-backed incident", async () => {
     mockedAnalyzeDemo.mockResolvedValue(analysisFixture);
     render(<App />);
 
-    expect(screen.getAllByText("No file selected").length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByRole("button", { name: /^run demo$/i }));
+    expect((await screen.findAllByText("No file selected")).length).toBeGreaterThan(0);
+    fireEvent.click(await screen.findByRole("button", { name: /^run demo$/i }));
 
     await waitFor(() => expect(mockedAnalyzeDemo).toHaveBeenCalledOnce());
     expect(await screen.findByRole("heading", { name: "Incident desk" })).toBeInTheDocument();
@@ -98,7 +135,7 @@ describe("application investigation workflow", () => {
       "href",
       "/.auth/login/google?post_login_redirect_uri=%2F",
     );
-    fireEvent.click(screen.getByRole("button", { name: /^run demo$/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /^run demo$/i }));
 
     expect(await screen.findByText("Demo analysis unavailable")).toBeInTheDocument();
   });
@@ -144,7 +181,7 @@ describe("application investigation workflow", () => {
       .mockResolvedValueOnce(analysisFixture);
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /^run demo$/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /^run demo$/i }));
     expect(await screen.findByText("Demo rejected by policy")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /^run demo$/i }));
 
@@ -155,7 +192,7 @@ describe("application investigation workflow", () => {
   it("executes sample, real-lab, single-file, and case-bundle intake paths", async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /^run sample$/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /^run sample$/i }));
     await waitFor(() => expect(mockedAnalyzeSample).toHaveBeenCalledOnce());
 
     fireEvent.click(screen.getByRole("button", { name: /^real lab case$/i }));
@@ -169,5 +206,104 @@ describe("application investigation workflow", () => {
     fireEvent.change(screen.getByLabelText("Case..."), { target: { files: [file, file] } });
     await waitFor(() => expect(mockedAnalyzeCaseBundle).toHaveBeenCalled());
     expect(screen.getByRole("heading", { name: "Case investigation" })).toBeInTheDocument();
+  });
+
+  it("runs a session-only public analysis and hides private capabilities", async () => {
+    mockedPublicDemoStatus.mockResolvedValue({
+      enabled: true,
+      profile: "public_demo",
+      storage: "disabled",
+      external_ai: false,
+      max_bytes: 524288,
+      max_lines: 20000,
+      session_timeout_seconds: 1800,
+      allowed_extensions: [".csv", ".json", ".jsonl", ".log", ".txt"],
+      available_views: ["upload", "incidents", "findings", "evidence", "tutorial"],
+    });
+    render(<App />);
+
+    expect(await screen.findByText("Public session-only demo")).toBeInTheDocument();
+    expect(screen.getByText("Session-only processing")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^case$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /local ai/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /live monitor/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^findings$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^tutorial$/i })).toBeInTheDocument();
+
+    const file = new File(["event"], "event.log", { type: "text/plain" });
+    fireEvent.change(screen.getByLabelText("Browse..."), { target: { files: [file] } });
+    await waitFor(() => expect(mockedAnalyzePublicDemo).toHaveBeenCalledWith(file));
+    expect(await screen.findByRole("heading", { name: "Incident desk" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Clear session" })[0]);
+    expect(screen.getAllByText("No file selected").length).toBeGreaterThan(0);
+  });
+
+  it("fails closed while the runtime profile is unresolved", () => {
+    mockedPublicDemoStatus.mockReturnValue(new Promise(() => undefined));
+
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "Loading TraceHawk" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^case$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /local ai/i })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Browse...")).not.toBeInTheDocument();
+  });
+
+  it("rejects an oversized public file before reading or sending it", async () => {
+    mockedPublicDemoStatus.mockResolvedValue({
+      enabled: true,
+      profile: "public_demo",
+      storage: "disabled",
+      external_ai: false,
+      max_bytes: 4,
+      max_lines: 20,
+      session_timeout_seconds: 1800,
+      allowed_extensions: [".log"],
+      available_views: ["upload"],
+    });
+    render(<App />);
+
+    const file = new File(["12345"], "event.log", { type: "text/plain" });
+    fireEvent.change(await screen.findByLabelText("Browse..."), {
+      target: { files: [file] },
+    });
+
+    expect(await screen.findByText("Public demo files are limited to 4 bytes.")).toBeInTheDocument();
+    expect(mockedAnalyzePublicDemo).not.toHaveBeenCalled();
+  });
+
+  it("clears public evidence when the inactivity deadline expires", async () => {
+    vi.useFakeTimers();
+    try {
+      mockedPublicDemoStatus.mockResolvedValue({
+        enabled: true,
+        profile: "public_demo",
+        storage: "disabled",
+        external_ai: false,
+        max_bytes: 524288,
+        max_lines: 20000,
+        session_timeout_seconds: 1,
+        allowed_extensions: [".log"],
+        available_views: ["upload", "incidents"],
+      });
+      render(<App />);
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: /^run demo$/i }));
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(screen.getByRole("heading", { name: "Incident desk" })).toBeInTheDocument();
+
+      act(() => vi.advanceTimersByTime(1000));
+
+      expect(screen.getAllByText("No file selected").length).toBeGreaterThan(0);
+      expect(screen.getByRole("heading", { name: "Investigation workspace" })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

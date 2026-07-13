@@ -37,6 +37,7 @@ interface WorkspaceBodyProps {
   onSelectRule: (ruleId: string) => void;
   onSelectIncident: (incident: Incident) => void;
   onSelectFinding: (id: string) => void;
+  publicDemo?: boolean;
 }
 
 export function WorkspaceBody({
@@ -57,6 +58,7 @@ export function WorkspaceBody({
   onSelectRule,
   onSelectIncident,
   onSelectFinding,
+  publicDemo = false,
 }: WorkspaceBodyProps) {
   const visibleFindings = filterFindingsByQuery(result?.findings ?? [], searchQuery);
   const visibleSelectedFinding =
@@ -94,6 +96,7 @@ export function WorkspaceBody({
         report={reportResponse}
         onReport={onReportResponse}
         onReportFormatChange={onReportFormatChange}
+        publicDemo={publicDemo}
       />
     );
   }
@@ -132,6 +135,20 @@ export function WorkspaceBody({
           findings={result?.findings ?? []}
           onSelectFinding={onSelectFinding}
         />
+      </section>
+    );
+  }
+  if (activeView === "findings") {
+    return (
+      <section className="analysis-grid findings-only-grid">
+        <FindingsPanel
+          findings={visibleFindings}
+          selectedFinding={visibleSelectedFinding}
+          onSelect={onSelectFinding}
+          onOpenRule={onSelectRule}
+          emptyText="No findings yet. Upload a supported text log or run a sample."
+        />
+        <EvidencePanel finding={visibleSelectedFinding} evidence={visibleEvidence} />
       </section>
     );
   }

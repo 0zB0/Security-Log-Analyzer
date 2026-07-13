@@ -1,0 +1,25 @@
+WEBVTT
+
+1
+00:00:01.400 --> 00:00:12.368
+Welcome to the Upload tutorial. This view starts an investigation and shows what the parser, detection engine, and correlator produced before you draw conclusions.
+
+2
+00:00:13.768 --> 00:00:25.264
+We click Run demo to load the fixed, sanitized SSH compromise sample. The browser sends it once to the stateless endpoint, and TraceHawk opens the strongest incident.
+
+3
+00:00:26.664 --> 00:00:37.608
+We return to Upload. The intake strip reports the parser and finding count, while the metric cards separate raw lines, parsed events, findings, and incidents.
+
+4
+00:00:39.008 --> 00:00:50.768
+Browse reads one supported text log. The sample selector chooses a safe scenario, Run sample executes it, and Markdown opens the report builder without generating a report.
+
+5
+00:00:52.168 --> 00:01:03.664
+The investigation preview connects incident cards, finding cards, and exact evidence. Clicking a card changes selection only; it never repeats or stores the analysis.
+
+6
+00:01:05.064 --> 00:01:15.336
+The privacy banner is the boundary to remember. Clear session, refresh, tab close, or thirty minutes of inactivity removes the browser-held result.

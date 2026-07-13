@@ -20,7 +20,7 @@ export function EntityInventory({
   );
 
   return (
-    <section className="surface entity-inventory">
+    <section className="surface entity-inventory" data-tour="entity-inventory">
       <div className="surface-header">
         <div>
           <h2>Entity inventory</h2>
@@ -33,7 +33,7 @@ export function EntityInventory({
       ) : topEntities.length === 0 ? (
         <div className="empty-state">No entities were extracted from this analysis.</div>
       ) : (
-        <div className="entity-grid">
+        <div className="entity-grid" data-tour="entity-cards">
           {topEntities.map((entity) => (
             <article className="entity-card" key={entity.id}>
               <div className="entity-card-top">
@@ -46,7 +46,7 @@ export function EntityInventory({
                 <span>{entity.finding_ids.length} findings</span>
                 <span>{entity.incident_ids.length} incidents</span>
               </div>
-              <div className="entity-links">
+              <div className="entity-links" data-tour="entity-links">
                 {entity.incident_ids.slice(0, 3).map((incidentId) => {
                   const incident = incidentsById.get(incidentId);
                   return incident ? (
@@ -78,7 +78,7 @@ export function MitreMapPanel({
 }) {
   const groups = buildMitreGroups(result?.findings ?? []);
   return (
-    <section className="surface mitre-map">
+    <section className="surface mitre-map" data-tour="mitre-map">
       <div className="surface-header">
         <div>
           <h2>MITRE map</h2>
@@ -91,7 +91,7 @@ export function MitreMapPanel({
       ) : groups.length === 0 ? (
         <div className="empty-state">No MITRE mappings were found.</div>
       ) : (
-        <div className="mitre-grid">
+        <div className="mitre-grid" data-tour="mitre-techniques">
           {groups.map((group) => (
             <article className="mitre-tactic" key={group.tactic}>
               <div className="mitre-tactic-header">
@@ -110,7 +110,7 @@ export function MitreMapPanel({
                       <span>{technique.ruleIds.length} rules</span>
                       <span>{technique.evidenceCount} evidence lines</span>
                     </div>
-                    <div className="entity-links">
+                    <div className="entity-links" data-tour="mitre-links">
                       {technique.findingIds.slice(0, 4).map((findingId) => (
                         <button key={findingId} onClick={() => onSelectFinding(findingId)}>
                           {shortId(findingId)}
@@ -214,7 +214,7 @@ export function DetectionLibrary({
           </div>
           <BookOpen size={18} />
         </div>
-        <div className="library-controls">
+        <div className="library-controls" data-tour="library-filters">
           <input
             aria-label="Search detection rules"
             value={query}
@@ -243,7 +243,7 @@ export function DetectionLibrary({
           </label>
         </div>
         {error ? <div className="error-banner">{error}</div> : null}
-        <div className="library-rule-list">
+        <div className="library-rule-list" data-tour="library-rules">
           {filteredRules.map((rule) => (
             <button
               className={`library-rule-row ${selectedRule?.id === rule.id ? "selected" : ""}`}
@@ -288,14 +288,14 @@ function RuleLibraryDetail({
 }) {
   if (!rule) {
     return (
-      <section className="surface library-detail-surface">
+      <section className="surface library-detail-surface" data-tour="library-detail">
         <div className="empty-state">No rule selected.</div>
       </section>
     );
   }
 
   return (
-    <section className="surface library-detail-surface">
+    <section className="surface library-detail-surface" data-tour="library-detail">
       <div className="surface-header">
         <div>
           <h2>{rule.title}</h2>

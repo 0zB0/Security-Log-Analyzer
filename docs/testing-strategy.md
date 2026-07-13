@@ -2,7 +2,7 @@
 
 > Audience: engineers, security reviewers, and academic evaluators
 > Canonical for: verification layers and the claims each layer can support
-> Verified against: TraceHawk v0.9.0
+> Verified against: TraceHawk v0.10.0
 
 TraceHawk uses multiple verification layers because no single test type proves parser correctness,
 detection quality, UI behavior, operational safety, and production readiness at once.
@@ -85,9 +85,11 @@ incident, evidence, case, report, assistant/settings, rule-library, and live-mon
 Accessibility assertions use axe on primary rendered states. Coverage includes all maintained
 frontend source files and enforces 70% lines/statements, 65% functions, and 50% branches.
 
-Playwright runs five Chromium workflows against the production build: demo/report, admin
+Playwright runs five private-workspace Chromium workflows against the production build: demo/report, admin
 navigation, real-lab case correlation, finding-to-evidence pivot, and rejected-action recovery.
-Coverage and browser evidence are retained by GitLab and GitHub CI.
+A separate public-demo project verifies anonymous status, sample and real-file analysis, refresh
+clearing, private-route denial, contextual help, keyboard tour behavior, and direct `/tutorial`
+access. Coverage and browser evidence are retained by GitLab and GitHub CI.
 
 ## Detection Contracts
 
@@ -118,6 +120,8 @@ Integration tests use FastAPI's test client and isolated application state to co
 - rule library exposure;
 - liveness/readiness and metrics dependencies.
 - server-side evidence hashes, graph references, live attestation, and migration round trips.
+- public-profile validation, no-store headers, body/rate/concurrency/timeout limits, private-route
+  denial, and unchanged database row counts after public analysis.
 
 These tests prove component cooperation in one process. They do not prove distributed behavior or a
 long-running production database lifecycle.
@@ -156,6 +160,7 @@ Smoke tools verify real process boundaries that unit tests do not:
 | `make smoke-reports` | rendered report path |
 | `make smoke-ui` | fast Vite/source contract smoke; not a rendered interaction test |
 | `npm --prefix apps/web run test:e2e` | rendered Chromium investigation and report workflow |
+| `npm --prefix apps/web run test:e2e:public` | rendered anonymous session lifecycle and tutorial boundary |
 | `make real-lab-proof` | real Zeek/Suricata replay/export path |
 
 Smoke tests are narrower than full E2E product tests. They prove a chosen critical path, not every
@@ -194,6 +199,10 @@ the gap between hand-written text fixtures and real engine output while remainin
 The delivery pipeline builds an immutable commit-tagged image, deploys it, and checks that the
 running revision reports the expected commit. A 200 response alone is insufficient because it can
 come from a previous healthy deployment.
+
+The public deployment verifier additionally requires `public_demo`, `stored=false`,
+`external_ai=false`, no analysis identifier, no-cache response headers, and `404` for a private
+analysis path.
 
 ## Primary Commands
 

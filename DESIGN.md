@@ -1,6 +1,6 @@
 # TraceHawk Design System
 
-Version: 0.9.0
+Version: 0.10.0
 Product: TraceHawk / Security Log Analyzer
 Direction: darker OpenCode-inspired evidence console
 
@@ -151,7 +151,7 @@ Use the product path and version:
 
 Show:
 
-- `TraceHawk v0.9.0`
+- `TraceHawk v0.10.0`
 - auth state
 - data scope
 - refresh action

@@ -1,0 +1,25 @@
+WEBVTT
+
+1
+00:00:01.400 --> 00:00:15.176
+Welcome to the MITRE tutorial. This view organizes current findings by ATT and CK tactics and techniques. A mapping is classification context, not proof that the full technique occurred.
+
+2
+00:00:16.576 --> 00:00:26.680
+We load the sanitized SSH sample. Its rules map password guessing, valid accounts, and local account creation into one possible progression.
+
+3
+00:00:28.080 --> 00:00:36.816
+Technique cards show the identifier, name, maximum severity, contributing rules, and evidence coverage under each attacker objective.
+
+4
+00:00:38.216 --> 00:00:49.976
+For example, T eleven ten point zero zero one represents password guessing. Its evidence count comes from the current rule matches, not from an external threat-intelligence verdict.
+
+5
+00:00:51.376 --> 00:01:01.120
+We click a short finding identifier to select the detection that created this mapping. Findings and Evidence preserve that selection for validation.
+
+6
+00:01:02.520 --> 00:01:11.280
+Use the map to structure investigation language, then verify every label against rule logic and raw evidence before describing an attack chain.

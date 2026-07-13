@@ -136,4 +136,5 @@ def test_version_exposes_public_build_metadata(monkeypatch) -> None:
         "build_commit": "abc1234",
         "runtime_mode": "azure-container-apps",
         "llm_provider": "mock",
+        "deployment_profile": "private",
     }

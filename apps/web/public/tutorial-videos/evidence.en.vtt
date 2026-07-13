@@ -1,0 +1,29 @@
+WEBVTT
+
+1
+00:00:01.400 --> 00:00:11.000
+Welcome to the Evidence tutorial. This view keeps raw log lines beside the detection that references them so the analyst can challenge the match.
+
+2
+00:00:12.400 --> 00:00:21.784
+We load the sanitized SSH sample. No uploaded evidence is written to public history or sent to external artificial intelligence.
+
+3
+00:00:23.184 --> 00:00:32.040
+The finding selector controls the evidence context. Clicking a finding card updates both the raw viewer and the metadata panel.
+
+4
+00:00:33.440 --> 00:00:44.600
+We select the brute-force context and inspect repeated failed logins for the same user and source address. Changing client ports is normal and does not imply different attackers.
+
+5
+00:00:46.000 --> 00:00:56.080
+Line numbers and untouched text show what the parser and rule actually received. The view does not replace evidence with an artificial-intelligence summary.
+
+6
+00:00:57.480 --> 00:01:11.160
+The metadata panel connects rule, severity, confidence, event count, MITRE technique, and per-line content hashes. These hashes prove consistency inside this analysis, not external chain of custody.
+
+7
+00:01:12.560 --> 00:01:21.968
+Clicking Rule opens the transparent definition behind the selected evidence. This completes the path from source line to detection logic.

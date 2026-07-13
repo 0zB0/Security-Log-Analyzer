@@ -27,6 +27,39 @@ services:
     profiles:
       - production
 
+  public-demo:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:8001:8000"
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    environment:
+      TRACEHAWK_DEPLOYMENT_PROFILE: public_demo
+      TRACEHAWK_AUTH_MODE: disabled
+      TRACEHAWK_DB_PATH: /tmp/public-demo-disabled.db
+      TRACEHAWK_LLM_PROVIDER: mock
+      PUBLIC_DEMO_MAX_BYTES: 524288
+      PUBLIC_DEMO_MAX_LINES: 20000
+      PUBLIC_DEMO_RATE_LIMIT_REQUESTS: 5
+      PUBLIC_DEMO_RATE_LIMIT_WINDOW_SECONDS: 600
+      PUBLIC_DEMO_MAX_CONCURRENCY: 2
+      PUBLIC_DEMO_TIMEOUT_SECONDS: 10
+      PUBLIC_DEMO_SESSION_TIMEOUT_SECONDS: 1800
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/ready', timeout=3)
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    profiles:
+      - public-demo
+
   api:
     build:
       context: ./apps/api

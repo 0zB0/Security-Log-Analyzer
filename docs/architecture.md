@@ -2,7 +2,7 @@
 
 > Audience: engineers, security reviewers, and operators
 > Canonical for: system components, boundaries, core objects, and architectural invariants
-> Verified against: TraceHawk v0.9.0
+> Verified against: TraceHawk v0.10.0
 
 TraceHawk is a single-replica, local-first investigation service. It accepts bounded logs or
 lightweight telemetry, produces deterministic findings, correlates them into explainable incidents,

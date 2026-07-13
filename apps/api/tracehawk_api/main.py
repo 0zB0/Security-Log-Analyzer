@@ -15,7 +15,11 @@ from tracehawk_api.auth import (
     authenticate_headers,
     validate_auth_configuration,
 )
-from tracehawk_api.config import settings
+from tracehawk_api.config import (
+    DEPLOYMENT_PROFILE_PUBLIC_DEMO,
+    settings,
+    validate_deployment_configuration,
+)
 from tracehawk_api.database import init_db
 from tracehawk_api.observability import (
     METRICS,
@@ -31,11 +35,13 @@ from tracehawk_api.routers.live import router as live_router
 from tracehawk_api.routers.mitre import router as mitre_router
 from tracehawk_api.routers.notes import router as notes_router
 from tracehawk_api.routers.operations import router as operations_router
+from tracehawk_api.routers.public_demo import router as public_demo_router
 from tracehawk_api.routers.reports import router as reports_router
 from tracehawk_api.routers.retention import router as retention_router
 from tracehawk_api.routers.rules import router as rules_router
 from tracehawk_api.security import (
     InMemoryRateLimitMiddleware,
+    PublicDemoNoStoreMiddleware,
     RequestBodyLimitMiddleware,
     SecurityHeadersMiddleware,
 )
@@ -45,8 +51,10 @@ from tracehawk_api.version import API_VERSION, RELEASE
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     configure_structured_logging()
+    validate_deployment_configuration()
     validate_auth_configuration()
-    init_db()
+    if settings.deployment_profile != DEPLOYMENT_PROFILE_PUBLIC_DEMO:
+        init_db()
     yield
 
 
@@ -61,6 +69,7 @@ app.add_middleware(InMemoryRateLimitMiddleware)
 app.add_middleware(RequestBodyLimitMiddleware)
 app.add_middleware(AuthRbacAuditMiddleware)
 app.add_middleware(ObservabilityMiddleware)
+app.add_middleware(PublicDemoNoStoreMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -83,6 +92,7 @@ app.include_router(live_router)
 app.include_router(mitre_router)
 app.include_router(notes_router)
 app.include_router(operations_router)
+app.include_router(public_demo_router)
 app.include_router(reports_router)
 app.include_router(retention_router)
 app.include_router(rules_router)
@@ -90,7 +100,11 @@ app.include_router(rules_router)
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "mode": "local-only"}
+    return {
+        "status": "ok",
+        "mode": "local-only",
+        "deployment_profile": settings.deployment_profile,
+    }
 
 
 @app.get("/api/health/live")
@@ -125,6 +139,7 @@ def version() -> dict[str, str]:
         "build_commit": settings.build_commit,
         "runtime_mode": settings.runtime_mode,
         "llm_provider": settings.llm_provider,
+        "deployment_profile": settings.deployment_profile,
     }
 
 
@@ -140,7 +155,10 @@ def auth_status(request: Request) -> dict[str, object]:
         "role": principal.role if principal else None,
         "auth_mode": settings.auth_mode,
         "allowlist_enabled": bool(configured_allowed),
-        "local_admin": settings.auth_mode == AUTH_MODE_DISABLED,
+        "local_admin": (
+            settings.auth_mode == AUTH_MODE_DISABLED
+            and settings.deployment_profile != DEPLOYMENT_PROFILE_PUBLIC_DEMO
+        ),
     }
 
 
@@ -156,6 +174,13 @@ if web_dist_path is not None:
     assets_path = web_dist_path / "assets"
     if assets_path.exists():
         app.mount("/assets", StaticFiles(directory=assets_path), name="web-assets")
+    tutorial_videos_path = web_dist_path / "tutorial-videos"
+    if tutorial_videos_path.exists():
+        app.mount(
+            "/tutorial-videos",
+            StaticFiles(directory=tutorial_videos_path),
+            name="tutorial-videos",
+        )
 
     @app.get("/", include_in_schema=False)
     def web_index() -> FileResponse:

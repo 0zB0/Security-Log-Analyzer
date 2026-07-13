@@ -1,7 +1,18 @@
 import { useMemo, useState } from "react";
 import { ScrollText } from "lucide-react";
 
-import { AnalysisResult, AssistantResponse, EvidenceLine, Finding, Incident, ReportResponse, generateCaseReport, generateIncidentReport } from "../../lib/api";
+import {
+  AnalysisResult,
+  AssistantResponse,
+  EvidenceLine,
+  Finding,
+  Incident,
+  ReportResponse,
+  generateCaseReport,
+  generateIncidentReport,
+  generatePublicCaseReport,
+  generatePublicIncidentReport,
+} from "../../lib/api";
 import { ReportFormat } from "../../app/workspaceTypes";
 import { base64ToArrayBuffer } from "./workspaceSelectors";
 
@@ -13,6 +24,7 @@ export function ReportPanel({
   report,
   onReport,
   onReportFormatChange,
+  publicDemo = false,
 }: {
   result: AnalysisResult | null;
   selectedIncident: Incident | null;
@@ -21,6 +33,7 @@ export function ReportPanel({
   report: ReportResponse | null;
   onReport: (report: ReportResponse | null) => void;
   onReportFormatChange: (format: ReportFormat) => void;
+  publicDemo?: boolean;
 }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +68,17 @@ export function ReportPanel({
     setError(null);
     try {
       const generated = isCaseReport
-        ? await generateCaseReport({
+        ? publicDemo
+          ? await generatePublicCaseReport({
+              analysis: result,
+              redaction: {
+                enabled: redactSensitive,
+                mask_ips: true,
+                mask_users: true,
+                mask_hosts: true,
+              },
+            })
+          : await generateCaseReport({
             analysis: result,
             assistant_summary: assistantResponse?.summary,
             format: reportFormat === "pdf" ? "pdf" : "markdown",
@@ -66,7 +89,19 @@ export function ReportPanel({
               mask_hosts: true,
             },
           })
-        : await generateIncidentReport({
+        : publicDemo
+          ? await generatePublicIncidentReport({
+              incident: selectedIncident as Incident,
+              findings: linkedFindings,
+              evidence: linkedEvidence,
+              redaction: {
+                enabled: redactSensitive,
+                mask_ips: true,
+                mask_users: true,
+                mask_hosts: true,
+              },
+            })
+          : await generateIncidentReport({
             incident: selectedIncident as Incident,
             findings: linkedFindings,
             evidence: linkedEvidence,
@@ -111,7 +146,7 @@ export function ReportPanel({
 
   return (
     <section className="report-grid">
-      <section className="surface report-control">
+      <section className="surface report-control" data-tour="report-controls">
         <div className="surface-header">
           <div>
             <h2>{isCaseReport ? "Case report" : "Incident report"}</h2>
@@ -155,18 +190,23 @@ export function ReportPanel({
                 className={reportFormat === "html" ? "selected" : ""}
                 onClick={() => onReportFormatChange("html")}
                 disabled={isCaseReport}
+                hidden={publicDemo}
               >
                 HTML
               </button>
               <button
                 className={reportFormat === "pdf" ? "selected" : ""}
                 onClick={() => onReportFormatChange("pdf")}
+                hidden={publicDemo}
               >
                 PDF
               </button>
             </div>
+            {publicDemo ? (
+              <span className="session-note">Public demo reports are Markdown-only.</span>
+            ) : null}
           </div>
-          <label className="toggle-row">
+          <label className="toggle-row" data-tour="report-redaction">
             <input
               type="checkbox"
               checked={redactSensitive}
@@ -180,16 +220,22 @@ export function ReportPanel({
               className="upload-button"
               onClick={handleGenerate}
               disabled={(!isCaseReport && !selectedIncident) || isGenerating}
+              data-tour="report-generate"
             >
               <ScrollText size={16} /> {isGenerating ? "Generating" : "Generate report"}
             </button>
-            <button className="stop-button" onClick={handleDownload} disabled={!report}>
+            <button
+              className="stop-button"
+              onClick={handleDownload}
+              disabled={!report}
+              data-tour="report-download"
+            >
               Download {report ? `.${report.filename.split(".").pop()}` : ""}
             </button>
           </div>
         </div>
       </section>
-      <section className="surface report-preview">
+      <section className="surface report-preview" data-tour="report-preview">
         <div className="surface-header">
           <div>
             <h2>Preview</h2>

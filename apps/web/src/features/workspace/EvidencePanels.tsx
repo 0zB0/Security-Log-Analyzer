@@ -11,7 +11,7 @@ export function EvidencePanel({
   evidence: EvidenceLine[];
 }) {
   return (
-    <section className="surface evidence-surface">
+    <section className="surface evidence-surface" data-tour="finding-evidence">
       <div className="surface-header">
         <div>
           <h2>Evidence</h2>
@@ -76,9 +76,10 @@ export function EvidenceReview({
         selectedFinding={selectedFinding}
         onSelect={onSelectFinding}
         onOpenRule={onOpenRule}
+        dataTour="evidence-findings"
         emptyText={emptyText}
       />
-      <section className="surface evidence-main">
+      <section className="surface evidence-main" data-tour="evidence-raw">
         <div className="surface-header">
           <div>
             <h2>Raw evidence</h2>
@@ -112,7 +113,7 @@ function EvidenceMetadata({
   evidence: EvidenceLine[];
 }) {
   return (
-    <section className="surface evidence-metadata">
+    <section className="surface evidence-metadata" data-tour="evidence-metadata">
       <div className="surface-header compact">
         <div>
           <h2>Evidence metadata</h2>

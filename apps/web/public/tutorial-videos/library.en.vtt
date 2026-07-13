@@ -1,0 +1,29 @@
+WEBVTT
+
+1
+00:00:01.400 --> 00:00:11.744
+Welcome to the Detection Library tutorial. The Library turns every public finding into inspectable, versioned rule logic instead of a black-box verdict.
+
+2
+00:00:13.144 --> 00:00:19.960
+We load the sanitized SSH sample so the Library can mark which rules produced findings in this session.
+
+3
+00:00:21.360 --> 00:00:29.760
+The rule list shows severity, confidence, category, log types, MITRE mapping, and whether a rule matched the current analysis.
+
+4
+00:00:31.160 --> 00:00:40.328
+We type S S H into search. Search filters the visible curriculum only; it does not alter findings or rerun detection.
+
+5
+00:00:41.728 --> 00:00:50.296
+We choose the Auth category and enable Found only. These controls narrow the list to relevant rules that matched this sample.
+
+6
+00:00:51.696 --> 00:01:03.096
+Clicking a rule card updates the detail panel. Here we read what the rule looks for, correlation behavior, false positives, current findings, and analyst next steps.
+
+7
+00:01:04.496 --> 00:01:14.456
+The learning loop ends by comparing the rule conditions with the selected finding and its raw evidence. Transparent logic makes the detection challengeable.

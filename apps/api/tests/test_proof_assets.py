@@ -7,6 +7,16 @@ from pypdf import PdfReader
 
 
 ROOT = Path(__file__).resolve().parents[3]
+TUTORIAL_VIDEO_VIEWS = {
+    "upload",
+    "incidents",
+    "findings",
+    "evidence",
+    "entities",
+    "mitre",
+    "reports",
+    "library",
+}
 
 
 def test_release_visual_assets_are_complete_and_readable() -> None:
@@ -82,3 +92,23 @@ def test_distribution_manifests_exclude_source_only_output() -> None:
         assert artifacts
         assert all(path.startswith("docs/assets/") for path in artifacts)
         assert not any(path.startswith("output/") for path in artifacts)
+
+
+def test_narrated_tutorial_video_assets_are_complete_and_readable() -> None:
+    video_root = ROOT / "apps/web/public/tutorial-videos"
+    manifest = json.loads((video_root / "manifest.json").read_text(encoding="utf-8"))
+
+    assert {item["view"] for item in manifest} == TUTORIAL_VIDEO_VIEWS
+    assert len(manifest) == len(TUTORIAL_VIDEO_VIEWS)
+    for item in manifest:
+        view = item["view"]
+        video_path = video_root / f"{view}.mp4"
+        captions_path = video_root / f"{view}.en.vtt"
+        assert item["video"] == f"/tutorial-videos/{view}.mp4"
+        assert item["captions"] == f"/tutorial-videos/{view}.en.vtt"
+        assert item["language"] == "en"
+        assert item["voice"] == "en-US-GuyNeural"
+        assert 60 <= item["duration_seconds"] <= 90
+        assert video_path.stat().st_size > 100_000
+        assert b"ftyp" in video_path.read_bytes()[:32]
+        assert captions_path.read_text(encoding="utf-8").startswith("WEBVTT\n")

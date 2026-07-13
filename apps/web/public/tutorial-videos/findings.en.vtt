@@ -1,0 +1,25 @@
+WEBVTT
+
+1
+00:00:01.400 --> 00:00:12.656
+Welcome to the Findings tutorial. A finding is one deterministic rule match. Review it independently before accepting the incident that contains it.
+
+2
+00:00:14.056 --> 00:00:20.272
+We load the fixed SSH sample so every learner sees the same evidence and the same four findings.
+
+3
+00:00:21.672 --> 00:00:31.656
+The list shows title, severity, confidence, event count, and MITRE technique. Clicking a finding card changes the evidence preview beside it.
+
+4
+00:00:33.056 --> 00:00:43.592
+We select a finding and compare its reason with the numbered raw lines. Confidence describes the rule match; it does not remove the possibility of a false positive.
+
+5
+00:00:44.992 --> 00:00:56.824
+We click Rule to open the exact versioned detection definition. The Library explains matching logic, correlation behavior, false positives, and recommended analyst steps.
+
+6
+00:00:58.224 --> 00:01:08.232
+Returning to Findings preserves the selected detection. The workflow is deliberate: signal, evidence, rule logic, and only then a conclusion.

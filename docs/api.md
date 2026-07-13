@@ -32,6 +32,28 @@ GET /api/health/ready
 
 Liveness proves the process is serving. Readiness executes a SQLite query and validates the full
 YAML rule library plus the correlation-pattern library; it returns `503` when a dependency fails.
+In `public_demo`, readiness reports the database as `disabled` and validates only the rule and
+correlation libraries because that runtime never initializes SQLite.
+
+## Session-Only Public Demo
+
+These endpoints exist only when `TRACEHAWK_DEPLOYMENT_PROFILE=public_demo`. They are anonymous,
+stateless, non-cacheable, and deliberately separate from the persistent private API.
+
+```text
+GET /api/public-demo/status
+POST /api/public-demo/analyze
+POST /api/public-demo/analyze/sample/{sample_id}
+POST /api/public-demo/report/incident
+POST /api/public-demo/report/case
+```
+
+`POST /api/public-demo/analyze` accepts JSON with `filename` and `text`. It allows one bounded UTF-8
+`.log`, `.txt`, `.csv`, `.json`, or `.jsonl` payload and returns the deterministic analysis inside
+an envelope with `ephemeral=true`, `stored=false`, `external_ai=false`, and lifecycle metadata.
+The response has no public `analysis_id`. Public reports are Markdown returned in the response and
+are not written to disk or SQLite. See [Session-only public demo](public-demo.md) for limits and the
+complete capability boundary.
 
 ## Metrics
 

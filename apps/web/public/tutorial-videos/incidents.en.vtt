@@ -1,0 +1,25 @@
+WEBVTT
+
+1
+00:00:01.400 --> 00:00:12.776
+Welcome to the Incidents tutorial. Incidents group related deterministic findings into a reviewable story, but a high score is still a priority signal rather than proof.
+
+2
+00:00:14.176 --> 00:00:25.600
+We load the sanitized SSH sample. Repeated failures, a later success, and privileged account activity are correlated into one possible credential compromise.
+
+3
+00:00:27.000 --> 00:00:37.488
+The incident list ranks stories by severity, score, finding count, techniques, and shared entities. Clicking an incident card updates the detail panel.
+
+4
+00:00:38.888 --> 00:00:48.776
+We select the incident and verify the scoring rationale. TraceHawk exposes each score component instead of presenting an unexplained risk number.
+
+5
+00:00:50.176 --> 00:00:59.776
+A linked finding button selects one contributing detection. That selection is preserved when we move to Findings or Evidence for validation.
+
+6
+00:01:01.176 --> 00:01:13.080
+Finally, we read the timeline in order. Ten failures precede an accepted login and a privileged command. The sequence is the key signal, not the score alone.

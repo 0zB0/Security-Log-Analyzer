@@ -5,10 +5,12 @@ export type WorkspaceView =
   | "entities"
   | "mitre"
   | "incidents"
+  | "findings"
   | "evidence"
   | "assistant"
   | "reports"
   | "library"
+  | "tutorial"
   | "settings";
 
 export type ReportFormat = "markdown" | "html" | "pdf";

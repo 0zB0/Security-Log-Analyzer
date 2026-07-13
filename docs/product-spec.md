@@ -2,7 +2,7 @@
 
 > Audience: product reviewers, engineers, security analysts, and contributors
 > Canonical for: product promise, current user, scope, non-goals, and success criteria
-> Verified against: TraceHawk v0.9.0
+> Verified against: TraceHawk v0.10.0
 
 ## Product Promise
 

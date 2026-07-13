@@ -2,7 +2,7 @@
 
 > Audience: employers, engineering managers, technical interviewers, academic reviewers, and contributors
 > Canonical for: mapping TraceHawk capabilities to engineering disciplines and review evidence
-> Verified against: TraceHawk v0.9.0
+> Verified against: TraceHawk v0.10.0
 
 TraceHawk is best evaluated as a compact, full-stack security product rather than as a small script
 or an attempted enterprise SIEM. This guide maps each engineering area to its implementation,

@@ -1549,6 +1549,434 @@ code,
   color: var(--muted);
 }
 
+.public-session-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(126, 231, 135, 0.35);
+  background: rgba(35, 134, 54, 0.12);
+  padding: 0.8rem 1rem;
+}
+
+.public-session-banner > div:first-child {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.public-session-banner strong {
+  color: var(--ok);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+}
+
+.public-session-banner span {
+  color: var(--muted-strong);
+  font-size: 0.82rem;
+}
+
+.session-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  white-space: nowrap;
+}
+
+.context-help-button {
+  width: 38px;
+  height: 38px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--surface-raised);
+  color: var(--muted-strong);
+}
+
+.context-help-button:hover,
+.context-help-button:focus-visible {
+  border-color: var(--low);
+  color: var(--low);
+  outline: none;
+}
+
+.tutorial-page {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.tutorial-intro {
+  padding: 1rem;
+}
+
+.tutorial-intro h2,
+.tutorial-intro p,
+.tutorial-section-card h3 {
+  margin-top: 0;
+}
+
+.tutorial-intro p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.tutorial-chapter-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.tutorial-chapter-links a,
+.tutorial-chapter-actions a {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted-strong);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  padding: 0.42rem 0.65rem;
+  text-decoration: none;
+}
+
+.tutorial-chapter-links a:hover,
+.tutorial-chapter-links a:focus-visible,
+.tutorial-chapter-actions a:hover,
+.tutorial-chapter-actions a:focus-visible {
+  border-color: var(--low);
+  color: var(--low);
+  outline: none;
+}
+
+.tutorial-common-controls {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.tutorial-common-controls .tutorial-card-heading p,
+.tutorial-section-card .tutorial-card-heading p {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0.35rem 0 0;
+}
+
+.tutorial-section-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.tutorial-section-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 1.2rem;
+  scroll-margin-top: 1rem;
+}
+
+.tutorial-card-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.tutorial-card-heading span {
+  color: var(--low);
+  font-family: var(--mono);
+}
+
+.tutorial-card-heading h3 {
+  margin-bottom: 0;
+}
+
+.tutorial-learning-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.tutorial-learning-block {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.015);
+  padding: 1rem;
+}
+
+.tutorial-learning-block h4 {
+  margin: 0 0 0.8rem;
+}
+
+.tutorial-display-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.tutorial-display-list article {
+  border-left: 2px solid var(--line);
+  padding-left: 0.75rem;
+}
+
+.tutorial-display-list h5,
+.tutorial-display-list p {
+  margin: 0;
+}
+
+.tutorial-display-list h5 {
+  color: var(--text);
+  font-size: 0.86rem;
+}
+
+.tutorial-display-list p {
+  color: var(--muted-strong);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin-top: 0.3rem;
+}
+
+.tutorial-display-list .tutorial-example-line {
+  color: var(--muted);
+}
+
+.tutorial-example-grid {
+  display: grid;
+  grid-template-columns: 105px 1fr;
+  gap: 0.55rem 0.75rem;
+  margin: 0;
+}
+
+.tutorial-example-grid dt {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.tutorial-example-grid dd {
+  margin: 0;
+  color: var(--muted-strong);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.tutorial-control-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.tutorial-control-item {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.7fr) minmax(260px, 1.15fr) minmax(260px, 1.15fr);
+  gap: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 0.75rem;
+}
+
+.tutorial-control-item p {
+  color: var(--muted-strong);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 0.2rem 0 0;
+}
+
+.tutorial-control-item > div > span {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.tutorial-control-name {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tutorial-control-name > span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.18rem 0.4rem;
+}
+
+.tutorial-boundaries {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.tutorial-boundaries > div {
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+}
+
+.tutorial-boundaries p {
+  color: var(--muted-strong);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 0.35rem 0 0;
+}
+
+.tutorial-video-reference {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid rgba(121, 192, 255, 0.38);
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(121, 192, 255, 0.08), rgba(60, 207, 145, 0.035));
+  padding: 1rem;
+}
+
+.tutorial-video-copy {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.tutorial-video-copy > svg {
+  flex: 0 0 auto;
+  color: var(--low);
+  margin-top: 0.1rem;
+}
+
+.tutorial-video-copy h4,
+.tutorial-video-copy p,
+.tutorial-video-player p {
+  margin: 0;
+}
+
+.tutorial-video-copy p {
+  color: var(--muted-strong);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  margin-top: 0.3rem;
+}
+
+.tutorial-video-copy span {
+  display: block;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  margin-top: 0.55rem;
+  text-transform: uppercase;
+}
+
+.tutorial-video-player {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.65rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}
+
+.tutorial-video-player video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #050a10;
+}
+
+.tutorial-video-player p {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.tutorial-chapter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.guided-tour-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.guided-tour-dialog {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  width: min(430px, calc(100vw - 2rem));
+  pointer-events: auto;
+  border: 1px solid var(--low);
+  border-radius: 10px;
+  background: #0b1017;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.55);
+  padding: 1rem;
+}
+
+.guided-tour-dialog:focus {
+  outline: 2px solid rgba(121, 192, 255, 0.45);
+  outline-offset: 2px;
+}
+
+.guided-tour-dialog h2 {
+  margin: 0.75rem 0 0.4rem;
+  font-size: 1rem;
+}
+
+.guided-tour-dialog p {
+  margin: 0;
+  color: var(--muted-strong);
+  line-height: 1.5;
+}
+
+.guided-tour-topline,
+.guided-tour-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.guided-tour-topline {
+  color: var(--low);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.guided-tour-topline button {
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--muted-strong);
+}
+
+.guided-tour-actions {
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.tour-target-active {
+  position: relative;
+  z-index: 1001;
+  outline: 3px solid var(--low) !important;
+  outline-offset: 4px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.2);
+}
+
+.session-note {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.findings-only-grid {
+  grid-template-columns: minmax(320px, 0.9fr) minmax(360px, 1.1fr);
+}
+
 @media (max-width: 950px) {
   .commandbar,
   .workspace,
@@ -1567,6 +1995,24 @@ code,
   .intake-controls,
   .note-compose {
     grid-template-columns: 1fr;
+  }
+
+  .tutorial-learning-grid,
+  .tutorial-boundaries,
+  .tutorial-control-item,
+  .tutorial-video-reference {
+    grid-template-columns: 1fr;
+  }
+
+  .tutorial-chapter-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .public-session-banner,
+  .session-banner-actions {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .sidebar {
@@ -1613,4 +2059,14 @@ code,
   .entity-list {
     justify-content: flex-start;
   }
+}
+.runtime-profile-loading {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+}
+
+.runtime-profile-loading .surface {
+  max-width: 36rem;
+  padding: 2rem;
 }
