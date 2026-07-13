@@ -1,10 +1,10 @@
 {
-  "content_sha256": "84145bbe4c8e52560213f8fabf3ed2d5c934eb49e366ba2d0d0031688a58b893",
+  "content_sha256": "a7a81bebc7730c1c844ecb828fc2b94250d59df5220ad96c9443ee1e4e4a62f7",
   "file_count": 468,
   "policy": "curated-public-allowlist",
   "provenance": "git-commit",
   "release": "v0.10.0",
   "schema_version": 1,
-  "source_commit": "cba2672aa2b128cc1ea6e08a98519e8a116aa841",
+  "source_commit": "67b7c457165dd55a56926b0a85b3ca168c512990",
   "source_state": "clean"
 }
