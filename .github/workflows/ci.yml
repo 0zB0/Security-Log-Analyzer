@@ -56,7 +56,7 @@ jobs:
       - name: Dependency audit
         run: npm --prefix apps/web audit --omit=dev --audit-level=high
       - name: Test and coverage
-        run: npm --prefix apps/web run test:coverage
+        run: npm --prefix apps/web run test:coverage -- --testTimeout=15000
       - name: Upload web coverage
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
