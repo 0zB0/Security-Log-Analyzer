@@ -1,6 +1,49 @@
 import { expect, test } from "@playwright/test";
 
 
+test("publishes theme-aware TraceHawk website icons", async ({ page, request }) => {
+  const iconPaths = [
+    "/assets/brand/favicon.ico",
+    "/assets/brand/favicon-light.png",
+    "/assets/brand/favicon-dark.png",
+    "/assets/brand/apple-touch-icon.png",
+    "/assets/brand/icon-192.png",
+    "/assets/brand/tracehawk-icon-dark.png",
+  ];
+
+  for (const path of iconPaths) {
+    const response = await request.get(path);
+    expect(response.status(), path).toBe(200);
+    expect(response.headers()["content-type"], path).toMatch(/^image\//);
+  }
+
+  const manifestResponse = await request.get("/assets/brand/site.webmanifest");
+  expect(manifestResponse.status()).toBe(200);
+  expect(await manifestResponse.json()).toMatchObject({
+    name: "TraceHawk",
+    short_name: "TraceHawk",
+    icons: [
+      { src: "/assets/brand/icon-192.png", sizes: "192x192", type: "image/png" },
+      {
+        src: "/assets/brand/tracehawk-icon-dark.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+  });
+
+  await page.goto("/");
+  await expect(page.locator('link[rel="icon"][media="(prefers-color-scheme: light)"]')).toHaveAttribute(
+    "href",
+    "/assets/brand/favicon-light.png",
+  );
+  await expect(page.locator('link[rel="icon"][media="(prefers-color-scheme: dark)"]')).toHaveAttribute(
+    "href",
+    "/assets/brand/favicon-dark.png",
+  );
+});
+
+
 test("keeps anonymous analysis session-only and blocks private capabilities", async ({
   page,
   request,

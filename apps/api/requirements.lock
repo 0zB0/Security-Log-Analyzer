@@ -66,13 +66,13 @@ h11==0.16.0
     #   uvicorn
 httpcore==1.0.9
     # via httpx
-httpcore2==2.5.0
+httpcore2==2.6.0
     # via httpx2
 httptools==0.8.0
     # via uvicorn
 httpx==0.28.1
     # via tracehawk-api (apps/api/pyproject.toml)
-httpx2==2.5.0
+httpx2==2.6.0
     # via tracehawk-api (apps/api/pyproject.toml)
 idna==3.18
     # via
@@ -113,7 +113,7 @@ mdurl==0.1.2
     # via markdown-it-py
 msgpack==1.2.1
     # via cachecontrol
-mypy==2.2.0
+mypy==2.3.0
     # via tracehawk-api (apps/api/pyproject.toml)
 mypy-extensions==1.1.0
     # via mypy
