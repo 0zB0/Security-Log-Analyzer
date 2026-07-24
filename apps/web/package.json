@@ -15,7 +15,7 @@
     "generate:tutorial-videos": "node scripts/generate-tutorial-videos.mjs"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "6.0.3",
+    "@vitejs/plugin-react": "6.0.4",
     "lucide-react": "1.23.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
